@@ -5,7 +5,7 @@ import org.junit.Test;
 import java.time.LocalDate;
 import java.util.Date;
 
-import static org.javarosa.core.model.utils.DateUtils.dateFromLocalDate;
+import static org.javarosa.core.model.utils.DateUtilsForTesting.dateFromLocalDate;
 import static org.junit.Assert.assertEquals;
 
 public class DateUtils_GetPastPeriodDateIncludeTodayTest {

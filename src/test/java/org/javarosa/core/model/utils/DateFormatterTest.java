@@ -21,7 +21,7 @@ import static org.javarosa.core.model.utils.DateFormatter.FORMAT_HUMAN_READABLE_
 import static org.javarosa.core.model.utils.DateFormatter.FORMAT_ISO8601;
 import static org.javarosa.core.model.utils.DateFormatter.FORMAT_TIMESTAMP_HTTP;
 import static org.javarosa.core.model.utils.DateFormatter.FORMAT_TIMESTAMP_SUFFIX;
-import static org.javarosa.core.model.utils.DateUtils.dateFromLocalDateTime;
+import static org.javarosa.core.model.utils.DateUtilsForTesting.dateFromLocalDateTime;
 import static org.junit.Assert.assertEquals;
 
 public class DateFormatterTest {

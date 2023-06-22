@@ -2,12 +2,13 @@ package org.javarosa.core.model.data.test;
 
 import org.javarosa.core.model.data.TimeData;
 import org.javarosa.core.model.utils.DateFields;
+import org.javarosa.core.model.utils.DateUtils;
 import org.junit.Test;
 
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.TimeZone;
 
-import static org.javarosa.core.model.utils.DateUtils.getDate;
 import static org.javarosa.core.model.utils.DateUtils.parseTime;
 import static org.javarosa.test.utils.SystemHelper.withTimeZone;
 import static org.junit.Assert.assertEquals;
@@ -76,7 +77,7 @@ public class TimeDataLimitationsTest {
         if (!parseTime(str, fields)) {
             return null;
         }
-        return getDate(fields, timeZone);
+        return DateUtils.dateFrom(fields.asLocalDateTime(), ZoneId.of(timeZone.getID()));
     }
 
     static class StringWrapper {

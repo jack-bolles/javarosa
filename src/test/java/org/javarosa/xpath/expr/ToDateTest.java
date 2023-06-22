@@ -1,6 +1,6 @@
 package org.javarosa.xpath.expr;
 
-import org.javarosa.core.model.utils.DateUtils;
+import org.javarosa.core.model.utils.DateUtilsForTesting;
 import org.javarosa.xpath.XPathTypeMismatchException;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Double.POSITIVE_INFINITY;
-import static org.javarosa.core.model.utils.DateUtils.dateFromLocalDateTime;
+import static org.javarosa.core.model.utils.DateUtilsForTesting.dateFromLocalDateTime;
 import static org.javarosa.test.utils.SystemHelper.withTimeZone;
 import static org.javarosa.xpath.expr.XPathFuncExpr.toDate;
 import static org.junit.Assert.assertEquals;
@@ -50,7 +50,7 @@ public class ToDateTest {
 
     @NotNull
     private static Date dateFromZonedDateTime(ZonedDateTime zonedDateTime) {
-        return DateUtils.dateFromLocalDateTime(zonedDateTime.toLocalDateTime());
+        return DateUtilsForTesting.dateFromLocalDateTime(zonedDateTime.toLocalDateTime());
     }
 
     @NotNull

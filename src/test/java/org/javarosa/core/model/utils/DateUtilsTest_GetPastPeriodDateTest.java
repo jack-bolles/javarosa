@@ -1,13 +1,12 @@
 package org.javarosa.core.model.utils;
 
-import static org.javarosa.core.model.utils.DateUtils.dateFromLocalDate;
-
 import org.junit.Test;
 
 import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
 
+import static org.javarosa.core.model.utils.DateUtilsForTesting.dateFromLocalDate;
 import static org.junit.Assert.assertEquals;
 
 public class DateUtilsTest_GetPastPeriodDateTest {

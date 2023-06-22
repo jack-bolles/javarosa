@@ -18,9 +18,7 @@ package org.javarosa.core.model.utils;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
@@ -31,33 +29,15 @@ import java.util.concurrent.TimeUnit;
 import static org.javarosa.core.model.utils.StringUtils.split;
 
 public class DateUtils {
-    @NotNull
-    public static Date dateFromLocalDate(LocalDate someDate) {
-        ZoneId zoneId = ZoneId.systemDefault();
-        LocalTime noon = LocalTime.NOON;
-        return dateFromLocalDateTime(LocalDateTime.of(someDate, noon), zoneId);
-    }
-
-    public static Date dateFromLocalDateTime(LocalDateTime someDateTime) {
-        return dateFromLocalDateTime(someDateTime, ZoneId.systemDefault());
-    }
 
     @NotNull
-    public static Date dateFromLocalDateTime(LocalDateTime someDateTime, ZoneId zoneId) {
+    public static Date dateFrom(LocalDateTime someDateTime, ZoneId zoneId) {
         return Date.from(someDateTime.atZone(zoneId).toInstant());
     }
 
     public static final long DAY_IN_MS = 86400000L;
 
     public DateUtils() {
-    }
-
-    public static Date getDate(DateFields f) {
-        return getDate(f, TimeZone.getDefault());
-    }
-
-    public static Date getDate(DateFields f, TimeZone tz) {
-        return dateFromLocalDateTime(f.asLocalDateTime(), ZoneId.of(tz.getID()));
     }
 
     public static int secTicksAsNanoSeconds(int millis) {
@@ -79,7 +59,8 @@ public class DateUtils {
 
                 DateFields newDate = DateFields.of(Integer.parseInt(pieces.get(0)), Integer.parseInt(pieces.get(1)), Integer.parseInt(pieces.get(2)));
                 parseTime(str.substring(i + 1), newDate);
-                return getDate(newDate);
+                TimeZone tz = TimeZone.getDefault();
+                return dateFrom(newDate.asLocalDateTime(), ZoneId.of(tz.getID()));
             }
         } else {
             return parseDate(str);
@@ -93,7 +74,9 @@ public class DateUtils {
         List<String> pieces = split(str, "-", false);
         if (pieces.size() != 3) throw new IllegalArgumentException("Wrong number of fields to parse date: " + str);
 
-        return getDate(DateFields.of(Integer.parseInt(pieces.get(0)), Integer.parseInt(pieces.get(1)), Integer.parseInt(pieces.get(2))));
+        DateFields f = DateFields.of(Integer.parseInt(pieces.get(0)), Integer.parseInt(pieces.get(1)), Integer.parseInt(pieces.get(2)));
+        TimeZone tz = TimeZone.getDefault();
+        return dateFrom(f.asLocalDateTime(), ZoneId.of(tz.getID()));
     }
 
     public static Date parseTime(String str) {
@@ -104,7 +87,8 @@ public class DateUtils {
         if (!parseTime(str, fields)) {
             return null;
         }
-        return getDate(fields);
+        TimeZone tz = TimeZone.getDefault();
+        return dateFrom(fields.asLocalDateTime(), ZoneId.of(tz.getID()));
     }
 
 
@@ -178,7 +162,7 @@ public class DateUtils {
         TimeZone utc = TimeZone.getTimeZone("UTC");
         Calendar c = Calendar.getInstance(utc);
         long msecOffset = (((60L * timeOffset.hour) + timeOffset.minute) * 60 * 1000L);
-        c.setTime(new Date(DateUtils.getDate(f, utc).getTime() + msecOffset));
+        c.setTime(new Date(dateFrom(f.asLocalDateTime(), ZoneId.of(utc.getID())).getTime() + msecOffset));
         //c is now in the timezone of the parsed value, so put
         //it in the local timezone.
         c.setTimeZone(TimeZone.getDefault());
@@ -258,7 +242,9 @@ public class DateUtils {
     /* ==== DATE UTILITY FUNCTIONS ==== */
 
     public static Date getDate(int year, int month, int day) {
-        return getDate(DateFields.of(year, month, day));
+        DateFields f = DateFields.of(year, month, day);
+        TimeZone tz = TimeZone.getDefault();
+        return dateFrom(f.asLocalDateTime(), ZoneId.of(tz.getID()));
     }
 
     /**
@@ -267,7 +253,9 @@ public class DateUtils {
     public static Date roundDate(Date d) {
         if (d == null) return null;
         DateFields f = getFields(d, TimeZone.getDefault());
-        return getDate(DateFields.of(f.year, f.month, f.day));
+        DateFields f1 = DateFields.of(f.year, f.month, f.day);
+        TimeZone tz = TimeZone.getDefault();
+        return dateFrom(f1.asLocalDateTime(), ZoneId.of(tz.getID()));
     }
 
     /* ==== DATE OPERATIONS ==== */

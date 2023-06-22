@@ -1,6 +1,8 @@
 package org.javarosa.core.model.utils;
+
 import org.junit.Before;
 import org.junit.Test;
+
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -12,7 +14,7 @@ import static org.javarosa.core.model.utils.DateFormat.HUMAN_READABLE_SHORT;
 import static org.javarosa.core.model.utils.DateFormat.ISO8601;
 import static org.javarosa.core.model.utils.DateFormat.TIMESTAMP_HTTP;
 import static org.javarosa.core.model.utils.DateFormat.TIMESTAMP_SUFFIX;
-import static org.javarosa.core.model.utils.DateUtils.dateFromLocalDateTime;
+import static org.javarosa.core.model.utils.DateUtilsForTesting.dateFromLocalDateTime;
 import static org.junit.Assert.assertEquals;
 public class DateFormatTest {
     private LocalDateTime localDateTime;
