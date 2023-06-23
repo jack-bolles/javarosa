@@ -5,10 +5,14 @@ import org.javarosa.core.model.utils.DateFields;
 import org.javarosa.core.model.utils.DateUtils;
 import org.junit.Test;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.TimeZone;
 
+import static org.javarosa.core.model.utils.DateUtils.TIME_OFFSET_REGEX;
 import static org.javarosa.core.model.utils.DateUtils.parseTime;
 import static org.javarosa.test.utils.SystemHelper.withTimeZone;
 import static org.junit.Assert.assertEquals;
@@ -52,7 +56,6 @@ public class TimeDataLimitationsTest {
             TimeData timeData = new TimeData(parseTime(savedTime.get()));
             assertEquals("11:00", timeData.getDisplayText());
         });
-
     }
 
     @Test
@@ -73,11 +76,33 @@ public class TimeDataLimitationsTest {
         });
     }
 
+    @Test
+    public void editingFormsSavedInTheSameLocationButAfterDSTChangeTestNew() {
+        LocalTime localTime = LocalTime.parse("10:00:00.000+02:00".split(TIME_OFFSET_REGEX)[0]);
+
+        withTimeZone(WARSAW, () -> {
+            // A user opens saved form in Warsaw and during summertime as well - the hour should be the same
+            LocalDate summerDate = LocalDate.of(2019, 8, 1);
+            TimeData timeData = new TimeData(parseTimeAndPreserveTimeAcrossDST(LocalDateTime.of(summerDate, localTime), WARSAW.toZoneId()));
+            assertEquals("10:00", timeData.getDisplayText());
+
+            // A user opens saved form in Warsaw as well but during wintertime - the hour is the same alleviating the mentioned limitation
+            LocalDate winterDate = LocalDate.of(2019, 12, 1);
+            timeData = new TimeData(parseTimeAndPreserveTimeAcrossDST(LocalDateTime.of(winterDate, localTime), WARSAW.toZoneId()));
+            assertEquals("10:00", timeData.getDisplayText());
+        });
+    }
+
+    @Deprecated
     private static Date parseTimeWithFixedDate(String str, DateFields fields, TimeZone timeZone) {
         if (!parseTime(str, fields)) {
             return null;
         }
         return DateUtils.dateFrom(fields.asLocalDateTime(), ZoneId.of(timeZone.getID()));
+    }
+
+    private static Date parseTimeAndPreserveTimeAcrossDST(LocalDateTime localDateTime, ZoneId zoneId) {
+        return DateUtils.dateFrom(localDateTime, zoneId);
     }
 
     static class StringWrapper {
