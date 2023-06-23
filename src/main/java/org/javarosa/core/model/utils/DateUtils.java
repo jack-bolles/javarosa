@@ -63,8 +63,7 @@ public class DateUtils {
             boolean hasTime = parseTime(str.substring(i + 1), fields);
             if (!hasTime) {
                 return null;
-            }
-            else {
+            } else {
                 String dateStr = str.substring(0, i);
                 List<String> pieces = split(dateStr, "-", false);
                 if (pieces.size() != 3)
@@ -102,7 +101,7 @@ public class DateUtils {
     @NotNull
     private static TimeAndOffset timeAndOffset(String str) {
         String[] timePieces = str.split(TIME_OFFSET_REGEX);
-        ZoneOffset zoneOffset = (timePieces.length ==2)
+        ZoneOffset zoneOffset = (timePieces.length == 2)
                 ? ZoneOffset.of(timePieces[1])
                 : OffsetDateTime.now().getOffset();
         return new TimeAndOffset(timePieces, zoneOffset);
@@ -251,9 +250,9 @@ public class DateUtils {
     /* ==== DATE UTILITY FUNCTIONS ==== */
 
     public static Date getDate(int year, int month, int day) {
-        DateFields f = DateFields.of(year, month, day);
         TimeZone tz = TimeZone.getDefault();
-        return dateFrom(f.asLocalDateTime(), ZoneId.of(tz.getID()));
+        LocalDate localDate = LocalDate.of(year, month, day);
+        return dateFrom(LocalDateTime.of(localDate, LocalTime.MIDNIGHT), tz.toZoneId());
     }
 
     /**
@@ -261,10 +260,31 @@ public class DateUtils {
      */
     public static Date roundDate(Date d) {
         if (d == null) return null;
-        DateFields f = getFields(d, TimeZone.getDefault());
-        DateFields f1 = DateFields.of(f.year, f.month, f.day);
+
         TimeZone tz = TimeZone.getDefault();
-        return dateFrom(f1.asLocalDateTime(), ZoneId.of(tz.getID()));
+        return dateFrom(LocalDateTime.of(localDateFrom(d, tz), LocalTime.MIDNIGHT), tz.toZoneId());
+    }
+
+    private static LocalDate localDateFrom(Date d, TimeZone aDefault) {
+        Calendar cd = Calendar.getInstance();
+        cd.setTime(d);
+        cd.setTimeZone(aDefault);
+
+        return LocalDate.of(cd.get(Calendar.YEAR),
+                cd.get(Calendar.MONTH) + DateFields.MONTH_OFFSET,
+                cd.get(Calendar.DAY_OF_MONTH)
+        );
+    }
+
+    private static LocalTime localTimeFrom(Date d, TimeZone aDefault) {
+        Calendar cd = Calendar.getInstance();
+        cd.setTime(d);
+        cd.setTimeZone(aDefault);
+        return LocalTime.of(cd.get(Calendar.HOUR_OF_DAY),
+                cd.get(Calendar.MINUTE),
+                cd.get(Calendar.SECOND),
+                secTicksAsNanoSeconds(cd.get(Calendar.MILLISECOND))
+        );
     }
 
     /* ==== DATE OPERATIONS ==== */
