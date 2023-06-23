@@ -36,6 +36,7 @@ import static org.javarosa.core.model.utils.StringUtils.split;
 public class DateUtils {
 
     public static final String TIME_OFFSET_REGEX = "(?=[Z+\\-])";
+    public static final int MONTH_OFFSET = (1 - Calendar.JANUARY);
 
     @NotNull
     public static Date dateFrom(LocalDateTime someDateTime, ZoneId zoneId) {
@@ -123,7 +124,10 @@ public class DateUtils {
             if (pieces.size() != 3)
                 throw new IllegalArgumentException("Wrong number of fields to parse date: " + dateStr);
 
-            DateFields.of(Integer.parseInt(pieces.get(0)), Integer.parseInt(pieces.get(1)), Integer.parseInt(pieces.get(2)));
+            //TODO -do better; Check for NumberFormatException - expensive way to check for correctness, without actually chekcing for correctness (type-yes; values-no
+            Integer.parseInt(pieces.get(0));
+            Integer.parseInt(pieces.get(1));
+            Integer.parseInt(pieces.get(2));
             return false;
         } catch (Exception e) {
             return true;
@@ -249,6 +253,7 @@ public class DateUtils {
 
     /* ==== DATE UTILITY FUNCTIONS ==== */
 
+    /** Same as RoundDate(), without the Date instance */
     public static Date getDate(int year, int month, int day) {
         TimeZone tz = TimeZone.getDefault();
         LocalDate localDate = LocalDate.of(year, month, day);
@@ -271,7 +276,7 @@ public class DateUtils {
         cd.setTimeZone(aDefault);
 
         return LocalDate.of(cd.get(Calendar.YEAR),
-                cd.get(Calendar.MONTH) + DateFields.MONTH_OFFSET,
+                cd.get(Calendar.MONTH) + MONTH_OFFSET,
                 cd.get(Calendar.DAY_OF_MONTH)
         );
     }
@@ -324,7 +329,7 @@ public class DateUtils {
         cd.setTime(d);
         cd.setTimeZone(aDefault);
 
-        return new DateFields(cd.get(Calendar.YEAR), cd.get(Calendar.MONTH) + DateFields.MONTH_OFFSET, cd.get(Calendar.DAY_OF_MONTH), cd.get(Calendar.HOUR_OF_DAY), cd.get(Calendar.MINUTE), cd.get(Calendar.SECOND), cd.get(Calendar.MILLISECOND), cd.get(Calendar.DAY_OF_WEEK), cd.get(Calendar.WEEK_OF_YEAR));
+        return new DateFields(cd.get(Calendar.YEAR), cd.get(Calendar.MONTH) + MONTH_OFFSET, cd.get(Calendar.DAY_OF_MONTH), cd.get(Calendar.HOUR_OF_DAY), cd.get(Calendar.MINUTE), cd.get(Calendar.SECOND), cd.get(Calendar.MILLISECOND), cd.get(Calendar.DAY_OF_WEEK), cd.get(Calendar.WEEK_OF_YEAR));
     }
 
     //convenience, should go away soon

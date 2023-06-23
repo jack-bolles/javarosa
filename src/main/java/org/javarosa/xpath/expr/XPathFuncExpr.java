@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
+import java.time.DateTimeException;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -822,14 +823,18 @@ public class XPathFuncExpr extends XPathExpression {
     public static Object toDate(Object input, boolean preserveTime) {
         input = unpack(input);
 
-        if (input instanceof Double) {
-            return dateFromDouble(input, preserveTime);
-        } else if (input instanceof String) {
-            return dateFromString((String) input);
-        } else if (input instanceof Date) {
-            return dateFromDate((Date) input, preserveTime);
-        } else {
-            throw new XPathTypeMismatchException("The value \"" + input.toString() + "\" can't be converted to a date.");
+        try {
+            if (input instanceof Double) {
+                return dateFromDouble(input, preserveTime);
+            } else if (input instanceof String) {
+                return dateFromString((String) input);
+            } else if (input instanceof Date) {
+                return dateFromDate((Date) input, preserveTime);
+            } else {
+                throw new XPathTypeMismatchException("The value \"" + input.toString() + "\" can't be converted to a date.");
+            }
+        } catch (DateTimeException dte) {
+            throw new XPathTypeMismatchException("The value \"" + input + "\" can't be converted to a date.", dte);
         }
     }
 

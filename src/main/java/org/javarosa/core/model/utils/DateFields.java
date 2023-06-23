@@ -5,14 +5,12 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.time.temporal.WeekFields;
-import java.util.Calendar;
 import java.util.Locale;
 
 import static org.javarosa.core.model.utils.DateUtils.secTicksAsNanoSeconds;
 
 
 public class DateFields {
-    public static final int MONTH_OFFSET = (1 - Calendar.JANUARY);
 
     public static DateFields of(int year, int month, int day, int hour, int minute, int second, int secTicks) {
         WeekFields weekNumbering = WeekFields.of(Locale.getDefault());
