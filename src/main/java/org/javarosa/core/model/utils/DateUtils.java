@@ -43,6 +43,10 @@ public class DateUtils {
         return Date.from(someDateTime.atZone(zoneId).toInstant());
     }
 
+    public static Date dateFromLocal(LocalDate localDate, ZoneId zoneId) {
+        return Date.from(localDate.atStartOfDay(zoneId).toInstant());
+    }
+
     public static final long DAY_IN_MS = 86400000L;
 
     public DateUtils() {
@@ -66,11 +70,8 @@ public class DateUtils {
                 return null;
             } else {
                 String dateStr = str.substring(0, i);
-                List<String> pieces = split(dateStr, "-", false);
-                if (pieces.size() != 3)
-                    throw new IllegalArgumentException("Wrong number of fields to parse date: " + dateStr);
-
-                DateFields newDate = DateFields.of(Integer.parseInt(pieces.get(0)), Integer.parseInt(pieces.get(1)), Integer.parseInt(pieces.get(2)));
+                LocalDate localDate =localDateFromString(dateStr);
+                DateFields newDate = DateFields.of(localDate.getYear(), localDate.getMonthValue(), localDate.getDayOfMonth());
                 parseTime(str.substring(i + 1), newDate);
                 TimeZone tz = TimeZone.getDefault();
                 return dateFrom(newDate.asLocalDateTime(), ZoneId.of(tz.getID()));
@@ -79,16 +80,21 @@ public class DateUtils {
 
     }
 
+    /** expects only date part of ISO string; ignores time and offset pieces */
     public static Date parseDate(String str) {
         if (stringDoesntHaveDateFields(str)) {
             throw new IllegalArgumentException("Fields = " + str);
         }
+
+        localDateFromString(str);
+        return dateFromLocal(localDateFromString(str), ZoneId.systemDefault());
+    }
+
+    private static LocalDate localDateFromString(String str) {
         List<String> pieces = split(str, "-", false);
         if (pieces.size() != 3) throw new IllegalArgumentException("Wrong number of fields to parse date: " + str);
 
-        DateFields f = DateFields.of(Integer.parseInt(pieces.get(0)), Integer.parseInt(pieces.get(1)), Integer.parseInt(pieces.get(2)));
-        TimeZone tz = TimeZone.getDefault();
-        return dateFrom(f.asLocalDateTime(), ZoneId.of(tz.getID()));
+        return LocalDate.of(Integer.parseInt(pieces.get(0)), Integer.parseInt(pieces.get(1)), Integer.parseInt(pieces.get(2)));
     }
 
     //TODO -assumes just the time string, need to guard against broader string
