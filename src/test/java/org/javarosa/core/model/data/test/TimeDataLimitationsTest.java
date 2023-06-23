@@ -95,7 +95,7 @@ public class TimeDataLimitationsTest {
 
     @Deprecated
     private static Date parseTimeWithFixedDate(String str, DateFields fields, TimeZone timeZone) {
-        if (!parseTime(str, fields)) {
+        if (!DateUtils.parseTimeAndOffsetSegmentsForDateTime(str, fields)) {
             return null;
         }
         return DateUtils.dateFrom(fields.asLocalDateTime(), ZoneId.of(timeZone.getID()));

@@ -65,14 +65,14 @@ public class DateUtils {
             return null;
         else {
             DateFields fields = new DateFields();
-            boolean hasTime = parseTime(str.substring(i + 1), fields);
+            boolean hasTime = parseTimeAndOffsetSegmentsForDateTime(str.substring(i + 1), fields);
             if (!hasTime) {
                 return null;
             } else {
                 String dateStr = str.substring(0, i);
                 LocalDate localDate =localDateFromString(dateStr);
                 DateFields newDate = DateFields.of(localDate.getYear(), localDate.getMonthValue(), localDate.getDayOfMonth());
-                parseTime(str.substring(i + 1), newDate);
+                parseTimeAndOffsetSegmentsForDateTime(str.substring(i + 1), newDate);
                 TimeZone tz = TimeZone.getDefault();
                 return dateFrom(newDate.asLocalDateTime(), ZoneId.of(tz.getID()));
             }
@@ -140,7 +140,10 @@ public class DateUtils {
         }
     }
 
-    public static boolean parseTime(String timeStr, DateFields f) {
+    /** should only be used as part of constructing a DateTime.
+     * Offsets, in particular, are meaningless for Time on its own.
+     * @see DateUtils.parseTime(String timeStr) for getting a standalone string. */
+    public static boolean parseTimeAndOffsetSegmentsForDateTime(String timeStr, DateFields f) {
         //get timezone information first. Make a Datefields set for the possible offset
         //NOTE: DO NOT DO DIRECT COMPUTATIONS AGAINST THIS. It's a holder for hour/minute
         //data only, but has data in other fields
