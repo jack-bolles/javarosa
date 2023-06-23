@@ -51,10 +51,6 @@ public class DateUtils {
         return Math.toIntExact(NANOSECONDS.convert(millis, MILLISECONDS));
     }
 
-    public static int nanoAsMillisSeconds(int millis) {
-        return Math.toIntExact(MILLISECONDS.convert(millis, NANOSECONDS));
-    }
-
     /* ==== PARSING DATES/TIMES FROM STANDARD STRINGS ==== */
     public static Date parseDateTime(String str) {
         int i = str.indexOf("T");
@@ -95,6 +91,7 @@ public class DateUtils {
         return dateFrom(f.asLocalDateTime(), ZoneId.of(tz.getID()));
     }
 
+    //TODO -assumes just the time string, need to guard against broader string
     public static Date parseTime(String str) {
         TimeAndOffset to = timeAndOffset(str);
         return dateFrom(LocalDateTime.of(LocalDate.now(),

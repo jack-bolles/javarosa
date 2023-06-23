@@ -79,7 +79,7 @@ public interface IAnswerData extends Externalizable {
                 b = Math.abs(d) > 1.0e-12 && !Double.isNaN(d);
             } else if (val instanceof String) {
                 String s = (String) val;
-                b = s.length() > 0;
+                b = s.length() > 0; //TODO will always be true?? Line 62 returns null if length is zero
             } else {
                 throw new RuntimeException("unrecognized data representation while trying to convert to BOOLEAN");
             }

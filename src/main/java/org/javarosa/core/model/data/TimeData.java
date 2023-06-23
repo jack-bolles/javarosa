@@ -84,10 +84,7 @@ public class TimeData implements IAnswerData {
     @Override
     public TimeData cast(UncastData data) throws IllegalArgumentException {
         Date ret = DateUtils.parseTime(data.value);
-        if(ret != null) {
-            return new TimeData(ret);
-        }
+        return new TimeData(ret);
 
-        throw new IllegalArgumentException("Invalid cast of data [" + data.value + "] to type Time");
     }
 }

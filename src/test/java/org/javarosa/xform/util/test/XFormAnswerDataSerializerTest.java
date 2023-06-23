@@ -17,21 +17,20 @@
 package org.javarosa.xform.util.test;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Date;
-
 import org.javarosa.core.model.data.DateData;
 import org.javarosa.core.model.data.IntegerData;
-import org.javarosa.core.model.data.SelectOneData;
 import org.javarosa.core.model.data.StringData;
 import org.javarosa.core.model.data.TimeData;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.xform.util.XFormAnswerDataSerializer;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Date;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Note that this is just a start and doesn't cover direct comparisons
@@ -43,20 +42,19 @@ import org.junit.Test;
 public class XFormAnswerDataSerializerTest {
 
     final String stringDataValue = "String Data Value";
-    final Integer integerDataValue = new Integer(5);
+    final Integer integerDataValue = 5;
     final Date dateDataValue = new Date();
     final Date timeDataValue = new Date();
 
     StringData stringData;
     IntegerData integerData;
     DateData dateData;
-    SelectOneData selectData;
     TimeData timeData;
 
     TreeElement stringElement = new TreeElement();
     TreeElement intElement = new TreeElement();
     TreeElement dateElement = new TreeElement();
-    TreeElement selectElement = new TreeElement();
+    TreeElement selectElement = new TreeElement(); //TODO - missing test?
     TreeElement timeElement = new TreeElement();
 
     XFormAnswerDataSerializer serializer;

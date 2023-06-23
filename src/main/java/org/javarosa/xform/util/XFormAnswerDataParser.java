@@ -57,10 +57,6 @@ public class XFormAnswerDataParser {
 
     private static final Logger logger = LoggerFactory.getLogger(XFormAnswerDataParser.class.getSimpleName());
 
-    public static IAnswerData getAnswerData(String text, int dataType) {
-        return getAnswerData(text, dataType, null);
-    }
-
     public static IAnswerData getAnswerData(String text, int intDataType, QuestionDef q) {
         String trimmedText = text.trim();
         if (trimmedText.length() == 0)
