@@ -21,21 +21,21 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.temporal.Temporal;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.TimeZone;
 import java.util.stream.Stream;
 
 import static java.util.TimeZone.getTimeZone;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.javarosa.core.model.utils.DateUtils.TIME_OFFSET_REGEX;
 import static org.javarosa.test.utils.SystemHelper.withTimeZone;
 
 @RunWith(Parameterized.class)
@@ -87,6 +87,26 @@ public class DateUtilsParseTimeTests {
         ).forEach(tz -> withTimeZone(tz, () -> assertThat(parseTime(input), is(expectedTime))));
     }
 
+    @Test
+    public void splittingTimes() {
+        String regex = "(?=[Z+\\-])";
+
+        String[] timePieces = "10:00:00.000+02:00".split(regex);
+        assertThat(timePieces.length, is(2));
+        assertThat(timePieces[1], is("+02:00"));
+
+        timePieces = "10:00:00.000-02:00".split(regex);
+        assertThat(timePieces.length, is(2));
+        assertThat(timePieces[1], is("-02:00"));
+
+        timePieces = "10:00:00.000Z".split(regex);
+        assertThat(timePieces.length, is(2));
+        assertThat(timePieces[1], is("Z"));
+
+        timePieces = "10:00:00.000".split(regex);
+        assertThat(timePieces.length, is(1));
+    }
+
     /**
      * Returns a LocalTime or a OffsetTime obtained from the result of
      * calling DateUtils.parseTime() with the provided input.
@@ -94,23 +114,11 @@ public class DateUtilsParseTimeTests {
      * The interim OffsetDateTime value ensures that it represents the
      * same instant as the Date from the call to DateUtils.parseTime().
      */
-    public Temporal parseTime(String input) {
-        Instant inputInstant = Objects.requireNonNull(DateUtils.parseTime(input)).toInstant();
-
-        if (input.contains("+") || input.contains("-")) {
-            // The input declares some positive or negative time offset
-            int beginOfOffsetPart = input.contains("+") ? input.indexOf("+") : input.indexOf("-");
-            String offsetPart = input.substring(beginOfOffsetPart);
-            // The input declares some positive or negative time offset
-            String offset = offsetPart.length() == 3 ? offsetPart + ":00" : offsetPart;
-            return OffsetDateTime.ofInstant(inputInstant, ZoneId.of(offset)).toOffsetTime();
-        }
-
-        if (input.endsWith("Z"))
-            // The input time is at UTC
-            return OffsetDateTime.ofInstant(inputInstant, ZoneId.of("Z")).toOffsetTime();
-
-        // No time offset declared. Return a LocalTime
-        return LocalDateTime.ofInstant(inputInstant, ZoneId.systemDefault()).toLocalTime();
+    private Temporal parseTime(String input) {
+        Instant inputInstant = DateUtils.parseTime(input).toInstant();
+        String[] timePieces = input.split(TIME_OFFSET_REGEX);
+        return timePieces.length == 2
+                ? OffsetDateTime.ofInstant(inputInstant, ZoneOffset.of(timePieces[1])).toOffsetTime()
+                : OffsetDateTime.ofInstant(inputInstant, ZoneId.systemDefault()).toLocalTime();
     }
 }

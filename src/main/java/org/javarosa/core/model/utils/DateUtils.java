@@ -18,17 +18,24 @@ package org.javarosa.core.model.utils;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.javarosa.core.model.utils.StringUtils.split;
 
 public class DateUtils {
+
+    public static final String TIME_OFFSET_REGEX = "(?=[Z+\\-])";
 
     @NotNull
     public static Date dateFrom(LocalDateTime someDateTime, ZoneId zoneId) {
@@ -41,17 +48,27 @@ public class DateUtils {
     }
 
     public static int secTicksAsNanoSeconds(int millis) {
-        return Math.toIntExact(TimeUnit.NANOSECONDS.convert(millis, TimeUnit.MILLISECONDS));
+        return Math.toIntExact(NANOSECONDS.convert(millis, MILLISECONDS));
+    }
+
+    public static int nanoAsMillisSeconds(int millis) {
+        return Math.toIntExact(MILLISECONDS.convert(millis, NANOSECONDS));
     }
 
     /* ==== PARSING DATES/TIMES FROM STANDARD STRINGS ==== */
     public static Date parseDateTime(String str) {
-        DateFields fields = new DateFields();
         int i = str.indexOf("T");
-        if (i != -1) {
-            if (stringDoesntHaveDateFields(str.substring(0, i)) || !parseTime(str.substring(i + 1), fields)) {
+        if (i == -1) return parseDate(str);
+
+        if (stringDoesntHaveDateFields(str.substring(0, i)))
+            return null;
+        else {
+            DateFields fields = new DateFields();
+            boolean hasTime = parseTime(str.substring(i + 1), fields);
+            if (!hasTime) {
                 return null;
-            } else {
+            }
+            else {
                 String dateStr = str.substring(0, i);
                 List<String> pieces = split(dateStr, "-", false);
                 if (pieces.size() != 3)
@@ -62,9 +79,8 @@ public class DateUtils {
                 TimeZone tz = TimeZone.getDefault();
                 return dateFrom(newDate.asLocalDateTime(), ZoneId.of(tz.getID()));
             }
-        } else {
-            return parseDate(str);
         }
+
     }
 
     public static Date parseDate(String str) {
@@ -80,17 +96,30 @@ public class DateUtils {
     }
 
     public static Date parseTime(String str) {
-        Date d = new Date();
-        DateFields fields = getFields(d, TimeZone.getDefault());
-        fields.second = 0;
-        fields.secTicks = 0;
-        if (!parseTime(str, fields)) {
-            return null;
-        }
-        TimeZone tz = TimeZone.getDefault();
-        return dateFrom(fields.asLocalDateTime(), ZoneId.of(tz.getID()));
+        TimeAndOffset to = timeAndOffset(str);
+        return dateFrom(LocalDateTime.of(LocalDate.now(),
+                        LocalTime.parse(to.timePieces[0])),
+                to.zoneOffset);
     }
 
+    @NotNull
+    private static TimeAndOffset timeAndOffset(String str) {
+        String[] timePieces = str.split(TIME_OFFSET_REGEX);
+        ZoneOffset zoneOffset = (timePieces.length ==2)
+                ? ZoneOffset.of(timePieces[1])
+                : OffsetDateTime.now().getOffset();
+        return new TimeAndOffset(timePieces, zoneOffset);
+    }
+
+    private static class TimeAndOffset {
+        public final String[] timePieces;
+        public final ZoneOffset zoneOffset;
+
+        public TimeAndOffset(String[] timePieces, ZoneOffset zoneOffset) {
+            this.timePieces = timePieces;
+            this.zoneOffset = zoneOffset;
+        }
+    }
 
     private static boolean stringDoesntHaveDateFields(String dateStr) {
         try {
@@ -187,13 +216,15 @@ public class DateUtils {
     /**
      * Parse the raw components of time (hh:mm:ss) with no timezone information
      */
-    private static boolean parseRawTime(String timeStr, DateFields f) {
+    private static boolean parseRawTime(String timeStr, DateFields ff) {
         List<String> pieces = split(timeStr, ":", false);
         if (pieces.size() != 2 && pieces.size() != 3) return false;
 
         try {
-            f.hour = Integer.parseInt(pieces.get(0));
-            f.minute = Integer.parseInt(pieces.get(1));
+            int hour = Integer.parseInt(pieces.get(0));
+            int minute = Integer.parseInt(pieces.get(1));
+            int second = 0;
+            int secTicks = 0;
 
             if (pieces.size() == 3) {
                 String secStr = pieces.get(2);
@@ -204,38 +235,19 @@ public class DateUtils {
                 }
                 secStr = secStr.substring(0, i);
 
-                int idxDec = secStr.indexOf('.');
-                if (idxDec == -1) {
-                    if (secStr.length() == 0) {
-                        f.second = 0;
-                    } else {
-                        f.second = Integer.parseInt(secStr);
-                    }
-                    f.secTicks = 0;
-                } else {
-                    String secPart = secStr.substring(0, idxDec);
-                    if (secPart.length() == 0) {
-                        f.second = 0;
-                    } else {
-                        f.second = Integer.parseInt(secPart);
-                    }
-                    String secTickStr = secStr.substring(idxDec + 1);
-                    if (secTickStr.length() > 0) {
-                        f.secTicks = Integer.parseInt(secTickStr);
-                    } else {
-                        f.secTicks = 0;
-                    }
-                }
-
                 double fsec = Double.parseDouble(secStr);
-                f.second = (int) fsec;
-                f.secTicks = (int) (1000.0 * fsec - 1000.0 * f.second);
+                second = (int) fsec;
+                secTicks = (int) (1000.0 * fsec - 1000.0 * second);
             }
+
+            ff.hour = hour;
+            ff.minute = minute;
+            ff.second = second;
+            ff.secTicks = secTicks;
+            return ff.check();
         } catch (NumberFormatException nfe) {
             return false;
         }
-
-        return f.check();
     }
 
 
