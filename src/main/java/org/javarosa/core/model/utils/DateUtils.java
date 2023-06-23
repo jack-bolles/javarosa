@@ -17,6 +17,7 @@
 package org.javarosa.core.model.utils;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -37,17 +38,12 @@ public class DateUtils {
 
     public static final String TIME_OFFSET_REGEX = "(?=[Z+\\-])";
     public static final int MONTH_OFFSET = (1 - Calendar.JANUARY);
+    public static final long DAY_IN_MS = 86400000L;
 
     @NotNull
     public static Date dateFrom(LocalDateTime someDateTime, ZoneId zoneId) {
         return Date.from(someDateTime.atZone(zoneId).toInstant());
     }
-
-    public static Date dateFromLocal(LocalDate localDate, ZoneId zoneId) {
-        return Date.from(localDate.atStartOfDay(zoneId).toInstant());
-    }
-
-    public static final long DAY_IN_MS = 86400000L;
 
     public DateUtils() {
     }
@@ -70,7 +66,7 @@ public class DateUtils {
                 return null;
             } else {
                 String dateStr = str.substring(0, i);
-                LocalDate localDate =localDateFromString(dateStr);
+                LocalDate localDate = localDateFromString(dateStr);
                 DateFields newDate = DateFields.of(localDate.getYear(), localDate.getMonthValue(), localDate.getDayOfMonth());
                 parseTimeAndOffsetSegmentsForDateTime(str.substring(i + 1), newDate);
                 TimeZone tz = TimeZone.getDefault();
@@ -80,14 +76,15 @@ public class DateUtils {
 
     }
 
-    /** expects only date part of ISO string; ignores time and offset pieces */
+    /** expects only date part of ISO string; ignores time and offset pieces
+     * returns a Date at the startOfTheDay in the System's default ZoneId */
     public static Date parseDate(String str) {
         if (stringDoesntHaveDateFields(str)) {
             throw new IllegalArgumentException("Fields = " + str);
         }
 
-        localDateFromString(str);
-        return dateFromLocal(localDateFromString(str), ZoneId.systemDefault());
+        LocalDate localDate = localDateFromString(str);
+        return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
     private static LocalDate localDateFromString(String str) {
@@ -97,7 +94,7 @@ public class DateUtils {
         return LocalDate.of(Integer.parseInt(pieces.get(0)), Integer.parseInt(pieces.get(1)), Integer.parseInt(pieces.get(2)));
     }
 
-    //TODO -assumes just the time string, need to guard against broader string
+    //TODO - assumes just the time string, need to guard against broader string
     public static Date parseTime(String str) {
         TimeAndOffset to = timeAndOffset(str);
         return dateFrom(LocalDateTime.of(LocalDate.now(),
@@ -115,10 +112,10 @@ public class DateUtils {
     }
 
     private static class TimeAndOffset {
-        public final String[] timePieces;
-        public final ZoneOffset zoneOffset;
+        private final String[] timePieces;
+        private final ZoneOffset zoneOffset;
 
-        public TimeAndOffset(String[] timePieces, ZoneOffset zoneOffset) {
+        private TimeAndOffset(String[] timePieces, ZoneOffset zoneOffset) {
             this.timePieces = timePieces;
             this.zoneOffset = zoneOffset;
         }
@@ -142,7 +139,7 @@ public class DateUtils {
 
     /** should only be used as part of constructing a DateTime.
      * Offsets, in particular, are meaningless for Time on its own.
-     * @see DateUtils.parseTime(String timeStr) for getting a standalone string. */
+     * @see DateUtils.parseTime(String) for getting a standalone string. */
     public static boolean parseTimeAndOffsetSegmentsForDateTime(String timeStr, DateFields f) {
         //get timezone information first. Make a Datefields set for the possible offset
         //NOTE: DO NOT DO DIRECT COMPUTATIONS AGAINST THIS. It's a holder for hour/minute
@@ -226,36 +223,74 @@ public class DateUtils {
      * Parse the raw components of time (hh:mm:ss) with no timezone information
      */
     private static boolean parseRawTime(String timeStr, DateFields ff) {
-        List<String> pieces = split(timeStr, ":", false);
-        if (pieces.size() != 2 && pieces.size() != 3) return false;
+        RawTime rawTime = asRawTime(timeStr);
+        if (rawTime == null) return false;
+        ff.hour = rawTime.hour;
+        ff.minute = rawTime.minute;
+        ff.second = rawTime.second;
+        ff.secTicks = rawTime.secTicks;
+        return ff.check();
 
+    }
+
+    @Nullable
+    private static RawTime asRawTime(String timeStr) {
         try {
+            List<String> pieces = split(timeStr, ":", false);
+            if (pieces.size() != 2 && pieces.size() != 3) return null;
+
             int hour = Integer.parseInt(pieces.get(0));
             int minute = Integer.parseInt(pieces.get(1));
             int second = 0;
             int secTicks = 0;
 
             if (pieces.size() == 3) {
-                String secStr = pieces.get(2);
-                int i;
-                for (i = 0; i < secStr.length(); i++) {
-                    char c = secStr.charAt(i);
-                    if (!Character.isDigit(c) && c != '.') break;
-                }
-                secStr = secStr.substring(0, i);
-
-                double fsec = Double.parseDouble(secStr);
-                second = (int) fsec;
-                secTicks = (int) (1000.0 * fsec - 1000.0 * second);
+                SecondsAndTicks tAndO = secondsAndTicks(pieces.get(2));
+                second = tAndO.second;
+                secTicks = tAndO.secTicks;
             }
-
-            ff.hour = hour;
-            ff.minute = minute;
-            ff.second = second;
-            ff.secTicks = secTicks;
-            return ff.check();
+            return new RawTime(hour, minute, second, secTicks);
         } catch (NumberFormatException nfe) {
-            return false;
+            return null;
+        }
+    }
+
+    private static class RawTime {
+        private final int hour;
+        private final int minute;
+        private final int second;
+        private final int secTicks;
+
+        private RawTime(int hour, int minute, int second, int secTicks) {
+            this.hour = hour;
+            this.minute = minute;
+            this.second = second;
+            this.secTicks = secTicks;
+        }
+    }
+
+    private static SecondsAndTicks secondsAndTicks(String secondsAndTicks) {
+        String secStr = secondsAndTicks;
+        int i;
+        for (i = 0; i < secStr.length(); i++) {
+            char c = secStr.charAt(i);
+            if (!Character.isDigit(c) && c != '.') break;
+        }
+        secStr = secStr.substring(0, i);
+
+        double fsec = Double.parseDouble(secStr);
+        int second = (int) fsec;
+        int secTicks = (int) (1000.0 * fsec - 1000.0 * second);
+        return new SecondsAndTicks(second, secTicks);
+    }
+
+    private static class SecondsAndTicks {
+        private final int second;
+        private final int secTicks;
+
+        private SecondsAndTicks(int second, int secTicks) {
+            this.second = second;
+            this.secTicks = secTicks;
         }
     }
 
