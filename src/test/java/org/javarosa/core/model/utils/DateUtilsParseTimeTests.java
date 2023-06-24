@@ -24,7 +24,6 @@ import java.time.Instant;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.Temporal;
 import java.util.Arrays;
@@ -119,6 +118,6 @@ public class DateUtilsParseTimeTests {
         String[] timePieces = input.split(TIME_OFFSET_REGEX);
         return timePieces.length == 2
                 ? OffsetDateTime.ofInstant(inputInstant, ZoneOffset.of(timePieces[1])).toOffsetTime()
-                : OffsetDateTime.ofInstant(inputInstant, ZoneId.systemDefault()).toLocalTime();
+                : OffsetDateTime.ofInstant(inputInstant, ZoneOffset.UTC).toLocalTime();
     }
 }

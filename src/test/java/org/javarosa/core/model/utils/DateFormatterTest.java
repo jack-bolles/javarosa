@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Locale;
@@ -80,6 +81,6 @@ public class DateFormatterTest {
     @Test public void dateTimeFromXPathEval(){
         Date parseDateTime = DateUtils.parseDateTime("2000-01-01T10:20:30.000");
         LocalDateTime localDateTime = LocalDateTime.parse("2000-01-01T10:20:30.000");
-        assertThat(dateFromLocalDateTime(localDateTime), is(parseDateTime));
+        assertThat(dateFromLocalDateTime(localDateTime, ZoneOffset.UTC), is(parseDateTime));
     }
 }

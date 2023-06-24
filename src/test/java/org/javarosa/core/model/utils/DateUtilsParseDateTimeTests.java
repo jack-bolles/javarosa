@@ -24,6 +24,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.temporal.Temporal;
 import java.util.Arrays;
 import java.util.Collection;
@@ -93,7 +94,7 @@ public class DateUtilsParseDateTimeTests {
             // The input time is at UTC
             return OffsetDateTime.ofInstant(inputInstant, ZoneId.of("Z"));
 
-        // No time offset declared. Return a LocalTime
-        return LocalDateTime.ofInstant(inputInstant, ZoneId.systemDefault());
+        // No time offset declared. Use ZoneOffset.UTC
+        return LocalDateTime.ofInstant(inputInstant, ZoneOffset.UTC);
     }
 }

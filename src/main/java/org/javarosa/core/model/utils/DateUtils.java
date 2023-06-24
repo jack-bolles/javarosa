@@ -22,7 +22,6 @@ import org.jetbrains.annotations.Nullable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Calendar;
@@ -30,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import static java.time.LocalDateTime.of;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.javarosa.core.model.utils.StringUtils.split;
@@ -52,37 +52,29 @@ public class DateUtils {
         return Math.toIntExact(NANOSECONDS.convert(millis, MILLISECONDS));
     }
 
-    /* ==== PARSING DATES/TIMES FROM STANDARD STRINGS ==== */
+    /** Full ISO string interpreted into a Date. Defaults to today, at start of day, in UTC */
     public static Date parseDateTime(String str) {
         int i = str.indexOf("T");
         if (i == -1) return parseDate(str);
 
-        if (stringDoesntHaveDateFields(str.substring(0, i)))
-            return null;
-        else {
-            DateFields fields = new DateFields();
-            boolean hasTime = parseTimeAndOffsetSegmentsForDateTime(str.substring(i + 1), fields);
-            if (!hasTime) {
-                return null;
-            } else {
-                String dateStr = str.substring(0, i);
-                LocalDate localDate = localDateFromString(dateStr);
-                DateFields newDate = DateFields.of(localDate.getYear(), localDate.getMonthValue(), localDate.getDayOfMonth());
-                parseTimeAndOffsetSegmentsForDateTime(str.substring(i + 1), newDate);
-                TimeZone tz = TimeZone.getDefault();
-                return dateFrom(newDate.asLocalDateTime(), ZoneId.of(tz.getID()));
-            }
+        TimeAndOffset timeAndOffset;
+        LocalTime time = LocalTime.MIDNIGHT;
+        ZoneId zoneId = ZoneOffset.UTC;
+        String timeAndOffsetString = str.substring(i + 1);
+        if (!timeAndOffsetString.trim().isEmpty()) {
+            timeAndOffset = timeAndOffset(timeAndOffsetString);
+            time = timeAndOffset.localTime;
+            zoneId = timeAndOffset.zoneOffset;
         }
-
+        LocalDate localDate = localDateFromString(str.substring(0, i));
+        return dateFrom(of(localDate, time), zoneId);
     }
 
-    /** expects only date part of ISO string; ignores time and offset pieces
-     * returns a Date at the startOfTheDay in the System's default ZoneId */
+    /**
+     * expects only date part of ISO string; ignores time and offset pieces
+     * returns a Date at the startOfTheDay in the System's default ZoneId
+     */
     public static Date parseDate(String str) {
-        if (stringDoesntHaveDateFields(str)) {
-            throw new IllegalArgumentException("Fields = " + str);
-        }
-
         LocalDate localDate = localDateFromString(str);
         return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
@@ -94,12 +86,13 @@ public class DateUtils {
         return LocalDate.of(Integer.parseInt(pieces.get(0)), Integer.parseInt(pieces.get(1)), Integer.parseInt(pieces.get(2)));
     }
 
-    //TODO - assumes just the time string, need to guard against broader string
+    /**
+     * TODO - assumes just the time string, need to guard against broader string?
+     * uses current date, at the time specified
+     */
     public static Date parseTime(String str) {
         TimeAndOffset to = timeAndOffset(str);
-        return dateFrom(LocalDateTime.of(LocalDate.now(),
-                        LocalTime.parse(to.timePieces[0])),
-                to.zoneOffset);
+        return dateFrom(of(LocalDate.now(), to.localTime), to.zoneOffset);
     }
 
     @NotNull
@@ -107,39 +100,27 @@ public class DateUtils {
         String[] timePieces = str.split(TIME_OFFSET_REGEX);
         ZoneOffset zoneOffset = (timePieces.length == 2)
                 ? ZoneOffset.of(timePieces[1])
-                : OffsetDateTime.now().getOffset();
-        return new TimeAndOffset(timePieces, zoneOffset);
+                : ZoneOffset.UTC;
+        return new TimeAndOffset(LocalTime.parse(timePieces[0]), zoneOffset);
     }
 
     private static class TimeAndOffset {
-        private final String[] timePieces;
+        private final LocalTime localTime;
         private final ZoneOffset zoneOffset;
 
-        private TimeAndOffset(String[] timePieces, ZoneOffset zoneOffset) {
-            this.timePieces = timePieces;
+        private TimeAndOffset(LocalTime time, ZoneOffset zoneOffset) {
+            this.localTime = time;
             this.zoneOffset = zoneOffset;
         }
     }
 
-    private static boolean stringDoesntHaveDateFields(String dateStr) {
-        try {
-            List<String> pieces = split(dateStr, "-", false);
-            if (pieces.size() != 3)
-                throw new IllegalArgumentException("Wrong number of fields to parse date: " + dateStr);
-
-            //TODO -do better; Check for NumberFormatException - expensive way to check for correctness, without actually chekcing for correctness (type-yes; values-no
-            Integer.parseInt(pieces.get(0));
-            Integer.parseInt(pieces.get(1));
-            Integer.parseInt(pieces.get(2));
-            return false;
-        } catch (Exception e) {
-            return true;
-        }
-    }
-
-    /** should only be used as part of constructing a DateTime.
-     * Offsets, in particular, are meaningless for Time on its own.
-     * @see DateUtils.parseTime(String) for getting a standalone string. */
+    /**
+     * Only used by one test method. not the mainline of parsing a string to a date/time value
+     * will be removing in a subsequent commit
+     *
+     * @see DateUtils.parseTime(String) for getting a standalone string.
+     */
+    @Deprecated
     public static boolean parseTimeAndOffsetSegmentsForDateTime(String timeStr, DateFields f) {
         //get timezone information first. Make a Datefields set for the possible offset
         //NOTE: DO NOT DO DIRECT COMPUTATIONS AGAINST THIS. It's a holder for hour/minute
@@ -301,17 +282,15 @@ public class DateUtils {
     public static Date getDate(int year, int month, int day) {
         TimeZone tz = TimeZone.getDefault();
         LocalDate localDate = LocalDate.of(year, month, day);
-        return dateFrom(LocalDateTime.of(localDate, LocalTime.MIDNIGHT), tz.toZoneId());
+        return dateFrom(of(localDate, LocalTime.MIDNIGHT), tz.toZoneId());
     }
 
-    /**
-     * @return new Date object with same date but time set to midnight (in current timezone)
-     */
+    /** @return new Date object with same date but time set to midnight (in current timezone) */
     public static Date roundDate(Date d) {
         if (d == null) return null;
 
         TimeZone tz = TimeZone.getDefault();
-        return dateFrom(LocalDateTime.of(localDateFrom(d, tz), LocalTime.MIDNIGHT), tz.toZoneId());
+        return dateFrom(of(localDateFrom(d, tz), LocalTime.MIDNIGHT), tz.toZoneId());
     }
 
     private static LocalDate localDateFrom(Date d, TimeZone aDefault) {
@@ -322,17 +301,6 @@ public class DateUtils {
         return LocalDate.of(cd.get(Calendar.YEAR),
                 cd.get(Calendar.MONTH) + MONTH_OFFSET,
                 cd.get(Calendar.DAY_OF_MONTH)
-        );
-    }
-
-    private static LocalTime localTimeFrom(Date d, TimeZone aDefault) {
-        Calendar cd = Calendar.getInstance();
-        cd.setTime(d);
-        cd.setTimeZone(aDefault);
-        return LocalTime.of(cd.get(Calendar.HOUR_OF_DAY),
-                cd.get(Calendar.MINUTE),
-                cd.get(Calendar.SECOND),
-                secTicksAsNanoSeconds(cd.get(Calendar.MILLISECOND))
         );
     }
 
