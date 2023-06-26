@@ -14,6 +14,7 @@ import java.util.TimeZone;
 
 import static org.javarosa.core.model.utils.DateUtils.TIME_OFFSET_REGEX;
 import static org.javarosa.core.model.utils.DateUtils.parseTime;
+import static org.javarosa.core.model.utils.DateUtilsOldPath.parseTimeAndOffsetSegmentsForDateTime;
 import static org.javarosa.test.utils.SystemHelper.withTimeZone;
 import static org.junit.Assert.assertEquals;
 
@@ -95,7 +96,7 @@ public class TimeDataLimitationsTest {
 
     @Deprecated
     private static Date parseTimeWithFixedDate(String str, DateFields fields, TimeZone timeZone) {
-        if (!DateUtils.parseTimeAndOffsetSegmentsForDateTime(str, fields)) {
+        if (!parseTimeAndOffsetSegmentsForDateTime(str, fields)) {
             return null;
         }
         return DateUtils.dateFrom(fields.asLocalDateTime(), ZoneId.of(timeZone.getID()));
