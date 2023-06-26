@@ -1,7 +1,6 @@
 package org.javarosa.core.model.data.test;
 
 import org.javarosa.core.model.data.TimeData;
-import org.javarosa.core.model.utils.DateFields;
 import org.javarosa.core.model.utils.DateUtils;
 import org.junit.Test;
 
@@ -14,7 +13,6 @@ import java.util.TimeZone;
 
 import static org.javarosa.core.model.utils.DateUtils.TIME_OFFSET_REGEX;
 import static org.javarosa.core.model.utils.DateUtils.parseTime;
-import static org.javarosa.core.model.utils.DateUtilsOldPath.parseTimeAndOffsetSegmentsForDateTime;
 import static org.javarosa.test.utils.SystemHelper.withTimeZone;
 import static org.junit.Assert.assertEquals;
 
@@ -61,24 +59,6 @@ public class TimeDataLimitationsTest {
 
     @Test
     public void editingFormsSavedInTheSameLocationButAfterDSTChangeTest() {
-        DateFields dateFields = DateFields.of(2019, 8, 1);
-
-        withTimeZone(WARSAW, () -> {
-            String savedTime = "10:00:00.000+02:00";
-
-            // A user opens saved form in Warsaw and during summertime as well - the hour should be the same
-            TimeData timeData = new TimeData(parseTimeWithFixedDate(savedTime, dateFields, WARSAW));
-            assertEquals("10:00", timeData.getDisplayText());
-
-            // A user opens saved form in Warsaw as well but during wintertime - the hour is edited -1h (the mentioned limitation)
-            dateFields.month = 12;
-            timeData = new TimeData(parseTimeWithFixedDate(savedTime, dateFields, WARSAW));
-            assertEquals("09:00", timeData.getDisplayText());
-        });
-    }
-
-    @Test
-    public void editingFormsSavedInTheSameLocationButAfterDSTChangeTestNew() {
         LocalTime localTime = LocalTime.parse("10:00:00.000+02:00".split(TIME_OFFSET_REGEX)[0]);
 
         withTimeZone(WARSAW, () -> {
@@ -92,14 +72,6 @@ public class TimeDataLimitationsTest {
             timeData = new TimeData(parseTimeAndPreserveTimeAcrossDST(LocalDateTime.of(winterDate, localTime), WARSAW.toZoneId()));
             assertEquals("10:00", timeData.getDisplayText());
         });
-    }
-
-    @Deprecated
-    private static Date parseTimeWithFixedDate(String str, DateFields fields, TimeZone timeZone) {
-        if (!parseTimeAndOffsetSegmentsForDateTime(str, fields)) {
-            return null;
-        }
-        return DateUtils.dateFrom(fields.asLocalDateTime(), ZoneId.of(timeZone.getID()));
     }
 
     private static Date parseTimeAndPreserveTimeAcrossDST(LocalDateTime localDateTime, ZoneId zoneId) {
