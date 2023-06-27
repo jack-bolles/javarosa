@@ -25,17 +25,17 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.TimeZone;
 
 import static java.time.LocalDateTime.of;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
-import static org.javarosa.core.model.utils.StringUtils.split;
+import static org.javarosa.core.model.data.DateData.localDateFromString;
 
 public class DateUtils {
 
     public static final String TIME_OFFSET_REGEX = "(?=[Z+\\-])";
+    public static final String DATE_TIME_SPLIT_REGEX = "([T\\s])";
     public static final int MONTH_OFFSET = (1 - Calendar.JANUARY);
     public static final long DAY_IN_MS = 86400000L;
 
@@ -48,38 +48,27 @@ public class DateUtils {
         return Math.toIntExact(NANOSECONDS.convert(millis, MILLISECONDS));
     }
 
-    /** Full ISO string interpreted into a Date. Defaults to today, at start of day, in UTC */
+    /** Full ISO string interpreted into a Date.
+     * Defaults to start of day, in UTC if time and/or offset are missing*/
     public static Date parseDateTime(String str) {
-        int i = str.indexOf("T");
-        if (i == -1) return parseDate(str);
-
-        TimeAndOffset timeAndOffset;
+        LocalDate localDate;
         LocalTime time = LocalTime.MIDNIGHT;
         ZoneId zoneId = ZoneOffset.UTC;
-        String timeAndOffsetString = str.substring(i + 1);
-        if (!timeAndOffsetString.trim().isEmpty()) {
-            timeAndOffset = timeAndOffset(timeAndOffsetString);
-            time = timeAndOffset.localTime;
-            zoneId = timeAndOffset.zoneOffset;
+
+        int i = str.indexOf("T");
+        if (i == -1) {
+            localDate = localDateFromString(str);
+        } else{
+            String timeAndOffsetString = str.substring(i + 1);
+            if (!timeAndOffsetString.trim().isEmpty()) {
+                TimeAndOffset timeAndOffset = timeAndOffset(timeAndOffsetString);
+                time = timeAndOffset.localTime;
+                zoneId = timeAndOffset.zoneOffset;
+            }
+            localDate = localDateFromString(str.substring(0, i));
         }
-        LocalDate localDate = localDateFromString(str.substring(0, i));
+
         return dateFrom(of(localDate, time), zoneId);
-    }
-
-    /**
-     * expects only date part of ISO string; ignores time and offset pieces
-     * returns a Date at the startOfTheDay in the System's default ZoneId
-     */
-    public static Date parseDate(String str) {
-        LocalDate localDate = localDateFromString(str);
-        return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-    }
-
-    private static LocalDate localDateFromString(String str) {
-        List<String> pieces = split(str, "-", false);
-        if (pieces.size() != 3) throw new IllegalArgumentException("Wrong number of fields to parse date: " + str);
-
-        return LocalDate.of(Integer.parseInt(pieces.get(0)), Integer.parseInt(pieces.get(1)), Integer.parseInt(pieces.get(2)));
     }
 
     /**

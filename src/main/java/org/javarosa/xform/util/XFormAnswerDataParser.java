@@ -103,8 +103,7 @@ public class XFormAnswerDataParser {
                 return dt == null ? null : new DateTimeData(dt);
 
             case DATE:
-                Date d = trimmedText == null ? null : DateUtils.parseDate(trimmedText);
-                return d == null ? null : new DateData(d);
+                return trimmedText == null ? null : DateData.dataFrom(trimmedText);
 
             case TIME:
                 Date t = trimmedText == null ? null : DateUtils.parseTime(trimmedText);

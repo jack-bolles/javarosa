@@ -16,7 +16,6 @@
 
 package org.javarosa.core.model.data;
 
-import org.javarosa.core.model.utils.DateFormatter;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.util.externalizable.ExtUtil;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
@@ -25,7 +24,15 @@ import org.jetbrains.annotations.NotNull;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
+
+import static org.javarosa.core.model.utils.DateFormat.HUMAN_READABLE_SHORT;
+import static org.javarosa.core.model.utils.DateFormat.ISO8601;
+import static org.javarosa.core.model.utils.DateUtils.DATE_TIME_SPLIT_REGEX;
+import static org.javarosa.core.model.utils.StringUtils.split;
 
 /**
  * A response to a question requesting a Date Value
@@ -33,8 +40,29 @@ import java.util.Date;
  *
  */
 public class DateData implements IAnswerData {
+    @NotNull
+    public static DateData dataFrom(String dateString) {
+        return new DateData(parseDate(dateString));
+    }
+
+    /**
+     * extracts only date part of ISO string; ignores time and offset pieces
+     * returns a Date at the startOfTheDay in the System's default ZoneId
+     */
+    static Date parseDate(String str) {
+        LocalDate localDate = localDateFromString(str);
+        return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    }
+
+    public static LocalDate localDateFromString(String str) {
+        String dateString = str.split(DATE_TIME_SPLIT_REGEX)[0];
+        List<String> pieces = split(dateString, "-", false);
+        if (pieces.size() != 3) throw new IllegalArgumentException("Wrong number of fields to parse date: " + dateString);
+
+        return LocalDate.of(Integer.parseInt(pieces.get(0)), Integer.parseInt(pieces.get(1)), Integer.parseInt(pieces.get(2)));
+    }
+
     private Date d;
-    boolean init = false;
 
     /**
      * Empty Constructor, necessary for dynamic construction during deserialization.
@@ -48,16 +76,8 @@ public class DateData implements IAnswerData {
         setValue(d);
     }
 
-    private void init() {
-        if(!init) {
-            d = DateUtils.roundDate(d);
-            init = true;
-        }
-    }
-
     @Override
     public IAnswerData clone () {
-        init();
         return new DateData(new Date(d.getTime()));
     }
 
@@ -67,52 +87,44 @@ public class DateData implements IAnswerData {
         if(o == null) {
             throw new NullPointerException("Attempt to set an IAnswerData class to null.");
         }
-        d = (Date)o;
-        init = false;
+
+        //make a copy of the date passed in. TODO - poor man's immutability?
+        d = DateUtils.roundDate((Date)o);
     }
 
     @Override
     public @NotNull Object getValue () {
-        init();
         return new Date(d.getTime());
     }
 
     @Override
     public String getDisplayText () {
-        init();
-        return DateFormatter.formatDate(d, DateFormatter.FORMAT_HUMAN_READABLE_SHORT);
+        return HUMAN_READABLE_SHORT.formatDate(d);
     }
 
     @Override
     public void readExternal(DataInputStream in, PrototypeFactory pf) throws IOException {
-        init();
         setValue(ExtUtil.readDate(in));
     }
 
     @Override
     public void writeExternal(DataOutputStream out) throws IOException {
-        init();
         ExtUtil.writeDate(out, d);
     }
 
     @Override
     public UncastData uncast() {
-        init();
-        return new UncastData(DateFormatter.formatDate(d, DateFormatter.FORMAT_ISO8601));
+        return new UncastData(ISO8601.formatDate(d));
     }
 
     @Override
     public DateData cast(UncastData data) throws IllegalArgumentException {
-        Date ret = DateUtils.parseDate(data.value);
-        if(ret != null) {
-            return new DateData(ret);
-        }
+        return new DateData(parseDate(data.value));
 
-        throw new IllegalArgumentException("Invalid cast of data [" + data.value + "] to type Date");
     }
 
     @Override
     public String toString() {
-        return "StringData{d='" + DateFormatter.formatDate(d, DateFormatter.FORMAT_ISO8601) + "'}";
+        return "StringData{d='" + ISO8601.formatDate(d) + "'}";
     }
 }
