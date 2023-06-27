@@ -25,12 +25,13 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
 import static java.time.LocalDateTime.of;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
-import static org.javarosa.core.model.data.DateData.localDateFromString;
+import static org.javarosa.core.model.utils.StringUtils.split;
 
 public class DateUtils {
 
@@ -89,6 +90,15 @@ public class DateUtils {
         return new TimeAndOffset(LocalTime.parse(timePieces[0]), zoneOffset);
     }
 
+    public static LocalDate localDateFromString(String str) {
+        String dateString = str.split(DATE_TIME_SPLIT_REGEX)[0];
+        List<String> pieces = split(dateString, "-", false);
+        if (pieces.size() != 3)
+            throw new IllegalArgumentException("Wrong number of fields to parse date: " + dateString);
+
+        return LocalDate.of(Integer.parseInt(pieces.get(0)), Integer.parseInt(pieces.get(1)), Integer.parseInt(pieces.get(2)));
+    }
+
     private static class TimeAndOffset {
         private final LocalTime localTime;
         private final ZoneOffset zoneOffset;
@@ -117,7 +127,7 @@ public class DateUtils {
         return dateFrom(of(localDateFrom(d, tz), LocalTime.MIDNIGHT), tz.toZoneId());
     }
 
-    private static LocalDate localDateFrom(Date d, TimeZone aDefault) {
+    static LocalDate localDateFrom(Date d, TimeZone aDefault) {
         Calendar cd = Calendar.getInstance();
         cd.setTime(d);
         cd.setTimeZone(aDefault);

@@ -113,7 +113,7 @@ public interface IAnswerData extends Externalizable {
             if (dataType == TIME)
                 return new TimeData((Date) val);
             if (dataType == DATE)
-                return new DateData((Date) val);
+                return new DateData(DateData.localDateFrom((Date) val));
             return new DateTimeData((Date) val);
         } else {
             throw new RuntimeException("unrecognized data type in 'calculate' expression: " + val.getClass().getName());
