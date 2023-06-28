@@ -35,7 +35,6 @@ import static org.javarosa.core.model.DataType.LONG;
 import static org.javarosa.core.model.DataType.MULTIPLE_ITEMS;
 import static org.javarosa.core.model.DataType.TEXT;
 import static org.javarosa.core.model.DataType.TIME;
-import static org.javarosa.core.model.utils.DateUtils.localDateFrom;
 
 /**
  * An IAnswerData object represents an answer to a question
@@ -62,8 +61,7 @@ public interface IAnswerData extends Externalizable {
         // if numeric data, convert to int if node type is int OR data is an integer; else convert to double
         // if string data or date data, keep as is
         // if NaN or empty string, null
-        if ((val instanceof String && ((String) val).length() == 0) ||
-                (val instanceof Double && ((Double) val).isNaN())) {
+        if ((val instanceof String && ((String) val).length() == 0) || (val instanceof Double && ((Double) val).isNaN())) {
             return null;
         }
 
@@ -92,8 +90,7 @@ public interface IAnswerData extends Externalizable {
             double d = (Double) val;
             long l = (long) d;
             boolean isIntegral = Math.abs(d - l) < 1.0e-9;
-            if (INTEGER == dataType ||
-                    (isIntegral && (Integer.MAX_VALUE >= l) && (Integer.MIN_VALUE <= l))) {
+            if (INTEGER == dataType || (isIntegral && (Integer.MAX_VALUE >= l) && (Integer.MIN_VALUE <= l))) {
                 return new IntegerData((int) d);
             } else if (LONG == dataType || isIntegral) {
                 return new LongData((long) d);
@@ -110,18 +107,15 @@ public interface IAnswerData extends Externalizable {
             return new SelectOneData().cast(new UncastData(String.valueOf(val)));
         } else if (dataType == MULTIPLE_ITEMS) {
             return new MultipleItemsData().cast(new UncastData(String.valueOf(val)));
+        } else if (dataType == DATE) {
+            return new DateData((LocalDate) val);
+        } else if (val instanceof LocalDate) { //TODO - sweeper 'if'... should have been picked up by 'datatype' == DATE
+            return new DateData((LocalDate) val);
         } else if (val instanceof String) {
             return new StringData((String) val);
-        } else if (val instanceof LocalDate) {
-            return new DateData((LocalDate) val);
         } else if (val instanceof Date) {
-            if (dataType == TIME)
-                return new TimeData((Date) val);
-            else if (dataType == DATE) //TODO - @deprecated DateData uses LocalDate
-//                throw new RuntimeException("Date with Date: " + dataType.name() + " with value: " + val);
-                return new DateData(localDateFrom((Date) val));
-            else if (dataType == DATE_TIME)
-                return new DateTimeData((Date) val);
+            if (dataType == TIME) return new TimeData((Date) val);
+            else if (dataType == DATE_TIME) return new DateTimeData((Date) val);
             else if (dataType == TEXT)  //TODO - is this a bug or bad tests?
                 return new DateTimeData((Date) val);
             else

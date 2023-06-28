@@ -17,6 +17,7 @@
 package org.javarosa.core.util.externalizable;
 
 import org.javarosa.core.model.instance.TreeElement;
+import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.util.CacheTable;
 import org.javarosa.core.util.OrderedMap;
@@ -29,12 +30,13 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.UTFDataFormatException;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+
+import static org.javarosa.core.model.utils.DateFormat.ISO8601;
 
 public class ExtUtil {
     public static boolean interning = true;
@@ -152,9 +154,8 @@ public class ExtUtil {
         //time zone?
     }
 
-    //todo use class prototype instead of days since epoch
     public static void writeLocalDate(DataOutputStream out, LocalDate val) throws IOException {
-        writeNumeric(out, ChronoUnit.DAYS.between(LocalDate.EPOCH, val));
+        writeString(out, ISO8601.formatLocalDate(val));
     }
 
 
@@ -274,9 +275,8 @@ public class ExtUtil {
         //time zone?
     }
 
-    //todo use class prototype instead of days since epoch
     public static LocalDate readLocalDate(DataInputStream in) throws IOException {
-        return LocalDate.ofEpochDay(readNumeric(in));
+        return DateUtils.localDateFromString(readString(in));
     }
 
     public static byte[] readBytes(DataInputStream in) throws IOException {
@@ -507,7 +507,4 @@ public class ExtUtil {
     }
     ////
 
-    public static void attachCacheTable(CacheTable<String> stringCache) {
-        ExtUtil.stringCache = stringCache;
-    }
 }
