@@ -27,6 +27,7 @@ import org.junit.Test;
 import java.time.LocalDate;
 import java.util.Date;
 
+import static org.javarosa.core.model.data.DateData.localDateFrom;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -50,7 +51,7 @@ public class XFormAnswerTemporalDataSerializerTest {
 
     @Before
     public void setUp() throws Exception {
-        utilDateData = new DateData(utilDateDataValue);
+        utilDateData = new DateData(localDateFrom(utilDateDataValue));
         utilDateElement.setValue(utilDateData);
 
         dateData = new DateData(localDateDataValue);

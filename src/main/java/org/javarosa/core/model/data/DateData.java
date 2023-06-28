@@ -35,7 +35,7 @@ public class DateData implements IAnswerData {
 
     @NotNull
     public static DateData dataFrom(String dateString) {
-        return new DateData(parseDate(dateString));
+        return new DateData(localDateFromString(dateString));
     }
 
     public static LocalDate localDateFrom(Date date) {
@@ -54,10 +54,6 @@ public class DateData implements IAnswerData {
      * Shouldn't be used otherwise.
      */
     public DateData() { }
-
-    public DateData(java.util.Date d) {
-        this(localDateFrom(d));
-    }
 
     public DateData(LocalDate localDate) {
         this.localDate = localDate;
@@ -108,7 +104,7 @@ public class DateData implements IAnswerData {
 
     @Override
     public DateData cast(UncastData data) throws IllegalArgumentException {
-        return new DateData(parseDate(data.value));
+        return new DateData(localDateFromString(data.value));
     }
 
     @Override
