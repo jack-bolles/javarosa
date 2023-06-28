@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Date;
 import java.util.List;
 
+import static org.javarosa.core.model.utils.DateUtils.localDateFrom;
 import static org.javarosa.core.model.utils.StringUtils.split;
 
 /**
@@ -43,13 +44,13 @@ public class QuestionPreloader {
 
     /* String -> IPreloadHandler */
     // NOTE: this is not java.util.Map!!!
-    private Map<String, IPreloadHandler> preloadHandlers;
+    private final Map<String, IPreloadHandler> preloadHandlers;
 
     /**
      * Creates a new Preloader with default handlers
      */
     public QuestionPreloader() {
-        preloadHandlers = new Map<String, IPreloadHandler>();
+        preloadHandlers = new Map<>();
         initPreloadHandlers();
     }
 
@@ -199,14 +200,15 @@ public class QuestionPreloader {
      * null otherwise
      */
     private IAnswerData preloadDate(String preloadParams) {
+        //TODO - use LocalDate
         Date d = null;
         if (preloadParams.equals("today")) {
             d = new Date();
-        } else if (preloadParams.substring(0, 11).equals("prevperiod-")) {
+        } else if (preloadParams.startsWith("prevperiod-")) {
             List<String> v = split(preloadParams.substring(11), "-", false);
             String[] params = new String[v.size()];
             for (int i = 0; i < params.length; i++)
-                params[i] = (String) v.get(i);
+                params[i] = v.get(i);
 
             try {
                 String type = params[0];
@@ -237,9 +239,9 @@ public class QuestionPreloader {
             } catch (Exception e) {
                 throw new IllegalArgumentException("invalid preload params for preload mode 'date'");
             }
-        }
-        DateData data = new DateData(d);
-        return data;
+        } else return null;
+
+        return new DateData(localDateFrom(d));
     }
 
     /**
@@ -250,8 +252,7 @@ public class QuestionPreloader {
      * null otherwise
      */
     private IAnswerData preloadProperty(String preloadParams) {
-        String propname = preloadParams;
-        String propval = PropertyManager.__().getSingularProperty(propname);
+        String propval = PropertyManager.__().getSingularProperty(preloadParams);
         StringData data = null;
         if (propval != null && propval.length() > 0) {
             data = new StringData(propval);

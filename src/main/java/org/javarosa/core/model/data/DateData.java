@@ -88,7 +88,7 @@ public class DateData implements IAnswerData {
 
     @Override
     public String getDisplayText() {
-        return HUMAN_READABLE_SHORT.formatDate(from(localDate));
+        return HUMAN_READABLE_SHORT.formatLocalDate(localDate);
     }
 
     @Override
@@ -103,7 +103,7 @@ public class DateData implements IAnswerData {
 
     @Override
     public UncastData uncast() {
-        return new UncastData(ISO8601.formatDate(from(localDate)));
+        return new UncastData(ISO8601.formatLocalDate(localDate));
     }
 
     @Override
@@ -113,7 +113,7 @@ public class DateData implements IAnswerData {
 
     @Override
     public String toString() {
-        return "StringData{d='" + ISO8601.formatDate(from(localDate)) + "'}";
+        return "StringData{d='" + ISO8601.formatLocalDate(localDate) + "'}";
     }
 
     @Override

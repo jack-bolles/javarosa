@@ -57,8 +57,7 @@ public class DateFormatterTest {
     }
 
     @Test public void formatsDateAsTimeStampHTTP(){
-        Date dateToTest = dateFromLocalDateTime(localDateTime);
-        String formattedDate = DateFormatter.formatDate(dateToTest, FORMAT_TIMESTAMP_HTTP);
+        String formattedDate = DateFormatter.formatLocalDate(localDateTime.toLocalDate(), FORMAT_TIMESTAMP_HTTP);
         assertEquals("Sun, 11 Jun 2023", formattedDate);
     }
 

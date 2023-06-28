@@ -124,13 +124,13 @@ public class DateUtils {
         if (d == null) return null;
 
         TimeZone tz = TimeZone.getDefault();
-        return dateFrom(of(localDateFrom(d, tz), LocalTime.MIDNIGHT), tz.toZoneId());
+        return dateFrom(of(localDateFrom(d), LocalTime.MIDNIGHT), tz.toZoneId());
     }
 
-    static LocalDate localDateFrom(Date d, TimeZone aDefault) {
+    public static LocalDate localDateFrom(Date d) {
         Calendar cd = Calendar.getInstance();
         cd.setTime(d);
-        cd.setTimeZone(aDefault);
+        cd.setTimeZone(TimeZone.getDefault());
 
         return LocalDate.of(cd.get(Calendar.YEAR),
                 cd.get(Calendar.MONTH) + MONTH_OFFSET,

@@ -29,26 +29,22 @@ public class DateFormatTest {
 
     @Test
     public void formatsDateAsISO8601() {
-        Date dateToTest = dateFromLocalDateTime(localDateTime);
-        assertEquals("2023-06-11", ISO8601.formatDate(dateToTest));
+        assertEquals("2023-06-11", ISO8601.formatLocalDate(localDateTime.toLocalDate()));
     }
 
     @Test
     public void formatsDateAsHumanShort() {
-        Date dateToTest = dateFromLocalDateTime(localDateTime);
-        assertEquals("11/06/23", HUMAN_READABLE_SHORT.formatDate(dateToTest));
+        assertEquals("11/06/23", HUMAN_READABLE_SHORT.formatLocalDate(localDateTime.toLocalDate()));
     }
 
     @Test
     public void formatsDateAsTimeStampSuffix() {
-        Date dateToTest = dateFromLocalDateTime(localDateTime);
-        assertEquals("20230611", TIMESTAMP_SUFFIX.formatDate(dateToTest));
+        assertEquals("20230611", TIMESTAMP_SUFFIX.formatLocalDate(localDateTime.toLocalDate()));
     }
 
     @Test
     public void formatsDateAsTimeStampHTTP() {
-        Date dateToTest = dateFromLocalDateTime(localDateTime);
-        assertEquals("Sun, 11 Jun 2023", TIMESTAMP_HTTP.formatDate(dateToTest));
+        assertEquals("Sun, 11 Jun 2023", TIMESTAMP_HTTP.formatLocalDate(localDateTime.toLocalDate()));
     }
 
     @Test

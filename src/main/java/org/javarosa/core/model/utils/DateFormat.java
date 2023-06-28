@@ -3,6 +3,7 @@ package org.javarosa.core.model.utils;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Date;
@@ -20,8 +21,8 @@ public enum DateFormat {
                             .ofPattern(datePattern + delimiter + timePattern + offset(date)));
         }
 
-        public String formatDate(Date date) {
-            return DateFormatter.format(date, DateTimeFormatter.ofPattern(datePattern));
+        public String formatLocalDate(LocalDate localDate) {
+            return DateFormatter.format(localDate, DateTimeFormatter.ofPattern(datePattern));
         }
 
         public String formatTime(Date date) {
@@ -46,8 +47,9 @@ public enum DateFormat {
         public String formatDateTime(Date d) {
             return toUTC(d, datePattern+delimiter+timePattern);
         }
-        public String formatDate(Date date) {
-            return toUTC(date, datePattern);
+
+        public String formatLocalDate(LocalDate date) {
+            return DateFormatter.format(date, DateTimeFormatter.ofPattern(datePattern));
         }
         public String formatTime(Date date) {
             return toUTC(date, timePattern);
@@ -88,14 +90,12 @@ public enum DateFormat {
         return DateFormatter.format(d, datePattern+delimiter+timePattern);
     }
 
-    public String formatDate(Date d) {
-        //TODO - is emptyString what we want?
-        if (d == null) return "";
-
-        return DateFormatter.format(d, datePattern);
+    public String formatLocalDate(LocalDate localDate) {
+        return DateFormatter.format(localDate, datePattern);
     }
 
     public String formatTime(Date date) {
         return DateFormatter.format(date, DateTimeFormatter.ofPattern(timePattern));
     }
+
 }

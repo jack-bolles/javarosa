@@ -32,6 +32,7 @@ import static org.javarosa.core.model.DataType.INTEGER;
 import static org.javarosa.core.model.DataType.LONG;
 import static org.javarosa.core.model.DataType.MULTIPLE_ITEMS;
 import static org.javarosa.core.model.DataType.TIME;
+import static org.javarosa.core.model.utils.DateUtils.localDateFrom;
 
 /**
  * An IAnswerData object represents an answer to a question
@@ -113,7 +114,7 @@ public interface IAnswerData extends Externalizable {
             if (dataType == TIME)
                 return new TimeData((Date) val);
             if (dataType == DATE)
-                return new DateData(DateData.localDateFrom((Date) val));
+                return new DateData(localDateFrom((Date) val));
             return new DateTimeData((Date) val);
         } else {
             throw new RuntimeException("unrecognized data type in 'calculate' expression: " + val.getClass().getName());

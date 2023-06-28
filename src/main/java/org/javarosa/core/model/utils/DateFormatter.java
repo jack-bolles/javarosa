@@ -2,6 +2,7 @@ package org.javarosa.core.model.utils;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -27,11 +28,20 @@ public class DateFormatter {
     }
 
     public static String formatDate(Date date, int format) {
-        return getDateFormat(format).formatDate(date);
+        return getDateFormat(format).formatLocalDate(DateUtils.localDateFrom(date));
+    }
+
+    public static String formatLocalDate(LocalDate date, int format) {
+        return getDateFormat(format).formatLocalDate(date);
     }
 
     @NotNull
     public static String format(Date d, String format) {
+        return format(d, formatterFrom(format));
+    }
+
+    @NotNull
+    public static String format(LocalDate d, String format) {
         return format(d, formatterFrom(format));
     }
 
@@ -46,6 +56,11 @@ public class DateFormatter {
     public static String format(Date d, DateTimeFormatter formatter) {
         ZonedDateTime zonedDateTime = d.toInstant().atZone(ZoneId.systemDefault());
         return formatter.format(zonedDateTime);
+    }
+
+    @NotNull
+    public static String format(LocalDate d, DateTimeFormatter formatter) {
+        return formatter.format(d);
     }
 
     // TODO? replace with version of DateFormatSymbols
