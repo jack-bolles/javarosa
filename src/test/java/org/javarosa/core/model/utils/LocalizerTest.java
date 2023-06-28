@@ -23,6 +23,7 @@ import org.javarosa.core.services.locale.TableLocaleSource;
 import org.javarosa.core.util.NoLocalizedTextException;
 import org.javarosa.core.util.OrderedMap;
 import org.javarosa.core.util.UnregisteredLocaleException;
+import org.javarosa.core.util.externalizable.Externalizable;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.core.util.test.ExternalizableTest;
 import org.junit.Test;
@@ -39,7 +40,7 @@ public class LocalizerTest {
     private void testSerialize(Localizer l, String msg) {
         PrototypeFactory pf = new PrototypeFactory();
         pf.addClass(TableLocaleSource.class);
-        ExternalizableTest.testExternalizable(l, pf, "Localizer [" + msg + "]");
+        ExternalizableTest.testExternalizable(l, ((Externalizable) l).getClass(), pf, "Localizer [" + msg + "]");
     }
 
     @Test

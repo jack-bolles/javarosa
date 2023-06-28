@@ -53,41 +53,23 @@ public class ExtUtil {
     }
 
     public static Object deserialize(byte[] data, Class type) throws DeserializationException {
-        ByteArrayInputStream bais = new ByteArrayInputStream(data);
-        try {
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(data)) {
             return read(new DataInputStream(bais), type);
         } catch (EOFException | UTFDataFormatException eofe) {
             throw new DeserializationException("Unexpectedly reached end of stream when deserializing");
         } catch (IOException e) {
             throw new RuntimeException("Unknown IOException reading from ByteArrayInputStream; shouldn't happen!");
-        } finally {
-            try {
-                bais.close();
-            } catch (IOException e) {
-                //already closed. Don't sweat it
-            }
         }
     }
 
     public static Object deserialize(byte[] data, ExternalizableWrapper ew) throws DeserializationException {
-        ByteArrayInputStream bais = new ByteArrayInputStream(data);
-        try {
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(data)) {
             return read(new DataInputStream(bais), ew);
         } catch (EOFException | UTFDataFormatException eofe) {
             throw new DeserializationException("Unexpectedly reached end of stream when deserializing");
         } catch (IOException e) {
             throw new RuntimeException("Unknown IOException reading from ByteArrayInputStream; shouldn't happen!");
-        } finally {
-            try {
-                bais.close();
-            } catch (IOException e) {
-                //already closed. Don't sweat it
-            }
         }
-    }
-
-    public static int getSize(Object o) {
-        return serialize(o).length;
     }
 
     public static PrototypeFactory defaultPrototypes() {
@@ -163,14 +145,6 @@ public class ExtUtil {
         ExtUtil.writeNumeric(out, bytes.length);
         if (bytes.length > 0) //i think writing zero-length array might close the stream
             out.write(bytes);
-    }
-
-    //functions like these are bad; they should use the built-in list serialization facilities
-    public static void writeInts(DataOutputStream out, int[] ints) throws IOException {
-        ExtUtil.writeNumeric(out, ints.length);
-        for (int i : ints) {
-            ExtUtil.writeNumeric(out, i);
-        }
     }
 
     public static void writeAttributes(DataOutputStream out, List<TreeElement> attributes) throws IOException {
@@ -291,19 +265,9 @@ public class ExtUtil {
         return bytes;
     }
 
-    //bad
-    public static int[] readInts(DataInputStream in) throws IOException {
-        int size = (int) ExtUtil.readNumeric(in);
-        int[] ints = new int[size];
-        for (int i = 0; i < size; ++i) {
-            ints[i] = (int) ExtUtil.readNumeric(in);
-        }
-        return ints;
-    }
-
     public static List<TreeElement> readAttributes(DataInputStream in, TreeElement parent) throws IOException {
         int size = (int) ExtUtil.readNumeric(in);
-        List<TreeElement> attributes = new ArrayList<TreeElement>(size);
+        List<TreeElement> attributes = new ArrayList<>(size);
         for (int i = 0; i < size; ++i) {
             String namespace = ExtUtil.readString(in);
             String name = ExtUtil.readString(in);
@@ -454,7 +418,7 @@ public class ExtUtil {
                 }
             }
 
-            if (a instanceof OrderedMap && b instanceof OrderedMap) {
+            if (a instanceof OrderedMap) {
                 Iterator ea = a.keySet().iterator();
                 Iterator eb = b.keySet().iterator();
 
@@ -494,17 +458,4 @@ public class ExtUtil {
         sb.append("]");
         return sb.toString();
     }
-
-
-    //**REMOVE THESE TWO FUNCTIONS//
-    //original deserialization API (whose limits made us make this whole new framework!); here for backwards compatibility
-    public static void deserialize(byte[] data, Externalizable ext) throws IOException, DeserializationException {
-        ext.readExternal(new DataInputStream(new ByteArrayInputStream(data)), defaultPrototypes());
-    }
-
-    public static Object deserialize(byte[] data, Class type, PrototypeFactory pf) throws IOException, DeserializationException {
-        return read(new DataInputStream(new ByteArrayInputStream(data)), type, pf);
-    }
-    ////
-
 }

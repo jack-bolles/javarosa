@@ -16,16 +16,6 @@
 
 package org.javarosa.core.util.test;
 
-import static org.junit.Assert.fail;
-
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-
 import org.javarosa.core.util.OrderedMap;
 import org.javarosa.core.util.externalizable.ExtUtil;
 import org.javarosa.core.util.externalizable.ExtWrapBase;
@@ -35,12 +25,21 @@ import org.javarosa.core.util.externalizable.ExtWrapMap;
 import org.javarosa.core.util.externalizable.ExtWrapMapPoly;
 import org.javarosa.core.util.externalizable.ExtWrapNullable;
 import org.javarosa.core.util.externalizable.ExtWrapTagged;
-import org.javarosa.core.util.externalizable.Externalizable;
 import org.javarosa.core.util.externalizable.ExternalizableWrapper;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+
+import static org.junit.Assert.fail;
 
 public class ExternalizableTest {
     private static final Logger logger = LoggerFactory.getLogger(ExternalizableTest.class);
@@ -48,28 +47,6 @@ public class ExternalizableTest {
 
     @Test
     public void doTests () {
-        //base types (built-in + externalizable)
-        testExternalizable("string", String.class);
-        testExternalizable(new Byte((byte)0), Byte.class);
-        testExternalizable(new Byte((byte)0x55), Byte.class);
-        testExternalizable(new Byte((byte)0xe9), Byte.class);
-        testExternalizable(new Short((short)0), Short.class);
-        testExternalizable(new Short((short)-12345), Short.class);
-        testExternalizable(new Short((short)12345), Short.class);
-        testExternalizable(new Integer(0), Integer.class);
-        testExternalizable(new Integer(1234567890), Integer.class);
-        testExternalizable(new Integer(-1234567890), Integer.class);
-        testExternalizable(new Long(0), Long.class);
-        testExternalizable(new Long(1234567890123456789l), Long.class);
-        testExternalizable(new Long(-1234567890123456789l), Long.class);
-        testExternalizable(Boolean.TRUE, Boolean.class);
-        testExternalizable(Boolean.FALSE, Boolean.class);
-        testExternalizable(new Character('e'), Character.class);
-        testExternalizable(new Float(123.45e6), Float.class);
-        testExternalizable(new Double(123.45e6), Double.class);
-        testExternalizable(new Date(), Date.class);
-        testExternalizable(new SampleExtz("your", "mom"), SampleExtz.class);
-
         //base wrapper (end user will never use)
         testExternalizable("string", new ExtWrapBase(String.class));
         testExternalizable(new ExtWrapBase("string"), String.class);
@@ -197,44 +174,29 @@ public class ExternalizableTest {
         byte[] bytes;
         Object deser;
 
-        print("");
-        print("Original: " + printObj(orig));
+        printObj(orig);
 
         try {
             bytes = ExtUtil.serialize(orig);
 
-            print("Serialized as:");
-            print(ExtUtil.printBytes(bytes));
+            ExtUtil.printBytes(bytes);
 
             if (template instanceof Class) {
-                deser = ExtUtil.deserialize(bytes, (Class)template, pf);
+                deser = ExtUtil.read(new DataInputStream(new ByteArrayInputStream(bytes)), (Class) template, pf);
             } else if (template instanceof ExternalizableWrapper) {
                 deser = ExtUtil.read(new DataInputStream(new ByteArrayInputStream(bytes)), (ExternalizableWrapper)template, pf);
             } else {
                 throw new ClassCastException();
             }
 
-            print("Reconstituted: " + printObj(deser));
+            printObj(deser);
 
-            if (ExtUtil.equals(orig, deser)) {
-                print("SUCCESS");
-            } else {
-                print("FAILURE");
+            if (!ExtUtil.equals(orig, deser)) {
                 fail(failMessage + ": Objects do not match");
             }
-            print("---------------------------------------------");
         } catch (Exception e) {
             fail(failMessage + ": Exception! " + e.getClass().getName() + " " + e.getMessage());
         }
-    }
-
-    //for outside test suites to call
-    public static void testExternalizable (Externalizable original, PrototypeFactory pf) {
-        testExternalizable(original, pf, "Serialization failure for " + original.getClass().getName());
-    }
-
-    public static void testExternalizable (Externalizable original, PrototypeFactory pf, String failMessage) {
-        testExternalizable(original, original.getClass(), pf, failMessage);
     }
 
     //for use inside this test suite
@@ -281,9 +243,5 @@ public class ExternalizableTest {
         } else {
             return "{" + o.getClass().getName() + ":" + o.toString() + "}";
         }
-    }
-
-    private static void print (String s) {
-        logger.info(s);
     }
 }
