@@ -66,7 +66,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -132,7 +131,6 @@ import static org.javarosa.xpath.expr.XPathStep.AXIS_ATTRIBUTE;
 public class Scenario {
     private static final Logger log = LoggerFactory.getLogger(Scenario.class);
     public static final FormIndex BEGINNING_OF_FORM = FormIndex.createBeginningOfFormIndex();
-    private Path formFile;
     private final FormDef formDef;
     private FormEntryController controller;
     private EvaluationContext evaluationContext;
@@ -295,9 +293,7 @@ public class Scenario {
         XFormParser parser = new XFormParser(formReader, instanceReader);
         FormDef restoredFormDef = parser.parse();
 
-        Scenario restored = Scenario.from(restoredFormDef);
-
-        return restored;
+        return Scenario.from(restoredFormDef);
     }
 
     /**
@@ -530,16 +526,10 @@ public class Scenario {
     // region Answer the question at the form index
     // TODO Make more overloads of these methods to have one for each data type using the correct IAnswerData subclass
 
-    /**
-     * Answers the question at the form index
-     */
     public AnswerResult answer(String value) {
         return answer(new StringData(value));
     }
 
-    /**
-     * Answers the question at the form index
-     */
     public AnswerResult answer(List<String> values) {
         return answer(new MultipleItemsData(values.stream().map(Selection::new).collect(Collectors.toList())));
     }
@@ -548,30 +538,18 @@ public class Scenario {
         return answer(new SelectOneData(choice.selection()));
     }
 
-    /**
-     * Answers the question at the form index
-     */
     public AnswerResult answer(int value) {
         return answer(new IntegerData(value));
     }
 
-    /**
-     * Answers the question at the form index
-     */
     public AnswerResult answer(char value) {
         return answer(new StringData(String.valueOf(value)));
     }
 
-    /**
-     * Answers the question at the form index
-     */
     public AnswerResult answer(LocalDate value) {
-        return answer(new DateData(Date.valueOf(value)));
+        return answer(new DateData(value));
     }
 
-    /**
-     * Answers the question at the form index
-     */
     public AnswerResult answer(boolean value) {
         return answer(new BooleanData(value));
     }

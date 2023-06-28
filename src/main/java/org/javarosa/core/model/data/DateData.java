@@ -115,4 +115,18 @@ public class DateData implements IAnswerData {
     public String toString() {
         return "StringData{d='" + ISO8601.formatDate(from(localDate)) + "'}";
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DateData that = (DateData) o;
+        return localDate.equals(that.localDate);
+    }
+
+    @Override
+    public int hashCode() {
+        return localDate.hashCode();
+    }
+
 }
