@@ -18,7 +18,8 @@ public class AnswerDataTest {
         IAnswerData answerData = IAnswerData.wrapData(LocalDate.now(), DataType.DATE.value);
         assertEquals(expected, answerData);
     }
-//    @Test(expected = RuntimeException.class)
+    //@Test(expected = RuntimeException.class)
+    //deprecated behaviour given a stay of execution
     @Test
     public void wrapDataCanNOTWrapAroundUtilDate(){
         Date now = Date.from(Instant.now());
