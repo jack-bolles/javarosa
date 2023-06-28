@@ -28,6 +28,8 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.UTFDataFormatException;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -150,6 +152,12 @@ public class ExtUtil {
         //time zone?
     }
 
+    //todo use class prototype instead of days since epoch
+    public static void writeLocalDate(DataOutputStream out, LocalDate val) throws IOException {
+        writeNumeric(out, ChronoUnit.DAYS.between(LocalDate.EPOCH, val));
+    }
+
+
     public static void writeBytes(DataOutputStream out, byte[] bytes) throws IOException {
         ExtUtil.writeNumeric(out, bytes.length);
         if (bytes.length > 0) //i think writing zero-length array might close the stream
@@ -200,6 +208,8 @@ public class ExtUtil {
             return readBool(in);
         } else if (type == String.class) {
             return readString(in);
+        } else if (type == LocalDate.class) {
+            return readLocalDate(in);
         } else if (type == Date.class) {
             return readDate(in);
         } else if (type == byte[].class) {
@@ -262,6 +272,11 @@ public class ExtUtil {
     public static Date readDate(DataInputStream in) throws IOException {
         return new Date(readNumeric(in));
         //time zone?
+    }
+
+    //todo use class prototype instead of days since epoch
+    public static LocalDate readLocalDate(DataInputStream in) throws IOException {
+        return LocalDate.ofEpochDay(readNumeric(in));
     }
 
     public static byte[] readBytes(DataInputStream in) throws IOException {

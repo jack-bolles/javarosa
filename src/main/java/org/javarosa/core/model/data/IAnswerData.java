@@ -117,7 +117,8 @@ public interface IAnswerData extends Externalizable {
         } else if (val instanceof Date) {
             if (dataType == TIME)
                 return new TimeData((Date) val);
-            else if (dataType == DATE) //TODO - WIP moving DateData solely to LocalDate
+            else if (dataType == DATE) //TODO - @deprecated DateData uses LocalDate
+//                throw new RuntimeException("Date with Date: " + dataType.name() + " with value: " + val);
                 return new DateData(localDateFrom((Date) val));
             else if (dataType == DATE_TIME)
                 return new DateTimeData((Date) val);

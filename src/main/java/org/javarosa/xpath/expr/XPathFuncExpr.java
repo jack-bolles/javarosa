@@ -166,7 +166,7 @@ public class XPathFuncExpr extends XPathExpression {
      * Evaluate the function call.
      * <p>
      * First check if the function is a member of the built-in function suite. If not, then check
-     * for any custom handlers registered to handler the function. If not, throw and exception.
+     * for any custom handlers registered to handler the function. If not, throw an exception.
      * <p>
      * Both function name and appropriate arguments are taken into account when finding a suitable
      * handler. For built-in functions, the number of arguments must match; for custom functions,

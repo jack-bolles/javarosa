@@ -24,8 +24,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Date;
 
 import static org.javarosa.core.model.utils.DateFormat.HUMAN_READABLE_SHORT;
 import static org.javarosa.core.model.utils.DateFormat.ISO8601;
@@ -64,10 +62,6 @@ public class DateData implements IAnswerData {
         localDate = (LocalDate) o;
     }
 
-    private Date from(LocalDate dateToConvert) {
-        return java.util.Date.from(dateToConvert.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
-    }
-
     @Override
     public @NotNull Object getValue() {
         if(localDate == null) throw new NullPointerException("LocalDate not set yet on DateData");
@@ -81,12 +75,12 @@ public class DateData implements IAnswerData {
 
     @Override
     public void readExternal(DataInputStream in, PrototypeFactory pf) throws IOException {
-        setValue(ExtUtil.readDate(in));
+        setValue(ExtUtil.readLocalDate(in));
     }
 
     @Override
     public void writeExternal(DataOutputStream out) throws IOException {
-        ExtUtil.writeDate(out, from(localDate));
+        ExtUtil.writeLocalDate(out, localDate);
     }
 
     @Override

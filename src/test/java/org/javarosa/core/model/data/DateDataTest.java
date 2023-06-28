@@ -1,9 +1,19 @@
 package org.javarosa.core.model.data;
 
+import org.javarosa.core.services.PrototypeManager;
+import org.javarosa.core.util.externalizable.DeserializationException;
 import org.junit.Test;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.time.LocalDate;
 
+import static java.nio.file.Files.createTempFile;
+import static java.nio.file.Files.delete;
+import static java.nio.file.Files.newInputStream;
+import static java.nio.file.Files.newOutputStream;
 import static org.javarosa.core.model.data.DateData.dataFrom;
 import static org.javarosa.core.model.utils.DateUtils.localDateFromString;
 import static org.junit.Assert.assertEquals;
@@ -82,5 +92,24 @@ public class DateDataTest {
     public void serialisationFun() {
         DateData data = new DateData(); //should only be used for deserialisation purposes
         data.getValue();
+    }
+
+    @Test
+    public void serializeAndDeserializeForm() throws IOException, DeserializationException {
+        // Serialize form in a temp file
+        Path tempFile = createTempFile("javarosa", "test");
+        LocalDate now = LocalDate.now();
+        DateData sourceData = new DateData(now);
+        sourceData.writeExternal(new DataOutputStream(newOutputStream(tempFile)));
+
+        // Create an empty DateData and deserialize the value into it
+        DateData deserialiser = new DateData();
+        deserialiser.readExternal(
+                new DataInputStream(newInputStream(tempFile)),
+                PrototypeManager.getDefault()
+        );
+
+        delete(tempFile);
+        assertEquals(sourceData, deserialiser.cast(sourceData.uncast()));
     }
 }
