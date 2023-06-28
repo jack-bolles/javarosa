@@ -16,25 +16,21 @@
 
 package org.javarosa.xform.util;
 
-import java.util.Date;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.javarosa.core.data.IDataPointer;
 import org.javarosa.core.model.IAnswerDataSerializer;
 import org.javarosa.core.model.data.BooleanData;
 import org.javarosa.core.model.data.DateData;
 import org.javarosa.core.model.data.DateTimeData;
 import org.javarosa.core.model.data.DecimalData;
-import org.javarosa.core.model.data.GeoTraceData;
 import org.javarosa.core.model.data.GeoPointData;
 import org.javarosa.core.model.data.GeoShapeData;
+import org.javarosa.core.model.data.GeoTraceData;
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.data.IntegerData;
 import org.javarosa.core.model.data.LongData;
 import org.javarosa.core.model.data.MultiPointerAnswerData;
-import org.javarosa.core.model.data.PointerAnswerData;
 import org.javarosa.core.model.data.MultipleItemsData;
+import org.javarosa.core.model.data.PointerAnswerData;
 import org.javarosa.core.model.data.SelectOneData;
 import org.javarosa.core.model.data.StringData;
 import org.javarosa.core.model.data.TimeData;
@@ -42,6 +38,13 @@ import org.javarosa.core.model.data.UncastData;
 import org.javarosa.core.model.data.helper.Selection;
 import org.javarosa.core.model.utils.DateFormatter;
 import org.kxml2.kdom.Element;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import static org.javarosa.core.model.utils.DateFormat.ISO8601;
 
 /**
  * The XFormAnswerDataSerializer takes in AnswerData objects, and provides
@@ -101,7 +104,7 @@ public class XFormAnswerDataSerializer implements IAnswerDataSerializer {
      * formatting
      */
     public Object serializeAnswerData(DateData data) {
-        return DateFormatter.formatDate((Date)data.getValue(), DateFormatter.FORMAT_ISO8601);
+        return ISO8601.formatLocalDate((LocalDate)data.getValue());
     }
 
     /**

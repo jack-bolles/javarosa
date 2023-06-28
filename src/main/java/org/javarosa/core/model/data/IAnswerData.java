@@ -20,30 +20,32 @@ import org.javarosa.core.model.DataType;
 import org.javarosa.core.util.externalizable.Externalizable;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 import static org.javarosa.core.model.DataType.BOOLEAN;
 import static org.javarosa.core.model.DataType.CHOICE;
 import static org.javarosa.core.model.DataType.DATE;
+import static org.javarosa.core.model.DataType.DATE_TIME;
 import static org.javarosa.core.model.DataType.GEOPOINT;
 import static org.javarosa.core.model.DataType.GEOSHAPE;
 import static org.javarosa.core.model.DataType.GEOTRACE;
 import static org.javarosa.core.model.DataType.INTEGER;
 import static org.javarosa.core.model.DataType.LONG;
 import static org.javarosa.core.model.DataType.MULTIPLE_ITEMS;
+import static org.javarosa.core.model.DataType.TEXT;
 import static org.javarosa.core.model.DataType.TIME;
 import static org.javarosa.core.model.utils.DateUtils.localDateFrom;
 
 /**
  * An IAnswerData object represents an answer to a question
  * posed to a user.
- *
+ * <p>
  * IAnswerData objects should never in any circumstances contain
  * a null data value. In cases of empty or non-existent responses,
  * the IAnswerData reference should itself be null.
  *
  * @author Drew Roos
- *
  */
 public interface IAnswerData extends Externalizable {
     /**
@@ -61,7 +63,7 @@ public interface IAnswerData extends Externalizable {
         // if string data or date data, keep as is
         // if NaN or empty string, null
         if ((val instanceof String && ((String) val).length() == 0) ||
-            (val instanceof Double && ((Double) val).isNaN())) {
+                (val instanceof Double && ((Double) val).isNaN())) {
             return null;
         }
 
@@ -91,7 +93,7 @@ public interface IAnswerData extends Externalizable {
             long l = (long) d;
             boolean isIntegral = Math.abs(d - l) < 1.0e-9;
             if (INTEGER == dataType ||
-                (isIntegral && (Integer.MAX_VALUE >= l) && (Integer.MIN_VALUE <= l))) {
+                    (isIntegral && (Integer.MAX_VALUE >= l) && (Integer.MIN_VALUE <= l))) {
                 return new IntegerData((int) d);
             } else if (LONG == dataType || isIntegral) {
                 return new LongData((long) d);
@@ -110,36 +112,45 @@ public interface IAnswerData extends Externalizable {
             return new MultipleItemsData().cast(new UncastData(String.valueOf(val)));
         } else if (val instanceof String) {
             return new StringData((String) val);
+        } else if (val instanceof LocalDate) {
+            return new DateData((LocalDate) val);
         } else if (val instanceof Date) {
             if (dataType == TIME)
                 return new TimeData((Date) val);
-            if (dataType == DATE)
+            else if (dataType == DATE) //TODO - WIP moving DateData solely to LocalDate
                 return new DateData(localDateFrom((Date) val));
-            return new DateTimeData((Date) val);
+            else if (dataType == DATE_TIME)
+                return new DateTimeData((Date) val);
+            else if (dataType == TEXT)  //TODO - is this a bug or bad tests?
+                return new DateTimeData((Date) val);
+            else
+                throw new RuntimeException("could not match data type with Date: " + dataType.name() + " with value: " + val);
         } else {
-            throw new RuntimeException("unrecognized data type in 'calculate' expression: " + val.getClass().getName());
+            throw new RuntimeException("unrecognized data type in 'calculate' expression: " + val.getClass().getName() + " with value: " + val + " for  Date: " + dataType.name());
         }
     }
 
     /**
      * @param o the value of this answerdata object. Cannot be null.
-     * Null Data will not overwrite existing values.
+     *          Null Data will not overwrite existing values.
      * @throws NullPointerException if o is null
      */
-    void setValue (Object o); //can't be null
+    void setValue(Object o); //can't be null
+
     /**
      * @return The value of this answer, will never
      * be null
      */
     @NotNull
-    Object getValue ();       //will never be null
+    Object getValue();       //will never be null
+
     /**
      * @return Gets a string representation of this
      * answer
      */
-    String getDisplayText ();
+    String getDisplayText();
 
-    IAnswerData clone ();
+    IAnswerData clone();
 
     /**
      * Data types can be uncast if they are expected to be used
@@ -155,11 +166,11 @@ public interface IAnswerData extends Externalizable {
      * Casts the provided data into this data type.
      *
      * @param data An uncast data value which is compatible
-     * with this data type
-     * @return  An instance of the instance's data type
+     *             with this data type
+     * @return An instance of the instance's data type
      * which contains that value
      * @throws IllegalArgumentException If the uncast data is
-     * not in a compatible format
+     *                                  not in a compatible format
      */
     IAnswerData cast(UncastData data) throws IllegalArgumentException;
 }

@@ -47,6 +47,7 @@ import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.time.DateTimeException;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -89,9 +90,9 @@ public class XPathFuncExpr extends XPathExpression {
      * @param date the date object to be analyzed
      * @return The number of days (as a double precision floating point) since the Epoch
      */
-    private static int daysSinceEpoch(Date date) {
+    private static double daysSinceEpoch(Date date) {
         Date a = DateUtils.getDate(1970, 1, 1);
-        return (int) MathUtils.divLongNotSuck(DateUtils.roundDate(date).getTime() - DateUtils.roundDate(a).getTime() + DAY_IN_MS / 2, DAY_IN_MS);
+        return (double) MathUtils.divLongNotSuck(DateUtils.roundDate(date).getTime() - DateUtils.roundDate(a).getTime() + DAY_IN_MS / 2, DAY_IN_MS);
         //half-day offset is needed to handle differing DST offsets!
     }
 
@@ -703,9 +704,7 @@ public class XPathFuncExpr extends XPathExpression {
             val = (Double) o;
         } else if (o instanceof String) {
             /* annoying, but the xpath spec doesn't recognize scientific notation, or +/-Infinity
-             * when converting a string to a number
-             */
-
+             * when converting a string to a number */
             final String s = ((String) o)
                     .replace(',', '.') // Some locales use ',' instead of '.'
                     .trim();
@@ -722,7 +721,9 @@ public class XPathFuncExpr extends XPathExpression {
                 val = NaN;
             }
         } else if (o instanceof Date) {
-            val = (double) daysSinceEpoch((Date) o);
+            val = daysSinceEpoch((Date) o);
+        } else if (o instanceof LocalDate) {
+            val = daysSinceEpoch((LocalDate) o);
         } else if (o instanceof IExprDataType) {
             val = ((IExprDataType) o).toNumeric();
         }
@@ -731,7 +732,11 @@ public class XPathFuncExpr extends XPathExpression {
             return val;
         }
 
-        throw new XPathTypeMismatchException("converting to numeric");
+        throw new XPathTypeMismatchException("Can't convert type to numeric: "+ o.getClass());
+    }
+
+    private static Double daysSinceEpoch(LocalDate localDate) {
+        return (double) localDate.toEpochDay();
     }
 
     /**

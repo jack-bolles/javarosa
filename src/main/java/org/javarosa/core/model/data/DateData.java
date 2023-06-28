@@ -38,15 +38,6 @@ public class DateData implements IAnswerData {
         return new DateData(localDateFromString(dateString));
     }
 
-    public static LocalDate localDateFrom(Date date) {
-        return LocalDate.of(date.getYear() + 1900, date.getMonth() + 1, date.getDate());
-    }
-
-    static Date parseDate(String str) {
-        LocalDate localDate = localDateFromString(str);
-        return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-    }
-
     private LocalDate localDate;
 
     /**
@@ -70,7 +61,7 @@ public class DateData implements IAnswerData {
         if (o == null) {
             throw new NullPointerException("Attempt to set DateData::IAnswerData to null.");
         }
-        localDate = localDateFrom((Date) o);
+        localDate = (LocalDate) o;
     }
 
     private Date from(LocalDate dateToConvert) {
@@ -79,7 +70,8 @@ public class DateData implements IAnswerData {
 
     @Override
     public @NotNull Object getValue() {
-        return from(localDate);
+        if(localDate == null) throw new NullPointerException("LocalDate not set yet on DateData");
+        return localDate;
     }
 
     @Override

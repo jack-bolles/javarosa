@@ -5,7 +5,7 @@ import org.junit.Test;
 import java.time.LocalDate;
 
 import static org.javarosa.core.model.data.DateData.dataFrom;
-import static org.javarosa.core.model.data.DateData.parseDate;
+import static org.javarosa.core.model.utils.DateUtils.localDateFromString;
 import static org.junit.Assert.assertEquals;
 
 public class DateDataTest {
@@ -15,7 +15,7 @@ public class DateDataTest {
         DateData data = dataFrom(validISODateString);
 
         assertEquals(
-                parseDate(validISODateString),
+                localDateFromString(validISODateString),
                 data.getValue()
         );
     }
@@ -26,7 +26,7 @@ public class DateDataTest {
         DateData data = dataFrom(dateString);
 
         assertEquals(
-                parseDate(dateString),
+                localDateFromString(dateString),
                 data.getValue()
         );
     }
