@@ -83,7 +83,7 @@ public class LongData implements IAnswerData {
 
     @Override
     public UncastData uncast() {
-        return new UncastData(new Long(n).toString());
+        return new UncastData(Long.valueOf(n).toString());
     }
 
     @Override
@@ -100,5 +100,18 @@ public class LongData implements IAnswerData {
         return "LongData{" +
             "n=" + n +
             '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LongData longData = (LongData) o;
+        return n == longData.n;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (n ^ (n >>> 32));
     }
 }

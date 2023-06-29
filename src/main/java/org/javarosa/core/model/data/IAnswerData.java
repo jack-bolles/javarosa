@@ -21,6 +21,7 @@ import org.javarosa.core.util.externalizable.Externalizable;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Date;
 
 import static org.javarosa.core.model.DataType.BOOLEAN;
@@ -35,6 +36,8 @@ import static org.javarosa.core.model.DataType.LONG;
 import static org.javarosa.core.model.DataType.MULTIPLE_ITEMS;
 import static org.javarosa.core.model.DataType.TEXT;
 import static org.javarosa.core.model.DataType.TIME;
+import static org.javarosa.core.model.utils.DateUtils.localDateFrom;
+import static org.javarosa.core.model.utils.DateUtils.localTimeFrom;
 
 /**
  * An IAnswerData object represents an answer to a question
@@ -49,7 +52,9 @@ import static org.javarosa.core.model.DataType.TIME;
 public interface IAnswerData extends Externalizable {
     /**
      * convert the data object returned by the xpath expression into an IAnswerData suitable for
-     * storage in the FormInstance
+     * storage in the FormInstance.
+     * DataType is the primary; some vals can be coerced into a specific type.
+     * @see org.javarosa.core.model.data.AnswerDataTest
      */
     static IAnswerData wrapData(Object val, int intDataType) {
         //droos 1/29/10: we need to come up with a consistent rule for whether the resulting data is determined
@@ -61,9 +66,6 @@ public interface IAnswerData extends Externalizable {
         // if numeric data, convert to int if node type is int OR data is an integer; else convert to double
         // if string data or date data, keep as is
         // if NaN or empty string, null
-        if ((val instanceof String && ((String) val).length() == 0) || (val instanceof Double && ((Double) val).isNaN())) {
-            return null;
-        }
 
         final DataType dataType = DataType.from(intDataType);
 
@@ -80,13 +82,16 @@ public interface IAnswerData extends Externalizable {
                 b = Math.abs(d) > 1.0e-12 && !Double.isNaN(d);
             } else if (val instanceof String) {
                 String s = (String) val;
-                b = s.length() > 0; //TODO will always be true?? Line 62 returns null if length is zero
+                if(s.trim().isEmpty()) return null; //TODO - is this a bug? Preserving behaviour til I learn more.
+                b = s.length() > 0;
             } else {
                 throw new RuntimeException("unrecognized data representation while trying to convert to BOOLEAN");
             }
-
             return new BooleanData(b);
+
         } else if (val instanceof Double) {
+            if (((Double) val).isNaN()) return null;
+
             double d = (Double) val;
             long l = (long) d;
             boolean isIntegral = Math.abs(d - l) < 1.0e-9;
@@ -107,19 +112,41 @@ public interface IAnswerData extends Externalizable {
             return new SelectOneData().cast(new UncastData(String.valueOf(val)));
         } else if (dataType == MULTIPLE_ITEMS) {
             return new MultipleItemsData().cast(new UncastData(String.valueOf(val)));
+        } else if (dataType == TIME) {
+            if (val instanceof Date) {
+                return new TimeData(localTimeFrom((Date) val));
+            } else if (val instanceof LocalTime) {
+                return new TimeData((LocalTime) val);
+            } else
+                throw new UnsupportedOperationException("Use java.time.LocalTime instead of " + val.getClass().getName());
+        } else if (val instanceof LocalTime) { //TODO - sweeper 'if'... should have been picked up by 'datatype' == DATE
+            //todo - monitoring to see if this is ever the case
+            return new TimeData((LocalTime) val);
+
         } else if (dataType == DATE) {
-            return new DateData((LocalDate) val);
+            if (val instanceof Date) {
+                return new DateData(localDateFrom((Date) val));
+            } else if (val instanceof LocalDate) {
+                return new DateData((LocalDate) val);
+            } else
+                throw new UnsupportedOperationException("Use java.time.LocalDate instead of " + val.getClass().getName());
         } else if (val instanceof LocalDate) { //TODO - sweeper 'if'... should have been picked up by 'datatype' == DATE
+            //todo - monitoring to see if this is ever the case
             return new DateData((LocalDate) val);
-        } else if (val instanceof String) {
-            return new StringData((String) val);
+
         } else if (val instanceof Date) {
-            if (dataType == TIME) return new TimeData((Date) val);
-            else if (dataType == DATE_TIME) return new DateTimeData((Date) val);
+            if (dataType == DATE_TIME) return new DateTimeData((Date) val);
             else if (dataType == TEXT)  //TODO - is this a bug or bad tests?
                 return new DateTimeData((Date) val);
             else
-                throw new RuntimeException("could not match data type with Date: " + dataType.name() + " with value: " + val);
+                throw new UnsupportedOperationException("could not match data type with Date: " + dataType.name() + " with value: " + val);
+
+        } else if (val instanceof String) {
+            if(((String)val).trim().isEmpty()) {
+                System.out.println("dataType = " + dataType);
+                return null; //TODO - is this a bug? Preserving behaviour til I learn more.
+            }
+            return new StringData((String) val);
         } else {
             throw new RuntimeException("unrecognized data type in 'calculate' expression: " + val.getClass().getName() + " with value: " + val + " for  Date: " + dataType.name());
         }

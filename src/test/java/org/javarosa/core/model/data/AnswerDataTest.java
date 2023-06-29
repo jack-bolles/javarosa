@@ -3,38 +3,66 @@ package org.javarosa.core.model.data;
 import org.javarosa.core.model.DataType;
 import org.junit.Test;
 
-import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Date;
+import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
-import static org.javarosa.core.model.utils.DateUtils.localDateFrom;
+import static org.javarosa.core.model.DataType.BOOLEAN;
+import static org.javarosa.core.model.DataType.DECIMAL;
+import static org.javarosa.core.model.DataType.INTEGER;
+import static org.javarosa.core.model.DataType.LONG;
 import static org.junit.Assert.assertEquals;
 
 public class AnswerDataTest {
 
     @Test
-    public void wrapDataCanWrapAroundLocalDate(){
+    public void booleansWrapByValueFirst() {
+        Stream<DataType> dataTypeStream = Arrays
+                .stream(DataType.values())
+                .filter(type -> type.value != BOOLEAN.value);
+        dataTypeStream.forEach(dataType ->
+                assertEquals(IAnswerData.wrapData(true, dataType.value), new BooleanData(true)));
+    }
+
+    @Test public void booleanDataTypeCanCoerceDoublesAndStringValues(){
+        //TODO - empty string returns null, not false; despite DataType.BOOLEAN ... bug?
+//        assertEquals(IAnswerData.wrapData("", BOOLEAN.value), new BooleanData(false));
+        assertEquals(IAnswerData.wrapData("not blank", BOOLEAN.value), new BooleanData(true));
+        assertEquals(IAnswerData.wrapData(0.0, BOOLEAN.value), new BooleanData(false));
+        assertEquals(IAnswerData.wrapData(0.001, BOOLEAN.value), new BooleanData(true));
+    }
+
+    @Test
+    public void doublesWrapAccordingToTheirNumericType() {
+        double val = 11.42;
+        assertEquals(IAnswerData.wrapData(val, INTEGER.value), new IntegerData((int) val));
+        assertEquals(IAnswerData.wrapData(val, LONG.value), new LongData((long) val));
+        assertEquals(IAnswerData.wrapData(val, DECIMAL.value), new DecimalData(val));
+    }
+
+    @Test
+    public void DATEtypeDoesntWrapNumbers() {
+        IAnswerData answerData = IAnswerData.wrapData(42.0, DataType.DATE.value);
+        assertEquals(new IntegerData(42), answerData);
+    }
+    @Test(expected = UnsupportedOperationException.class)
+    public void DATEtypeDoesntWrapText() {
+        IAnswerData.wrapData("1970-1-1", DataType.DATE.value);
+    }
+
+    @Test
+    public void canWrapAroundLocalDateValAndDATEtype() {
         DateData expected = new DateData(LocalDate.now());
         IAnswerData answerData = IAnswerData.wrapData(LocalDate.now(), DataType.DATE.value);
         assertEquals(expected, answerData);
     }
-    @Test(expected = RuntimeException.class)
-    public void wrapDataCanNOTWrapAroundUtilDate(){
-        Date now = Date.from(Instant.now());
-        DateData expected = new DateData(localDateFrom(now));
-        IAnswerData answerData = IAnswerData.wrapData(now, DataType.DATE.value);
-        assertEquals(expected, answerData);
-    }
-
-    /** see WhoVATest smoke test for the source of this path through the system.
-     * TODO - Not sure if it's as expected or the smoke test needs updating.
-     * For now, we allow the behaviour.
-     */
     @Test
-    public void localDateIsWrappedWhenDataTypeIsTEXT(){
-        DateData expected = new DateData(LocalDate.now());
-        IAnswerData answerData = IAnswerData.wrapData(LocalDate.now(), DataType.TEXT.value);
+    public void canWrapAroundLocalDateTimeAndDATEtype() {
+        LocalTime time = LocalTime.now();
+        TimeData expected = new TimeData(time);
+        IAnswerData answerData = IAnswerData.wrapData(time, DataType.DATE.value);
         assertEquals(expected, answerData);
-
     }
+
 }

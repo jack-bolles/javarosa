@@ -23,11 +23,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-/**
- * @author Clayton Sims
- * @date May 19, 2009
- *
- */
 public class BooleanData implements IAnswerData {
 
     boolean data;
@@ -102,5 +97,20 @@ public class BooleanData implements IAnswerData {
         return "BooleanData{" +
             "data=" + data +
             '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        BooleanData that = (BooleanData) o;
+
+        return data == that.data;
+    }
+
+    @Override
+    public int hashCode() {
+        return (data ? 1 : 0);
     }
 }

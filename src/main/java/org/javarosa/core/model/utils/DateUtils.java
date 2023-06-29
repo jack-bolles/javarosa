@@ -18,6 +18,7 @@ package org.javarosa.core.model.utils;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -29,15 +30,12 @@ import java.util.List;
 import java.util.TimeZone;
 
 import static java.time.LocalDateTime.of;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.javarosa.core.model.utils.StringUtils.split;
 
 public class DateUtils {
 
     public static final String TIME_OFFSET_REGEX = "(?=[Z+\\-])";
     public static final String DATE_TIME_SPLIT_REGEX = "([T\\s])";
-    public static final int MONTH_OFFSET = (1 - Calendar.JANUARY);
     public static final long DAY_IN_MS = 86400000L;
 
     @NotNull
@@ -45,12 +43,10 @@ public class DateUtils {
         return Date.from(someDateTime.atZone(zoneId).toInstant());
     }
 
-    public static int secTicksAsNanoSeconds(int millis) {
-        return Math.toIntExact(NANOSECONDS.convert(millis, MILLISECONDS));
-    }
-
-    /** Full ISO string interpreted into a Date.
-     * Defaults to start of day, in UTC if time and/or offset are missing*/
+    /**
+     * Full ISO string interpreted into a Date.
+     * Defaults to start of day, in UTC if time and/or offset are missing
+     */
     public static Date parseDateTime(String str) {
         LocalDate localDate;
         LocalTime time = LocalTime.MIDNIGHT;
@@ -59,7 +55,7 @@ public class DateUtils {
         int i = str.indexOf("T");
         if (i == -1) {
             localDate = localDateFromString(str);
-        } else{
+        } else {
             String timeAndOffsetString = str.substring(i + 1);
             if (!timeAndOffsetString.trim().isEmpty()) {
                 TimeAndOffset timeAndOffset = timeAndOffset(timeAndOffsetString);
@@ -123,15 +119,19 @@ public class DateUtils {
     }
 
     public static LocalDate localDateFrom(Date d) {
-        Calendar cd = Calendar.getInstance();
-        cd.setTime(d);
-        cd.setTimeZone(TimeZone.getDefault());
-
-        return LocalDate.of(cd.get(Calendar.YEAR),
-                cd.get(Calendar.MONTH) + MONTH_OFFSET,
-                cd.get(Calendar.DAY_OF_MONTH)
-        );
+        return localDateTimeFrom(d).toLocalDate();
     }
+
+    public static LocalTime localTimeFrom(Date val) {
+        return localDateTimeFrom(val).toLocalTime();
+    }
+
+    public static LocalDateTime localDateTimeFrom(Date dateToConvert) {
+        return Instant.ofEpochMilli(dateToConvert.getTime())
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
+    }
+
 
     /* ==== DATE OPERATIONS ==== */
 
@@ -155,7 +155,7 @@ public class DateUtils {
             int current_dow = cd.get(Calendar.DAY_OF_WEEK) - 1;
             int target_dow = DOW.valueOf(start).order;
             int offset = (includeToday ? 1 : 0);
-            int diff = ((current_dow - target_dow + 7 + offset) % 7 - offset) + (7 * nAgo) - (beginning ? 0 : 6); //booyah
+            int diff = ((current_dow - target_dow + 7 + offset) % 7 - offset) + (7 * nAgo) - (beginning ? 0 : 6);
             return new Date(ref.getTime() - diff * DAY_IN_MS);
         } else if (type.equals("month")) {
             //not supported

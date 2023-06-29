@@ -47,6 +47,8 @@ public class AnswerDataFactory {
                 return new MultipleItemsData();
             case BOOLEAN:
                 return new BooleanData();
+            case TIME:
+                return new TimeData();
             case DATE:
                 return new DateData();
             case DATE_TIME:
@@ -65,8 +67,6 @@ public class AnswerDataFactory {
                 return new LongData();
             case TEXT:
                 return new StringData();
-            case TIME:
-                return new TimeData();
 
             //All of these are things that might require other manipulations in the future, but
             //for low can all just live as untyped
