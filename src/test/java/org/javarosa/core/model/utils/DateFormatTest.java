@@ -6,6 +6,7 @@ import org.junit.Test;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import static java.time.ZoneId.of;
@@ -16,13 +17,15 @@ import static org.javarosa.core.model.utils.DateFormat.TIMESTAMP_SUFFIX;
 import static org.junit.Assert.assertEquals;
 public class DateFormatTest {
     private LocalDateTime localDateTime;
+    private ZonedDateTime zonedDateTime;
 
     @Before
     public void setUp(){
         Instant instant = Instant.parse("2023-06-11T11:22:33.123Z");
-        Clock clock = Clock.fixed(instant, of("Europe/London"));
-        ZonedDateTime someDateTime = Instant.now(clock).atZone(of("UTC"));
-        localDateTime = someDateTime.toLocalDateTime();
+        ZoneId zoneId = of("Europe/London");
+        Clock clock = Clock.fixed(instant, zoneId);
+        zonedDateTime = Instant.now(clock).atZone(of("UTC"));
+        localDateTime = zonedDateTime.toLocalDateTime();
     }
 
     @Test
@@ -62,11 +65,12 @@ public class DateFormatTest {
 
     @Test
     public void formatsTimeAsTimeStampHTTP() {
-        assertEquals("11:22:33 UTC", TIMESTAMP_HTTP.formatLocalTime(localDateTime.toLocalTime()));
+        assertEquals("11:22:33", TIMESTAMP_HTTP.formatLocalTime(localDateTime.toLocalTime()));
     }
 
     @Test
-    public void formatsTimeAsTimeStampHTTPWhenInAnotherTimeZone() {
-        assertEquals("10:22:33 UTC", TIMESTAMP_HTTP.formatLocalTime(localDateTime.toLocalTime()));
+    public void timeIsTimeZoneAgnostic() {
+        assertEquals("11:22:33", TIMESTAMP_HTTP.formatLocalTime(localDateTime.toLocalTime()));
+        assertEquals("11:22:33", TIMESTAMP_HTTP.formatLocalTime(zonedDateTime.toLocalTime()));
     }
 }

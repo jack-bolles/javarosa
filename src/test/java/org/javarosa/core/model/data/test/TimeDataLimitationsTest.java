@@ -1,19 +1,17 @@
 package org.javarosa.core.model.data.test;
 
 import org.javarosa.core.model.data.TimeData;
-import org.javarosa.core.model.utils.DateUtils;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.TimeZone;
 
 import static org.javarosa.core.model.utils.DateUtils.TIME_OFFSET_REGEX;
-import static org.javarosa.core.model.utils.DateUtils.parseTime;
-import static org.javarosa.test.utils.SystemHelper.withTimeZone;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -36,65 +34,31 @@ import static org.junit.Assert.assertEquals;
  */
 public class TimeDataLimitationsTest {
     public static final TimeZone WARSAW = TimeZone.getTimeZone("Europe/Warsaw");
-    public static final TimeZone KIEV = TimeZone.getTimeZone("Europe/Kiev");
 
     @Test
-    public void editingFormsSavedInDifferentTimezoneTest() {
-        StringWrapper savedTime = StringWrapper.empty();
-        // A user is in Warsaw (GMT+2) saved a form with the time question
-        withTimeZone(WARSAW, () -> {
-            boolean isSummerTime = TimeZone.getDefault().inDaylightTime(new Date());
-            savedTime.set(isSummerTime ? "10:00:00.000+02:00" : "10:00:00.000+01:00");
+    public void formsEditedInDifferentTimeZonesKeepTheTimeAndIgnoreTimezones(){
+        String warsawTime = "10:00:00.000+02:00";
+        String kievTime = "10:00:00.000+03:00";
 
-            // A user opens saved form in Warsaw as well - the hour should be the same
-            TimeData timeData = new TimeData(parseTime(savedTime.get()));
-            assertEquals("10:00", timeData.getDisplayText());
-        });
-        // A user travels to Kiev (GMT+3) and opens the saved form again - the hour should be edited +1h
-        withTimeZone(KIEV, () -> {
-            TimeData timeData = new TimeData(parseTime(savedTime.get()));
-            assertEquals("11:00", timeData.getDisplayText());
-        });
+        assertEquals(TimeData.dataFrom(warsawTime), TimeData.dataFrom(kievTime));
     }
 
     @Test
-    public void editingFormsSavedInTheSameLocationButAfterDSTChangeTest() {
+    public void editingFormsSavedInTheSameLocationButAfterDSTChangeRetainsTimeOfDay() {
         LocalTime localTime = LocalTime.parse("10:00:00.000+02:00".split(TIME_OFFSET_REGEX)[0]);
+        // A user opens saved form in Warsaw and during summertime as well - the hour should be the same
+        LocalDate summerDate = LocalDate.of(2019, 8, 1);
+        TimeData timeData = new TimeData(getZonedDateTime(LocalDateTime.of(summerDate, localTime), WARSAW.toZoneId()).toLocalTime());
+        assertEquals("10:00", timeData.getDisplayText());
 
-        withTimeZone(WARSAW, () -> {
-            // A user opens saved form in Warsaw and during summertime as well - the hour should be the same
-            LocalDate summerDate = LocalDate.of(2019, 8, 1);
-            TimeData timeData = new TimeData(parseTimeAndPreserveTimeAcrossDST(LocalDateTime.of(summerDate, localTime), WARSAW.toZoneId()));
-            assertEquals("10:00", timeData.getDisplayText());
-
-            // A user opens saved form in Warsaw as well but during wintertime - the hour is the same alleviating the mentioned limitation
-            LocalDate winterDate = LocalDate.of(2019, 12, 1);
-            timeData = new TimeData(parseTimeAndPreserveTimeAcrossDST(LocalDateTime.of(winterDate, localTime), WARSAW.toZoneId()));
-            assertEquals("10:00", timeData.getDisplayText());
-        });
+        // A user opens saved form in Warsaw as well but during wintertime - the hour is the same alleviating the mentioned limitation
+        LocalDate winterDate = LocalDate.of(2019, 12, 1);
+        timeData = new TimeData(getZonedDateTime(LocalDateTime.of(winterDate, localTime), WARSAW.toZoneId()).toLocalTime());
+        assertEquals("10:00", timeData.getDisplayText());
     }
 
-    private static Date parseTimeAndPreserveTimeAcrossDST(LocalDateTime localDateTime, ZoneId zoneId) {
-        return DateUtils.dateFrom(localDateTime, zoneId);
-    }
-
-    static class StringWrapper {
-        private String value;
-
-        StringWrapper(String value) {
-            this.value = value;
-        }
-
-        static StringWrapper empty() {
-            return new StringWrapper("");
-        }
-
-        public String get() {
-            return value;
-        }
-
-        public void set(String value) {
-            this.value = value;
-        }
+    @NotNull
+    private static ZonedDateTime getZonedDateTime(LocalDateTime localDateTime, ZoneId zoneId) {
+        return localDateTime.atZone(zoneId);
     }
 }

@@ -1,6 +1,5 @@
 package org.javarosa.xpath.expr;
 
-import org.javarosa.core.model.utils.DateUtilsForTesting;
 import org.javarosa.xpath.XPathTypeMismatchException;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
@@ -24,7 +23,7 @@ import static org.javarosa.xpath.expr.XPathFuncExpr.toDate;
 import static org.junit.Assert.assertEquals;
 
 public class ToDateTest {
-    public static final ZonedDateTime EPOCH_UTC_ZONED_DATE_TIME
+    private static final ZonedDateTime EPOCH_UTC_ZONED_DATE_TIME
             = ZonedDateTime.ofInstant(Instant.EPOCH, ZoneId.of("UTC")); // 1970-01-01T00:00:00 UTC
 
     @NotNull
@@ -39,24 +38,15 @@ public class ToDateTest {
         return Math.toIntExact(TimeUnit.NANOSECONDS.convert(millis, TimeUnit.MILLISECONDS));
     }
 
-    private static Date date(int year, int month, int day, int hour, int minute, int second, int milli) {
-        return dateFromLocalDateTime(localDateTime(year, month, day, hour, minute, second, milli));
-    }
-
     @NotNull
     private static LocalDateTime localDateTime(int year, int month, int day, int hour, int minute, int second, int milli) {
         return LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(hour, minute, second, secTicksAsNanoSeconds(milli)));
     }
 
     @NotNull
-    private static Date dateFromZonedDateTime(ZonedDateTime zonedDateTime) {
-        return DateUtilsForTesting.dateFromLocalDateTime(zonedDateTime.toLocalDateTime());
-    }
-
-    @NotNull
     private static Date epochPlusAYear(String tzID) {
-        ZonedDateTime zonedDateTime = EPOCH_UTC_ZONED_DATE_TIME.plusDays(365); // 1971-01-01T00:00:00 UTC
-        zonedDateTime = zonedDateTime.withZoneSameLocal(ZoneId.of(tzID));
+        ZonedDateTime zonedDateTime = EPOCH_UTC_ZONED_DATE_TIME.plusDays(365)
+                .withZoneSameLocal(ZoneId.of(tzID));
         return dateFromLocalDateTime(zonedDateTime.toLocalDateTime());
     }
 
@@ -71,7 +61,7 @@ public class ToDateTest {
     @Test
     public void convertsISO8601DatesWithoutOffsetPreservingTime() {
         assertEquals(
-                date(2018, 1, 1, 10, 20, 30, 400),
+                dateFromLocalDateTime(localDateTime(2018, 1, 1, 10, 20, 30, 400)),
                 toDate("2018-01-01T10:20:30.400", true)
         );
     }
@@ -81,7 +71,7 @@ public class ToDateTest {
         LocalDateTime localDateTime = localDateTime(2018, 1, 1, 10, 20, 30, 400);
         ZonedDateTime zonedDateTime = adjustLocalDateToOffsetTimeZone(localDateTime, 2);
         assertEquals(
-                dateFromZonedDateTime(zonedDateTime),
+                dateFromLocalDateTime(zonedDateTime.toLocalDateTime()),
                 toDate("2018-01-01T10:20:30.400+02", true)
         );
     }
@@ -89,7 +79,7 @@ public class ToDateTest {
     @Test
     public void convertsTimestampsWithoutPreservingTime() {
         assertEquals(
-                dateFromZonedDateTime(EPOCH_UTC_ZONED_DATE_TIME.plusDays(365)), // 1971-01-01T00:00:00 UTC
+                dateFromLocalDateTime(EPOCH_UTC_ZONED_DATE_TIME.plusDays(365).toLocalDateTime()), // 1971-01-01T00:00:00 UTC
                 toDate(365d, false));
     }
 
