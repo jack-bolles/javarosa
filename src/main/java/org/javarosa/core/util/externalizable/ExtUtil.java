@@ -38,6 +38,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static org.javarosa.core.model.utils.DateFormat.ISO8601;
+import static org.javarosa.core.model.utils.DateUtils.timeAndOffset;
 
 public class ExtUtil {
     public static boolean interning = true;
@@ -259,7 +260,8 @@ public class ExtUtil {
     }
 
     public static LocalTime readLocalTime(DataInputStream in) throws IOException {
-        return DateUtils.localTimeFromString(readString(in));
+        String str = readString(in);
+        return timeAndOffset(str).localTime;
     }
 
     public static byte[] readBytes(DataInputStream in) throws IOException {

@@ -73,16 +73,11 @@ public class DateUtils {
     }
 
     /**
-     * TODO - assumes just the time string, need to guard against broader string?
-     * uses current date, at the time specified
+     * TODO - assumes just the time and optionally offset,
+     * need to guard against broader string?
      */
-    public static Date parseTime(String str) {
-        TimeAndOffset to = timeAndOffset(str);
-        return dateFrom(of(LocalDate.now(), to.localTime), to.zoneOffset);
-    }
-
     @NotNull
-    private static TimeAndOffset timeAndOffset(String str) {
+    public static TimeAndOffset timeAndOffset(String str) {
         String[] timePieces = str.split(TIME_OFFSET_REGEX);
         ZoneOffset zoneOffset = (timePieces.length == 2)
                 ? ZoneOffset.of(timePieces[1])
@@ -99,15 +94,11 @@ public class DateUtils {
         return LocalDate.of(Integer.parseInt(pieces.get(0)), Integer.parseInt(pieces.get(1)), Integer.parseInt(pieces.get(2)));
     }
 
-    public static LocalTime localTimeFromString(String str){
-        return timeAndOffset(str).localTime;
-    }
+    public static class TimeAndOffset {
+        public final LocalTime localTime;
+        public final ZoneOffset zoneOffset;
 
-    private static class TimeAndOffset {
-        private final LocalTime localTime;
-        private final ZoneOffset zoneOffset;
-
-        private TimeAndOffset(LocalTime time, ZoneOffset zoneOffset) {
+        public TimeAndOffset(LocalTime time, ZoneOffset zoneOffset) {
             this.localTime = time;
             this.zoneOffset = zoneOffset;
         }

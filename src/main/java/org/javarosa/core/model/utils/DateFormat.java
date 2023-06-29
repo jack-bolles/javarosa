@@ -1,16 +1,11 @@
 package org.javarosa.core.model.utils;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.Optional;
 import java.util.TimeZone;
-import java.util.stream.Stream;
 
 public enum DateFormat {
 
@@ -50,16 +45,6 @@ public enum DateFormat {
             return formatter.format(currentDate);
         }
     };
-
-    @NotNull
-    public static DateFormat getByKey(int format) {
-        Stream<DateFormat> formatStream = Arrays.stream(values()).filter(dateFormat -> dateFormat.key == format);
-        Optional<DateFormat> optional = formatStream.findFirst();
-        if (!optional.isPresent()) {
-            throw new IllegalArgumentException("DateFormat unknown: " + format);
-        }
-        return optional.get();
-    }
 
     public final int key;
     public final String delimiter;

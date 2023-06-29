@@ -7,7 +7,10 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 public class DateFormatter {
     public static final int FORMAT_ISO8601 = 1;
@@ -17,19 +20,21 @@ public class DateFormatter {
     public static final int FORMAT_TIMESTAMP_HTTP = 9;
 
     public static String formatDateTime(Date date, int format) {
-        return getDateFormat(format).formatDateTime(date);
-    }
-
-    private static DateFormat getDateFormat(int format) {
-        return DateFormat.getByKey(format);
-    }
-
-    public static String formatDate(Date date, int format) {
-        return getDateFormat(format).formatLocalDate(DateUtils.localDateFrom(date));
+        return getByKey(format).formatDateTime(date);
     }
 
     public static String formatLocalDate(LocalDate date, int format) {
-        return getDateFormat(format).formatLocalDate(date);
+        return getByKey(format).formatLocalDate(date);
+    }
+
+    @NotNull
+    private static DateFormat getByKey(int format) {
+        Stream<DateFormat> formatStream = Arrays.stream(DateFormat.values()).filter(dateFormat -> dateFormat.key == format);
+        Optional<DateFormat> optional = formatStream.findFirst();
+        if (!optional.isPresent()) {
+            throw new IllegalArgumentException("DateFormat unknown: " + format);
+        }
+        return optional.get();
     }
 
     @NotNull

@@ -57,6 +57,7 @@ import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import static java.lang.Double.NaN;
+import static org.javarosa.core.model.utils.DateFormat.ISO8601;
 import static org.javarosa.core.model.utils.DateUtils.DAY_IN_MS;
 import static org.javarosa.core.model.utils.StringUtils.split;
 
@@ -732,7 +733,7 @@ public class XPathFuncExpr extends XPathExpression {
             return val;
         }
 
-        throw new XPathTypeMismatchException("Can't convert type to numeric: "+ o.getClass());
+        throw new XPathTypeMismatchException("Can't convert type to numeric: " + o.getClass());
     }
 
     private static Double daysSinceEpoch(LocalDate localDate) {
@@ -787,7 +788,8 @@ public class XPathFuncExpr extends XPathExpression {
         } else if (o instanceof String) {
             val = (String) o;
         } else if (o instanceof Date) {
-            val = DateFormatter.formatDate((Date) o, DateFormatter.FORMAT_ISO8601);
+            LocalDate localDate = DateUtils.localDateFrom((Date) o);
+            val = ISO8601.formatLocalDate(localDate);
         } else if (o instanceof IExprDataType) {
             val = o.toString();
         }

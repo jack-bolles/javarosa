@@ -29,12 +29,12 @@ import java.util.Date;
 
 import static org.javarosa.core.model.utils.DateFormat.HUMAN_READABLE_SHORT;
 import static org.javarosa.core.model.utils.DateFormat.ISO8601;
-import static org.javarosa.core.model.utils.DateUtils.localTimeFromString;
+import static org.javarosa.core.model.utils.DateUtils.timeAndOffset;
 
 public class TimeData implements IAnswerData {
 
     public static TimeData dataFrom(String timeString) {
-        return new TimeData(localTimeFromString(timeString));
+        return new TimeData(timeAndOffset(timeString).localTime);
     }
 
     public LocalTime localtime;
@@ -96,7 +96,7 @@ public class TimeData implements IAnswerData {
 
     @Override
     public TimeData cast(UncastData data) throws IllegalArgumentException {
-        return new TimeData(localTimeFromString(data.value));
+        return new TimeData(timeAndOffset(data.value).localTime);
     }
 
     @Override

@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
@@ -28,13 +29,16 @@ import java.time.ZoneOffset;
 import java.time.temporal.Temporal;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.TimeZone;
 import java.util.stream.Stream;
 
+import static java.time.LocalDateTime.of;
 import static java.util.TimeZone.getTimeZone;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.javarosa.core.model.utils.DateUtils.TIME_OFFSET_REGEX;
+import static org.javarosa.core.model.utils.DateUtils.timeAndOffset;
 import static org.javarosa.test.utils.SystemHelper.withTimeZone;
 
 @RunWith(Parameterized.class)
@@ -114,10 +118,16 @@ public class DateUtilsParseTimeTests {
      * same instant as the Date from the call to DateUtils.parseTime().
      */
     private Temporal parseTime(String input) {
-        Instant inputInstant = DateUtils.parseTime(input).toInstant();
+        Instant inputInstant = todayAt(input).toInstant();
         String[] timePieces = input.split(TIME_OFFSET_REGEX);
         return timePieces.length == 2
                 ? OffsetDateTime.ofInstant(inputInstant, ZoneOffset.of(timePieces[1])).toOffsetTime()
                 : OffsetDateTime.ofInstant(inputInstant, ZoneOffset.UTC).toLocalTime();
     }
+
+    private static Date todayAt(String str) {
+        DateUtils.TimeAndOffset to = timeAndOffset(str);
+        return DateUtils.dateFrom(of(LocalDate.now(), to.localTime), to.zoneOffset);
+    }
+
 }

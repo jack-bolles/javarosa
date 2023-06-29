@@ -22,6 +22,7 @@ import static org.javarosa.core.model.utils.DateFormatter.FORMAT_HUMAN_READABLE_
 import static org.javarosa.core.model.utils.DateFormatter.FORMAT_ISO8601;
 import static org.javarosa.core.model.utils.DateFormatter.FORMAT_TIMESTAMP_HTTP;
 import static org.javarosa.core.model.utils.DateFormatter.FORMAT_TIMESTAMP_SUFFIX;
+import static org.javarosa.core.model.utils.DateFormatter.formatLocalDate;
 import static org.javarosa.core.model.utils.DateUtilsForTesting.dateFromLocalDateTime;
 import static org.junit.Assert.assertEquals;
 
@@ -39,25 +40,22 @@ public class DateFormatterTest {
 
     @Test
     public void formatsDateAsISO8601(){
-        Date dateToTest = dateFromLocalDateTime(localDateTime);
-        String formattedDate = DateFormatter.formatDate(dateToTest, FORMAT_ISO8601);
+        String formattedDate = formatLocalDate(localDateTime.toLocalDate(), FORMAT_ISO8601);
         assertEquals("2023-06-11", formattedDate);
     }
 
     @Test public void formatsDateAsHumanShort(){
-        Date dateToTest = dateFromLocalDateTime(localDateTime);
-        String formattedDate = DateFormatter.formatDate(dateToTest, FORMAT_HUMAN_READABLE_SHORT);
+        String formattedDate = formatLocalDate(localDateTime.toLocalDate(), FORMAT_HUMAN_READABLE_SHORT);
         assertEquals("11/06/23", formattedDate);
     }
 
     @Test public void formatsDateAsTimeStampSuffix(){
-        Date dateToTest = dateFromLocalDateTime(localDateTime);
-        String formattedDate = DateFormatter.formatDate(dateToTest, FORMAT_TIMESTAMP_SUFFIX);
+        String formattedDate = formatLocalDate(localDateTime.toLocalDate(), FORMAT_TIMESTAMP_SUFFIX);
         assertEquals("20230611", formattedDate);
     }
 
     @Test public void formatsDateAsTimeStampHTTP(){
-        String formattedDate = DateFormatter.formatLocalDate(localDateTime.toLocalDate(), FORMAT_TIMESTAMP_HTTP);
+        String formattedDate = formatLocalDate(localDateTime.toLocalDate(), FORMAT_TIMESTAMP_HTTP);
         assertEquals("Sun, 11 Jun 2023", formattedDate);
     }
 
