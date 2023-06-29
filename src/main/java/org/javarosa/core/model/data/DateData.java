@@ -45,7 +45,7 @@ public class DateData implements IAnswerData {
     public DateData() { }
 
     public DateData(LocalDate localDate) {
-        this.localDate = localDate;
+        setValue(localDate);
     }
 
     @Override
@@ -55,7 +55,10 @@ public class DateData implements IAnswerData {
 
     @Override
     public void setValue(Object o) {
-        //Should not ever be possible to set this to a null value
+        if(localDate != null){
+            throw new IllegalArgumentException("date on DateData can be set once and only once");
+        }
+
         if (o == null) {
             throw new NullPointerException("Attempt to set DateData::IAnswerData to null.");
         }
@@ -95,7 +98,7 @@ public class DateData implements IAnswerData {
 
     @Override
     public String toString() {
-        return "StringData{d='" + ISO8601.formatLocalDate(localDate) + "'}";
+        return "DateData{localDate='" + ISO8601.formatLocalDate(localDate) + "'}";
     }
 
     @Override

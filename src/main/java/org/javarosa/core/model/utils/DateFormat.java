@@ -4,7 +4,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
@@ -25,8 +27,8 @@ public enum DateFormat {
             return DateFormatter.format(localDate, DateTimeFormatter.ofPattern(datePattern));
         }
 
-        public String formatTime(Date date) {
-            return DateFormatter.format(date, DateTimeFormatter.ofPattern((timePattern)));
+        public String formatLocalTime(LocalTime localTime) {
+            return DateTimeFormatter.ISO_LOCAL_TIME.format(localTime);
         }
 
         private String offset(Date date) {
@@ -39,8 +41,16 @@ public enum DateFormat {
         }
     },
     HUMAN_READABLE_SHORT(2, " ", "%d/%m/YY", "HH:mm") {
+        public String formatLocalTime(LocalTime time) {
+            return DateFormatter.format(time, DateTimeFormatter.ofPattern(timePattern));
+        }
+
     },
     TIMESTAMP_SUFFIX(7, "", "%Y%m%d", "HHmmss") {
+        public String formatLocalTime(LocalTime time) {
+//            return DateTimeFormatter.ISO_TIME.format(time);
+            return DateFormatter.format(time, DateTimeFormatter.ofPattern(timePattern));
+        }
     },
     /** RFC 822 */
     TIMESTAMP_HTTP(9, " ", "E, d MMM Y", "HH:mm:ss z") {
@@ -51,9 +61,13 @@ public enum DateFormat {
         public String formatLocalDate(LocalDate date) {
             return DateFormatter.format(date, DateTimeFormatter.ofPattern(datePattern));
         }
-        public String formatTime(Date date) {
-            return toUTC(date, timePattern);
+
+        public String formatLocalTime(LocalTime time) {
+            return DateTimeFormatter
+                    .ofLocalizedTime(FormatStyle.MEDIUM)
+                    .format(time);
         }
+
         private String toUTC(Date currentDate, String pattern) {
             SimpleDateFormat formatter = new SimpleDateFormat(pattern);
             formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -94,8 +108,7 @@ public enum DateFormat {
         return DateFormatter.format(localDate, datePattern);
     }
 
-    public String formatTime(Date date) {
-        return DateFormatter.format(date, DateTimeFormatter.ofPattern(timePattern));
+    public String formatLocalTime(LocalTime time) {
+        return DateFormatter.format(time, timePattern);
     }
-
 }

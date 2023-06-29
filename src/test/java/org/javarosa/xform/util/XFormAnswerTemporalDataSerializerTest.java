@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Date;
 
 import static org.javarosa.core.model.utils.DateUtils.localDateFrom;
@@ -36,7 +37,7 @@ public class XFormAnswerTemporalDataSerializerTest {
 
     final Date utilDateDataValue = new Date();
     final LocalDate localDateDataValue = LocalDate.now();
-    final Date timeDataValue = new Date();
+    final LocalTime localTimeDataValue = LocalTime.now();
 
     DateData utilDateData;
     DateData dateData;
@@ -57,7 +58,7 @@ public class XFormAnswerTemporalDataSerializerTest {
         dateData = new DateData(localDateDataValue);
         dateElement.setValue(dateData);
 
-        timeData = new TimeData(timeDataValue);
+        timeData = new TimeData(localTimeDataValue);
         timeElement.setValue(timeData);
 
         serializer = new XFormAnswerDataSerializer();

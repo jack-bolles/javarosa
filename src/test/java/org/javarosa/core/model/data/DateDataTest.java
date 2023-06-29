@@ -84,7 +84,7 @@ public class DateDataTest {
 
     @Test(expected = NullPointerException.class)
     public void dateDataCanNotBePassedNUllForItsUnderlyingValue() {
-        DateData data = new DateData(LocalDate.now());
+        DateData data = new DateData();
         data.setValue(null);
     }
 

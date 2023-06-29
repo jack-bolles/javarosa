@@ -99,6 +99,10 @@ public class DateUtils {
         return LocalDate.of(Integer.parseInt(pieces.get(0)), Integer.parseInt(pieces.get(1)), Integer.parseInt(pieces.get(2)));
     }
 
+    public static LocalTime localTimeFromString(String str){
+        return timeAndOffset(str).localTime;
+    }
+
     private static class TimeAndOffset {
         private final LocalTime localTime;
         private final ZoneOffset zoneOffset;

@@ -17,8 +17,6 @@
 package org.javarosa.core.model.data;
 
 
-import org.javarosa.core.model.utils.DateFormatter;
-import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.util.externalizable.ExtUtil;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.jetbrains.annotations.NotNull;
@@ -26,10 +24,20 @@ import org.jetbrains.annotations.NotNull;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.time.LocalTime;
 import java.util.Date;
 
+import static org.javarosa.core.model.utils.DateFormat.HUMAN_READABLE_SHORT;
+import static org.javarosa.core.model.utils.DateFormat.ISO8601;
+import static org.javarosa.core.model.utils.DateUtils.localTimeFromString;
+
 public class TimeData implements IAnswerData {
-    Date d;
+
+    public static TimeData dataFrom(String timeString) {
+        return new TimeData(localTimeFromString(timeString));
+    }
+
+    public LocalTime localtime;
 
     /**
      * Empty Constructor, necessary for dynamic construction during deserialization.
@@ -38,53 +46,74 @@ public class TimeData implements IAnswerData {
     public TimeData() {
     }
 
-    public TimeData (Date d) {
-        setValue(d);
+    public TimeData(Date d) {
+        throw new RuntimeException();
+    }
+
+    public TimeData(LocalTime time) {
+        setValue(time);
+    }
+
+
+    @Override
+    public IAnswerData clone() {
+        return new TimeData(localtime);
     }
 
     @Override
-    public IAnswerData clone () {
-        return new TimeData(new Date(d.getTime()));
+    public void setValue(Object o) {
+        if (localtime != null) throw new IllegalArgumentException("time on TimeData can be set once and only once");
+        if (o == null) throw new NullPointerException("Attempt to set an IAnswerData class to null.");
+
+        localtime = (LocalTime) o;
     }
 
     @Override
-    public void setValue (Object o) {
-        if(o == null) {
-            throw new NullPointerException("Attempt to set an IAnswerData class to null.");
-        }
-        d = new Date(((Date)o).getTime());
-
+    public @NotNull Object getValue() {
+        if (localtime == null) throw new NullPointerException("LocalTime not set yet on TimeData");
+        return localtime;
     }
 
     @Override
-    public @NotNull Object getValue () {
-        return new Date(d.getTime());
-    }
-
-    @Override
-    public String getDisplayText () {
-        return DateFormatter.formatTime(d, DateFormatter.FORMAT_HUMAN_READABLE_SHORT);
+    public String getDisplayText() {
+        return HUMAN_READABLE_SHORT.formatLocalTime(localtime);
     }
 
     @Override
     public void readExternal(DataInputStream in, PrototypeFactory pf) throws IOException {
-        setValue(ExtUtil.readDate(in));
+        setValue(ExtUtil.readLocalTime(in));
     }
 
     @Override
     public void writeExternal(DataOutputStream out) throws IOException {
-        ExtUtil.writeDate(out, d);
+        ExtUtil.writeLocalTime(out, localtime);
     }
 
     @Override
     public UncastData uncast() {
-        return new UncastData(DateFormatter.formatTime(d, DateFormatter.FORMAT_ISO8601));
+        return new UncastData(ISO8601.formatLocalTime(localtime));
     }
 
     @Override
     public TimeData cast(UncastData data) throws IllegalArgumentException {
-        Date ret = DateUtils.parseTime(data.value);
-        return new TimeData(ret);
+        return new TimeData(localTimeFromString(data.value));
+    }
 
+    @Override
+    public String toString() {
+        return "TimeData{localTime='" + ISO8601.formatLocalTime(localtime) + "'}";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TimeData that = (TimeData) o;
+        return localtime.equals(that.localtime);
+    }
+
+    @Override
+    public int hashCode() {
+        return localtime.hashCode();
     }
 }

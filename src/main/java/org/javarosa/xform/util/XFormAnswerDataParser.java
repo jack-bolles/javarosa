@@ -106,8 +106,7 @@ public class XFormAnswerDataParser {
                 return trimmedText == null ? null : DateData.dataFrom(trimmedText);
 
             case TIME:
-                Date t = trimmedText == null ? null : DateUtils.parseTime(trimmedText);
-                return t == null ? null : new TimeData(t);
+                return trimmedText == null ? null : TimeData.dataFrom(trimmedText);
 
             case BOOLEAN:
                 if (trimmedText == null) {

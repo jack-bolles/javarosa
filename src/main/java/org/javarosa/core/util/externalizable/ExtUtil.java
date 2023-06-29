@@ -30,6 +30,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.UTFDataFormatException;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -138,6 +139,10 @@ public class ExtUtil {
 
     public static void writeLocalDate(DataOutputStream out, LocalDate val) throws IOException {
         writeString(out, ISO8601.formatLocalDate(val));
+    }
+
+    public static void writeLocalTime(DataOutputStream out, LocalTime val) throws IOException {
+        writeString(out, ISO8601.formatLocalTime(val));
     }
 
 
@@ -251,6 +256,10 @@ public class ExtUtil {
 
     public static LocalDate readLocalDate(DataInputStream in) throws IOException {
         return DateUtils.localDateFromString(readString(in));
+    }
+
+    public static LocalTime readLocalTime(DataInputStream in) throws IOException {
+        return DateUtils.localTimeFromString(readString(in));
     }
 
     public static byte[] readBytes(DataInputStream in) throws IOException {

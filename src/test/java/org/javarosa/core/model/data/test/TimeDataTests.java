@@ -17,72 +17,45 @@
 package org.javarosa.core.model.data.test;
 
 
-
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Date;
-
 import org.javarosa.core.model.data.TimeData;
-import org.junit.Before;
 import org.junit.Test;
 
+import java.time.LocalTime;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 public class TimeDataTests {
-    Date now;
-    Date minusOneHour;
-
-
-    @Before
-    public void setUp() throws Exception {
-
-
-        now = new Date();
-        minusOneHour = new Date(new Date().getTime() - (1000*60));
-    }
 
     @Test
-    public void testGetData() {
-        TimeData data = new TimeData(now);
-        assertEquals("TimeData's getValue returned an incorrect Time", data.getValue(), now);
-        Date temp = new Date(now.getTime());
-        now.setTime(1234);
-        assertEquals("TimeData's getValue was mutated incorrectly", data.getValue(), temp);
+    public void testTimeCanBeSetOnceAndOnlyOnce() {
+        LocalTime now = LocalTime.of(10, 15);
+        LocalTime earlier = LocalTime.of(9, 15);
 
-        Date rep = (Date)data.getValue();
-        rep.setTime(rep.getTime() - 1000);
-
-        assertEquals("TimeData's getValue was mutated incorrectly", data.getValue(), temp);
-
-    }
-    @Test
-    public void testSetData() {
-        TimeData data = new TimeData(now);
-        data.setValue(minusOneHour);
-
-        assertTrue("TimeData did not set value properly. Maintained old value.", !(data.getValue().equals(now)));
-        assertEquals("TimeData did not properly set value ", data.getValue(), minusOneHour);
-
-        data.setValue(now);
-        assertTrue("TimeData did not set value properly. Maintained old value.", !(data.getValue().equals(minusOneHour)));
-        assertEquals("TimeData did not properly reset value ", data.getValue(), now);
-
-        Date temp = new Date(now.getTime());
-        now.setTime(now.getTime() - 1324);
-
-        assertEquals("TimeData's value was mutated incorrectly", data.getValue(), temp);
-    }
-    @Test
-    public void testNullData() {
-        boolean exceptionThrown = false;
         TimeData data = new TimeData();
         data.setValue(now);
+        assertEquals(now, data.getValue());
+
         try {
-            data.setValue(null);
-        } catch (NullPointerException e) {
-            exceptionThrown = true;
+            data.setValue(now);
+            fail("Don't even try, even if the same value");
+        } catch (IllegalArgumentException e) {
+            //as expected
         }
-        assertTrue("TimeData failed to throw an exception when setting null data", exceptionThrown);
-        assertTrue("TimeData overwrote existing value on incorrect input", data.getValue().equals(now));
+        try {
+            data.setValue(earlier);
+            fail();
+        } catch (IllegalArgumentException e) {
+            //as expected
+        }
+
+        //prove nothing's changed
+        assertEquals(now, data.getValue());
+    }
+
+
+    @Test(expected = NullPointerException.class)
+    public void testNullData() {
+        new TimeData((LocalTime) null);
     }
 }

@@ -60,7 +60,6 @@ public class ToDateTest {
         return dateFromLocalDateTime(zonedDateTime.toLocalDateTime());
     }
 
-
     @Test
     public void convertsISO8601DatesWithoutPreservingTime() {
         assertEquals(

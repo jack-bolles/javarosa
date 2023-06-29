@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
 import java.util.Date;
 
 public class DateFormatter {
@@ -23,10 +24,6 @@ public class DateFormatter {
         return DateFormat.getByKey(format);
     }
 
-    public static String formatTime(Date date, int format) {
-        return getDateFormat(format).formatTime(date);
-    }
-
     public static String formatDate(Date date, int format) {
         return getDateFormat(format).formatLocalDate(DateUtils.localDateFrom(date));
     }
@@ -41,7 +38,7 @@ public class DateFormatter {
     }
 
     @NotNull
-    public static String format(LocalDate d, String format) {
+    public static String format(Temporal d, String format) {
         return format(d, formatterFrom(format));
     }
 
@@ -59,7 +56,7 @@ public class DateFormatter {
     }
 
     @NotNull
-    public static String format(LocalDate d, DateTimeFormatter formatter) {
+    public static String format(Temporal d, DateTimeFormatter formatter) {
         return formatter.format(d);
     }
 

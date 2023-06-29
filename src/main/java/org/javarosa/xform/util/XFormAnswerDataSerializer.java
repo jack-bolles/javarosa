@@ -40,6 +40,7 @@ import org.javarosa.core.model.utils.DateFormatter;
 import org.kxml2.kdom.Element;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -122,7 +123,7 @@ public class XFormAnswerDataSerializer implements IAnswerDataSerializer {
      * formatting
      */
     public Object serializeAnswerData(TimeData data) {
-        return DateFormatter.formatTime((Date)data.getValue(), DateFormatter.FORMAT_ISO8601);
+        return ISO8601.formatLocalTime((LocalTime)data.getValue());
     }
 
     /**
