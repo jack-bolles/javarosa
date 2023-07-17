@@ -14,10 +14,9 @@
  * the License.
  */
 
-package org.javarosa.core.model.data.test;
+package org.javarosa.core.model.data;
 
 
-import org.javarosa.core.model.data.TimeData;
 import org.junit.Test;
 
 import java.time.LocalTime;
