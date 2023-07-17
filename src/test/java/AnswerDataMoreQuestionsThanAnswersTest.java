@@ -23,7 +23,8 @@ public class AnswerDataMoreQuestionsThanAnswersTest {
     }
 
     /**
-     * @Deprecated - allow deprecated val-type combinations to still work until tis subsystem is better understood
+     * @Deprecated - allow deprecated val-type combinations to still work
+     * until this subsystem is better understood
      */
     @Test
     public void DATEtypeCanWrapAroundUtilDate() {
