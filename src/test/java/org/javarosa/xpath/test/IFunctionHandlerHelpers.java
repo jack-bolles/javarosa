@@ -44,19 +44,13 @@ class IFunctionHandlerHelpers {
     static final IFunctionHandler HANDLER_INCONVERTIBLE = buildHandler("inconvertible", (args, ___) -> new Object());
     static final IFunctionHandler HANDLER_CONVERTIBLE = buildHandler("convertible", (args, ___) -> new IExprDataType() {
         @Override
-        public Boolean toBoolean() {
-            return true;
-        }
+        public Boolean toBoolean() { return true; }
 
         @Override
-        public Double toNumeric() {
-            return 5.0;
-        }
+        public Double toNumeric() { return 5.0; }
 
         @Override
-        public String toString() {
-            return "hi";
-        }
+        public String toString() { return "hi"; }
     });
     static final IFunctionHandler HANDLER_ADD = buildHandler("add", (args, ___) -> (Double) args[0] + (Double) args[1], Double.class, Double.class);
     static final IFunctionHandler HANDLER_PROTO = buildHandler("proto", (args, ___) -> printArgs(args), new Class[]{Double.class, Double.class}, new Class[]{Double.class}, new Class[]{String.class, String.class}, new Class[]{Double.class, String.class, Boolean.class});
@@ -167,13 +161,13 @@ class IFunctionHandlerHelpers {
         for (int i = 0; i < oa.length; i++) {
             String fullName = oa[i].getClass().getName();
             int lastIndex = Math.max(fullName.lastIndexOf('.'), fullName.lastIndexOf('$'));
-            sb.append(fullName.substring(lastIndex + 1, fullName.length()));
+            sb.append(fullName.substring(lastIndex + 1));
             sb.append(":");
             sb.append(oa[i] instanceof Date
                     ? ISO8601.formatLocalDate(DateUtils.localDateFrom((Date) oa[i]))
                     : (oa[i] instanceof LocalDate)
-                    ? ISO8601.formatLocalDate((LocalDate) oa[i])
-                    : oa[i].toString());
+                        ? ISO8601.formatLocalDate((LocalDate) oa[i])
+                        : oa[i].toString());
             if (i < oa.length - 1)
                 sb.append(",");
         }
@@ -183,13 +177,9 @@ class IFunctionHandlerHelpers {
 
     static class CustomType {
 
-        public String toString() {
-            return "";
-        }
+        public String toString() { return ""; }
 
-        public boolean equals(Object o) {
-            return o instanceof CustomType;
-        }
+        public boolean equals(Object o) { return o instanceof CustomType; }
     }
 
     private static class CustomSubType extends CustomType {

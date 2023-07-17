@@ -54,7 +54,7 @@ public interface IAnswerData extends Externalizable {
      * convert the data object returned by the xpath expression into an IAnswerData suitable for
      * storage in the FormInstance.
      * DataType is the primary; some vals can be coerced into a specific type.
-     * @see org.javarosa.core.model.data.AnswerDataTest
+     * @see org.javarosa.core.model.data.AnswerDataTest in Test module
      */
     static IAnswerData wrapData(Object val, int intDataType) {
         //droos 1/29/10: we need to come up with a consistent rule for whether the resulting data is determined
@@ -120,7 +120,7 @@ public interface IAnswerData extends Externalizable {
             } else
                 throw new UnsupportedOperationException("Use java.time.LocalTime instead of " + val.getClass().getName());
         } else if (val instanceof LocalTime) { //TODO - sweeper 'if'... should have been picked up by 'datatype' == DATE
-            //todo - monitoring to see if this is ever the case
+            //TODO - monitoring to see if this is ever the case
             return new TimeData((LocalTime) val);
 
         } else if (dataType == DATE) {
@@ -131,7 +131,7 @@ public interface IAnswerData extends Externalizable {
             } else
                 throw new UnsupportedOperationException("Use java.time.LocalDate instead of " + val.getClass().getName());
         } else if (val instanceof LocalDate) { //TODO - sweeper 'if'... should have been picked up by 'datatype' == DATE
-            //todo - monitoring to see if this is ever the case
+            //TODO - monitoring to see if this is ever the case
             return new DateData((LocalDate) val);
 
         } else if (val instanceof Date) {
@@ -157,11 +157,11 @@ public interface IAnswerData extends Externalizable {
      *          Null Data will not overwrite existing values.
      * @throws NullPointerException if o is null
      */
-    void setValue(Object o); //can't be null
+    void setValue(Object o); //can't be null - TODO- this is not enforced in implementations
 
     /**
      * @return The value of this answer, will never
-     * be null
+     * be null - TODO- this is not enforced in implementations
      */
     @NotNull
     Object getValue();       //will never be null

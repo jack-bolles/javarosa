@@ -58,9 +58,9 @@ public class ExtUtil {
         try (ByteArrayInputStream bais = new ByteArrayInputStream(data)) {
             return read(new DataInputStream(bais), type);
         } catch (EOFException | UTFDataFormatException eofe) {
-            throw new DeserializationException("Unexpectedly reached end of stream when deserializing");
+            throw new DeserializationException("Unexpectedly reached end of stream when deserializing", eofe);
         } catch (IOException e) {
-            throw new RuntimeException("Unknown IOException reading from ByteArrayInputStream; shouldn't happen!");
+            throw new RuntimeException("Unknown IOException reading from ByteArrayInputStream; shouldn't happen!", e);
         }
     }
 
@@ -68,9 +68,9 @@ public class ExtUtil {
         try (ByteArrayInputStream bais = new ByteArrayInputStream(data)) {
             return read(new DataInputStream(bais), ew);
         } catch (EOFException | UTFDataFormatException eofe) {
-            throw new DeserializationException("Unexpectedly reached end of stream when deserializing");
+            throw new DeserializationException("Unexpectedly reached end of stream when deserializing", eofe);
         } catch (IOException e) {
-            throw new RuntimeException("Unknown IOException reading from ByteArrayInputStream; shouldn't happen!");
+            throw new RuntimeException("Unknown IOException reading from ByteArrayInputStream; shouldn't happen!", e);
         }
     }
 

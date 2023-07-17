@@ -28,7 +28,9 @@ public enum DateFormat {
             int offset = date.getTimezoneOffset();
             if (offset == 0) return "";
             String sign = (offset > 0) ? "-" : "+";
-            return sign + StringUtils.intPad(Math.abs(offset / 60), 2) + ":" + StringUtils.intPad(Math.abs(offset % 60), 2);
+            return sign
+                    + StringUtils.intPad(Math.abs(offset / 60), 2) + ":"
+                    + StringUtils.intPad(Math.abs(offset % 60), 2);
         }
     },
     HUMAN_READABLE_SHORT(2, " ", "dd/MM/yy", "HH:mm") {},

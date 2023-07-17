@@ -44,19 +44,12 @@ public class QuestionPreloader {
 
     /* String -> IPreloadHandler */
     // NOTE: this is not java.util.Map!!!
-    private final Map<String, IPreloadHandler> preloadHandlers;
+    private final Map<String, IPreloadHandler> preloadHandlers = new Map<>();
 
-    /**
-     * Creates a new Preloader with default handlers
-     */
     public QuestionPreloader() {
-        preloadHandlers = new Map<>();
         initPreloadHandlers();
     }
 
-    /**
-     * Initializes the default preload handlers
-     */
     private void initPreloadHandlers() {
         IPreloadHandler date = new IPreloadHandler() {
             public String preloadHandled() {
@@ -122,32 +115,6 @@ public class QuestionPreloader {
             }
         };
 
-        /*
-        //TODO: Finish this up.
-        IPreloadHandler meta = new IPreloadHandler() {
-            public String preloadHandled() {
-                return "meta";
-            }
-            public IAnswerData handlePreload(String preloadParams) {
-                //TODO: Ideally, we want to handle this preloader by taking in the
-                //existing structure. Resultantly, we don't want to mess with this.
-                //We should be enforcing that we don't.
-                return null;
-            }
-
-            public boolean handlePostProcess(TreeElement node, String params) {
-                List kids = node.getChildren();
-                Enumeration en = kids.elements();
-                while(en.hasMoreElements()) {
-                    TreeElement kid = (TreeElement)en.nextElement();
-                    if(kid.getName().equals("uid")) {
-                        kid.setValue(new StringData(PropertyUtils.genGUID(25)));
-                    }
-                }
-                return true;
-            }
-        };
-        */
         addPreloadHandler(date);
         addPreloadHandler(property);
         addPreloadHandler(timestamp);
@@ -201,7 +168,7 @@ public class QuestionPreloader {
      */
     private IAnswerData preloadDate(String preloadParams) {
         //TODO - use LocalDate
-        Date d = null;
+        Date d;
         if (preloadParams.equals("today")) {
             d = new Date();
         } else if (preloadParams.startsWith("prevperiod-")) {

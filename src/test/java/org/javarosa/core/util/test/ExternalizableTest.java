@@ -28,8 +28,6 @@ import org.javarosa.core.util.externalizable.ExtWrapTagged;
 import org.javarosa.core.util.externalizable.ExternalizableWrapper;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -42,11 +40,12 @@ import java.util.List;
 import static org.junit.Assert.fail;
 
 public class ExternalizableTest {
-    private static final Logger logger = LoggerFactory.getLogger(ExternalizableTest.class);
-
 
     @Test
     public void doTests () {
+        //base types (externalizable)
+        testExternalizable(new SampleExtz("your", "mom"), SampleExtz.class);
+
         //base wrapper (end user will never use)
         testExternalizable("string", new ExtWrapBase(String.class));
         testExternalizable(new ExtWrapBase("string"), String.class);
@@ -55,25 +54,25 @@ public class ExternalizableTest {
         testExternalizable(new ExtWrapNullable((String)null), new ExtWrapNullable(String.class));
         testExternalizable(new ExtWrapNullable("string"), new ExtWrapNullable(String.class));
         testExternalizable(new ExtWrapNullable((Integer)null), new ExtWrapNullable(Integer.class));
-        testExternalizable(new ExtWrapNullable(new Integer(17)), new ExtWrapNullable(Integer.class));
+        testExternalizable(new ExtWrapNullable(17), new ExtWrapNullable(Integer.class));
         testExternalizable(new ExtWrapNullable((SampleExtz)null), new ExtWrapNullable(SampleExtz.class));
         testExternalizable(new ExtWrapNullable(new SampleExtz("hi", "there")), new ExtWrapNullable(SampleExtz.class));
 
         //lists of base types
-        List<Integer> v = new ArrayList<Integer>();
-        v.add(new Integer(27));
-        v.add(new Integer(-73));
-        v.add(new Integer(1024));
-        v.add(new Integer(66066066));
+        List<Integer> v = new ArrayList<>();
+        v.add(27);
+        v.add(-73);
+        v.add(1024);
+        v.add(66066066);
         testExternalizable(new ExtWrapList(v), new ExtWrapList(Integer.class));
 
-        List<String> vs = new ArrayList<String>();
+        List<String> vs = new ArrayList<>();
         vs.add("alpha");
         vs.add("beta");
         vs.add("gamma");
         testExternalizable(new ExtWrapList(vs), new ExtWrapList(String.class));
 
-        List<Object> w = new ArrayList<Object>();
+        List<Object> w = new ArrayList<>();
         w.add(new SampleExtz("where", "is"));
         w.add(new SampleExtz("the", "beef"));
         testExternalizable(new ExtWrapList(w), new ExtWrapList(SampleExtz.class));
@@ -89,8 +88,8 @@ public class ExternalizableTest {
 
         //lists of lists (including empties)
         ArrayList x = new ArrayList();
-        x.add(new Integer(-35));
-        x.add(new Integer(-31415926));
+        x.add(-35);
+        x.add(-31415926);
         ArrayList y = new ArrayList();
         y.add(v);
         y.add(x);
@@ -100,7 +99,7 @@ public class ExternalizableTest {
 
         //tagged base types
         testExternalizable(new ExtWrapTagged("string"), new ExtWrapTagged());
-        testExternalizable(new ExtWrapTagged(new Integer(5000)), new ExtWrapTagged());
+        testExternalizable(new ExtWrapTagged(5000), new ExtWrapTagged());
         //tagged custom type
         PrototypeFactory pf = new PrototypeFactory();
         pf.addClass(SampleExtz.class);
@@ -116,7 +115,7 @@ public class ExternalizableTest {
 
         //polymorphic lists
         List a = new ArrayList();
-        a.add(new Integer(47));
+        a.add(47);
         a.add("string");
         a.add(Boolean.FALSE);
         a.add(new SampleExtz("hello", "dolly"));
@@ -151,8 +150,8 @@ public class ExternalizableTest {
         testExternalizable(new ExtWrapTagged(new ExtWrapMap(h)), new ExtWrapTagged(), pf);
 
         HashMap j = new HashMap();
-        j.put(new Integer(17), h);
-        j.put(new Integer(-3), h);
+        j.put(17, h);
+        j.put(-3, h);
         HashMap k = new HashMap();
         k.put("key", j);
         testExternalizable(new ExtWrapMap(k, new ExtWrapMap(Integer.class, new ExtWrapMap(String.class, SampleExtz.class))),
@@ -160,8 +159,8 @@ public class ExternalizableTest {
 
         OrderedMap m = new OrderedMap();
         m.put("a", "b");
-        m.put("b", new Integer(17));
-        m.put("c", new Short((short)-443));
+        m.put("b", 17);
+        m.put("c", (short) -443);
         m.put("d", new SampleExtz("boris", "yeltsin"));
         m.put("e", new ExtWrapList(vs));
         testExternalizable(new ExtWrapMapPoly(m), new ExtWrapMapPoly(String.class, true), pf);
@@ -199,16 +198,15 @@ public class ExternalizableTest {
         }
     }
 
-    //for use inside this test suite
-    public void testExternalizable (Object orig, Object template) {
+    private void testExternalizable(Object orig, Object template) {
         testExternalizable(orig, template, null);
     }
 
-    public void testExternalizable (Object orig, Object template, PrototypeFactory pf) {
+    private void testExternalizable(Object orig, Object template, PrototypeFactory pf) {
         testExternalizable(orig, template, pf, null);
     }
 
-    public static String printObj (Object o) {
+    private static String printObj (Object o) {
         o = ExtUtil.unwrap(o);
 
         if (o == null) {
@@ -229,7 +227,7 @@ public class ExternalizableTest {
             return sb.toString();
         } else if (o instanceof HashMap) {
             StringBuilder sb = new StringBuilder();
-            sb.append((o instanceof OrderedMap ? "oH" : "H") + "[");
+            sb.append(o instanceof OrderedMap ? "oH" : "H").append("[");
             for (Iterator e = ((HashMap)o).keySet().iterator(); e.hasNext(); ) {
                 Object key = e.next();
                 sb.append(printObj(key));
@@ -241,7 +239,7 @@ public class ExternalizableTest {
             sb.append("]");
             return sb.toString();
         } else {
-            return "{" + o.getClass().getName() + ":" + o.toString() + "}";
+            return "{" + o.getClass().getName() + ":" + o + "}";
         }
     }
 }
