@@ -15,18 +15,21 @@ import static org.javarosa.core.model.utils.DateUtils.TIME_OFFSET_REGEX;
 import static org.junit.Assert.assertEquals;
 
 /**
- * This test is intended to show the limitation of {@link TimeData}.
+ * This test <em>was</em> intended to show the limitation of {@link TimeData}. This is no longer true since
+ * the underlying data type changed from java.util.Date to java.time.LocalDate. For purely TimeData,
+ * offsets are ignored and the time is preserved regardless of where it was created. The tests have been
+ * updated to match the desired behaviour is how the code performs.
  * <p>
- * Using this data type in countries which change their time (summer/winter - DST) will cause that forms saved during
+ * <s>Using this data type in countries which change their time (summer/winter - DST) will cause that forms saved during
  * wintertime and then edited during summertime (and vice versa) will be treated as saved in a neighbor's timezone.
  * It's because we have just time and time offset like: 10:00:00.000+02:00 but we don't know when the form has been
  * saved so we parse it using the current date.
- * <p>
  * Example:
  * If we saved 10:00:00.000+02:00 during summertime (in Poland) and we are editing the form during winter time our
  * timezone is +01:00 not +02:00. As mentioned above javarosa doesn't know that the form has been saved in the same location
  * but different timezone because of DST so it treats the value like saved in the neighbor timezone
  * (in Kiev or London for example).
+ * </s>
  * <p>
  * Related issues:
  * <a href="https://github.com/getodk/javarosa/pull/478">...</a>
