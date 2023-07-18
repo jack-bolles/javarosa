@@ -25,6 +25,7 @@ import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.util.Map;
 import org.javarosa.core.util.PropertyUtils;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -152,7 +153,7 @@ public interface IPreloadHandler {
                         nAgo = 1;
                     }
 
-                    d = supportedPeriod.pastPeriodFrom(new Date(), start, beginning, includeToday, nAgo);
+                    d = supportedPeriod.pastPeriodFrom(LocalDate.now(), start, beginning, includeToday, nAgo);
                 } catch (Exception e) {
                     throw new IllegalArgumentException("invalid preload params for preload mode 'date'", e);
                 }

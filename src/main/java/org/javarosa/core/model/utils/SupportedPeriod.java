@@ -1,5 +1,9 @@
 package org.javarosa.core.model.utils;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -29,6 +33,16 @@ public enum SupportedPeriod {
      * reference date, and the given parameters.
      */
     abstract Date pastPeriodFrom(Date ref, String start, boolean beginning, boolean includeToday, int nAgo);
+
+    public Date pastPeriodFrom(LocalDate testDate, String start, boolean beginning, boolean includeToday, int nAgo) {
+        return pastPeriodFrom(gimme(testDate), start, beginning, includeToday, nAgo);
+    }
+    private static  Date gimme(LocalDate localDate){
+        ZoneId zoneId = ZoneId.systemDefault();
+        LocalTime noon = LocalTime.NOON;
+        return DateUtils.dateFrom(LocalDateTime.of(localDate, noon), zoneId);
+    }
+
 }
 
 enum DOW {

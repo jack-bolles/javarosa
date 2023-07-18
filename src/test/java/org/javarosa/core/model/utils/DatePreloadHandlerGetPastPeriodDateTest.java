@@ -15,18 +15,16 @@ public class DatePreloadHandlerGetPastPeriodDateTest {
     @Test
     public void testGetPastPeriodDateFindsRespectsBeginningParameter() {
         LocalDate someLocalDate = LocalDate.of(2023, 6, 8);//a thursday
-        Date dateToTest = dateFromLocalDate(someLocalDate);
 
         LocalDate expectedPeriodBeginningLocalDate = LocalDate.of(2023, 6, 4);//a sunday
         LocalDate expectedPeriodEndingLocalDate = LocalDate.of(2023, 6, 10);//a saturday
 
         boolean beginning = true;
-        Date pastPeriodBeginningDate = week.pastPeriodFrom(dateToTest, "sun", beginning, false, 0);
+        Date pastPeriodBeginningDate = week.pastPeriodFrom(someLocalDate, "sun", beginning, false, 0);
         assertEquals(Calendar.SUNDAY, dayOfWeek(pastPeriodBeginningDate));
         assertEquals(dateFromLocalDate(expectedPeriodBeginningLocalDate), pastPeriodBeginningDate);
 
-        boolean beginning1 = !beginning;
-        Date pastPeriodEndingDate = week.pastPeriodFrom(dateToTest, "sun", beginning1, false, 0);
+        Date pastPeriodEndingDate = week.pastPeriodFrom(someLocalDate, "sun", !beginning, false, 0);
         assertEquals(Calendar.SATURDAY, dayOfWeek(pastPeriodEndingDate));
         assertEquals(dateFromLocalDate(expectedPeriodEndingLocalDate), pastPeriodEndingDate);
     }
@@ -34,19 +32,17 @@ public class DatePreloadHandlerGetPastPeriodDateTest {
     @Test
     public void testPeriodCanStartAnyDayOfTheWeek(){
         LocalDate someLocalDate = LocalDate.of(2023, 6, 8);//a thursday
-        Date dateToTest = dateFromLocalDate(someLocalDate);
 
         LocalDate expectedPeriodBeginningLocalDate = LocalDate.of(2023, 6, 7);//a wednesday
         LocalDate expectedPeriodEndingLocalDate = LocalDate.of(2023, 6, 13);//a tuesday
 
         boolean beginning = true;
         String start = "wed";
-        Date pastPeriodBeginningDate = week.pastPeriodFrom(dateToTest, start, beginning, false, 0);
+        Date pastPeriodBeginningDate = week.pastPeriodFrom(someLocalDate, start, beginning, false, 0);
         assertEquals(Calendar.WEDNESDAY, dayOfWeek(pastPeriodBeginningDate));
         assertEquals(dateFromLocalDate(expectedPeriodBeginningLocalDate), pastPeriodBeginningDate);
 
-        boolean beginning1 = !beginning;
-        Date pastPeriodEndingDate = week.pastPeriodFrom(dateToTest, start, beginning1, false, 0);
+        Date pastPeriodEndingDate = week.pastPeriodFrom(someLocalDate, start, !beginning, false, 0);
         assertEquals(Calendar.TUESDAY, dayOfWeek(pastPeriodEndingDate));
         assertEquals(dateFromLocalDate(expectedPeriodEndingLocalDate), pastPeriodEndingDate);
     }
@@ -54,13 +50,12 @@ public class DatePreloadHandlerGetPastPeriodDateTest {
     @Test
     public void testGetPastPeriodDateFindsCorrectWeek() {
         LocalDate someLocalDate = LocalDate.of(2023, 6, 8);//a thursday
-        Date dateToTest = dateFromLocalDate(someLocalDate);
 
         LocalDate expectedLocalDate = LocalDate.of(2023, 5, 21);//a sunday
         Date expectedDate = dateFromLocalDate(expectedLocalDate);
 
         int periodsAgo = 2;
-        Date pastPeriodDate = week.pastPeriodFrom(dateToTest, "sun", true, false, periodsAgo);
+        Date pastPeriodDate = week.pastPeriodFrom(someLocalDate, "sun", true, false, periodsAgo);
         assertEquals(Calendar.SUNDAY, dayOfWeek(pastPeriodDate));
         assertEquals(expectedDate, pastPeriodDate);
     }
