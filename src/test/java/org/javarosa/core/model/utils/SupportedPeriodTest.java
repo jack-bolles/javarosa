@@ -26,9 +26,13 @@ public class SupportedPeriodTest {
         //        prevperiod-week-wed-head-x
         assertEquals(LocalDate.of(2023, 7, 12),
                 localDateFrom(SupportedPeriod.week.pastPeriodFrom(testDate, "wed", true, true, 1)));
+        assertEquals(LocalDate.of(2023, 7, 5),
+                localDateFrom(SupportedPeriod.week.pastPeriodFrom(testDate, "wed", true, true, 2)));
         //        prevperiod-week-wed-head-
         assertEquals(LocalDate.of(2023, 7, 5),
                 localDateFrom(SupportedPeriod.week.pastPeriodFrom(testDate, "wed", true, false, 1)));
+        assertEquals(LocalDate.of(2023, 6, 28),
+                localDateFrom(SupportedPeriod.week.pastPeriodFrom(testDate, "wed", true, false, 2)));
     }
 
     @Test
