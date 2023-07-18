@@ -73,7 +73,7 @@ public interface IPreloadHandler {
         addPreloadHandler(map, new IPreloadHandler.TimeStampPreloadHandler());
         addPreloadHandler(map, new IPreloadHandler.UIDPreloadHandler());
         return map;
-    };
+    }
 
     static void addPreloadHandler(Map<String, IPreloadHandler> map, IPreloadHandler handler) {
         map.put(handler.preloadHandled(), handler);
