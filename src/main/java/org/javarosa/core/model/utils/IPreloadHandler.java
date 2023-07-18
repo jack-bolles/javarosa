@@ -22,6 +22,7 @@ import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.data.StringData;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.services.PropertyManager;
+import org.javarosa.core.util.Map;
 import org.javarosa.core.util.PropertyUtils;
 
 import java.util.Date;
@@ -65,6 +66,20 @@ public interface IPreloadHandler {
      */
     boolean handlePostProcess(TreeElement node, String params);
 
+    static Map<String, IPreloadHandler> builtIns(){
+        Map<String, IPreloadHandler> map = new Map<>();
+        addPreloadHandler(map, new IPreloadHandler.DatePreloadHandler());
+        addPreloadHandler(map, new IPreloadHandler.PropertyPreloadHandler());
+        addPreloadHandler(map, new IPreloadHandler.TimeStampPreloadHandler());
+        addPreloadHandler(map, new IPreloadHandler.UIDPreloadHandler());
+        return map;
+    };
+
+    static void addPreloadHandler(Map<String, IPreloadHandler> map, IPreloadHandler handler) {
+        map.put(handler.preloadHandled(), handler);
+    }
+
+
     class DatePreloadHandler implements IPreloadHandler {
         public String preloadHandled() {
             return "date";
@@ -98,6 +113,7 @@ public interface IPreloadHandler {
          * Or null if the type of date can't be determined.
          * Or throws an IllegalArgumentException if the tokenised params can't be interpreted by the  parser
          */
+        @SuppressWarnings("JavadocReference")
         public IAnswerData handlePreload(String preloadParams) {
             //TODO - use LocalDate
             Date d;
@@ -176,10 +192,12 @@ public interface IPreloadHandler {
             return "timestamp";
         }
 
+        /** if preloadParams == 'start', @return a DateTimeData, wrapping this moment in time; otherwise return null */
         public IAnswerData handlePreload(String preloadParams) {
             return ("start".equals(preloadParams) ? getDateTimeDataOfNow() : null);
         }
 
+        /** if preloadParams == 'end', set the node's answer to this moment in time and @return true; otherwise @return false */
         public boolean handlePostProcess(TreeElement node, String params) {
             if ("end".equals(params)) {
                 node.setAnswer(getDateTimeDataOfNow());
@@ -198,7 +216,7 @@ public interface IPreloadHandler {
             return "uid";
         }
 
-        // Generates an RFC 4122 UUID with a "uuid:" prefix
+        /** @return a StringData, wrapping a generated RFC 4122 UUID with a "uuid:" prefix */
         public IAnswerData handlePreload(String preloadParams) {
             return new StringData("uuid:" + PropertyUtils.genUUID());
         }
