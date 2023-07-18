@@ -28,7 +28,7 @@ public enum SupportedPeriod {
      * @return a Date object representing the amount of time between the
      * reference date, and the given parameters.
      */
-    public Date pastPeriodFrom(Date ref, String start, boolean beginning, boolean includeToday, int nAgo) {throw new IllegalArgumentException("Use the enum instance");}
+    abstract Date pastPeriodFrom(Date ref, String start, boolean beginning, boolean includeToday, int nAgo);
 }
 
 enum DOW {
