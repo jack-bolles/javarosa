@@ -58,7 +58,7 @@ import java.util.regex.Pattern;
 
 import static java.lang.Double.NaN;
 import static org.javarosa.core.model.utils.DateFormat.ISO8601;
-import static org.javarosa.core.model.utils.DateUtils.DAY_IN_MS;
+import static org.javarosa.core.model.utils.IPreloadHandler.DatePreloadHandler.DAY_IN_MS;
 import static org.javarosa.core.model.utils.StringUtils.split;
 
 /**

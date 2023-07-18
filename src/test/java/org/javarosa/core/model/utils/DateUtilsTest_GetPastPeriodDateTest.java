@@ -7,6 +7,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import static org.javarosa.core.model.utils.DateUtilsForTesting.dateFromLocalDate;
+import static org.javarosa.core.model.utils.IPreloadHandler.DatePreloadHandler.pastPeriodDateFrom;
 import static org.junit.Assert.assertEquals;
 
 public class DateUtilsTest_GetPastPeriodDateTest {
@@ -20,11 +21,11 @@ public class DateUtilsTest_GetPastPeriodDateTest {
         LocalDate expectedPeriodEndingLocalDate = LocalDate.of(2023, 6, 10);//a saturday
 
         boolean beginning = true;
-        Date pastPeriodBeginningDate = DateUtils.getPastPeriodDate(dateToTest, "week", "sun", beginning, false, 0);
+        Date pastPeriodBeginningDate = pastPeriodDateFrom(dateToTest, "week", "sun", beginning, false, 0);
         assertEquals(Calendar.SUNDAY, dayOfWeek(pastPeriodBeginningDate));
         assertEquals(dateFromLocalDate(expectedPeriodBeginningLocalDate), pastPeriodBeginningDate);
 
-        Date pastPeriodEndingDate = DateUtils.getPastPeriodDate(dateToTest, "week", "sun", !beginning, false, 0);
+        Date pastPeriodEndingDate = pastPeriodDateFrom(dateToTest, "week", "sun", !beginning, false, 0);
         assertEquals(Calendar.SATURDAY, dayOfWeek(pastPeriodEndingDate));
         assertEquals(dateFromLocalDate(expectedPeriodEndingLocalDate), pastPeriodEndingDate);
     }
@@ -39,11 +40,11 @@ public class DateUtilsTest_GetPastPeriodDateTest {
 
         boolean beginning = true;
         String start = "wed";
-        Date pastPeriodBeginningDate = DateUtils.getPastPeriodDate(dateToTest, "week", start, beginning, false, 0);
+        Date pastPeriodBeginningDate = pastPeriodDateFrom(dateToTest, "week", start, beginning, false, 0);
         assertEquals(Calendar.WEDNESDAY, dayOfWeek(pastPeriodBeginningDate));
         assertEquals(dateFromLocalDate(expectedPeriodBeginningLocalDate), pastPeriodBeginningDate);
 
-        Date pastPeriodEndingDate = DateUtils.getPastPeriodDate(dateToTest, "week", start, !beginning, false, 0);
+        Date pastPeriodEndingDate = pastPeriodDateFrom(dateToTest, "week", start, !beginning, false, 0);
         assertEquals(Calendar.TUESDAY, dayOfWeek(pastPeriodEndingDate));
         assertEquals(dateFromLocalDate(expectedPeriodEndingLocalDate), pastPeriodEndingDate);
     }
@@ -57,7 +58,7 @@ public class DateUtilsTest_GetPastPeriodDateTest {
         Date expectedDate = dateFromLocalDate(expectedLocalDate);
 
         int periodsAgo = 2;
-        Date pastPeriodDate = DateUtils.getPastPeriodDate(dateToTest, "week", "sun", true, false, periodsAgo);
+        Date pastPeriodDate = pastPeriodDateFrom(dateToTest, "week", "sun", true, false, periodsAgo);
         assertEquals(Calendar.SUNDAY, dayOfWeek(pastPeriodDate));
         assertEquals(expectedDate, pastPeriodDate);
     }

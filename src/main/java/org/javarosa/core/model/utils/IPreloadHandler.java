@@ -25,6 +25,7 @@ import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.util.Map;
 import org.javarosa.core.util.PropertyUtils;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -81,6 +82,35 @@ public interface IPreloadHandler {
 
 
     class DatePreloadHandler implements IPreloadHandler {
+        public static final long DAY_IN_MS = 86400000L;
+
+        /**
+         * Creates a Date object representing the amount of time between the
+         * reference date, and the given parameters.
+         *
+         * @param ref          The starting reference date
+         * @param type         "week", or "month", representing the time period which is to be returned.
+         * @param start        "sun", "mon", ... etc. representing the start of the time period.
+         * @param beginning    true=return first day of period, false=return last day of period
+         * @param includeToday Whether today's date can count as the last day of the period
+         * @param nAgo         How many periods ago. 1=most recent period, 0=period in progress
+         * @return a Date object representing the amount of time between the
+         * reference date, and the given parameters.
+         */
+        public static Date pastPeriodDateFrom(Date ref, String type, String start, boolean beginning, boolean includeToday, int nAgo) {
+            if (!type.equals("week")) {
+                throw new IllegalArgumentException();
+            }
+
+            Calendar cd = Calendar.getInstance();
+            cd.setTime(ref);
+            int current_dow = cd.get(Calendar.DAY_OF_WEEK) - 1;
+            int target_dow = DOW.valueOf(start).order;
+            int offset = (includeToday ? 1 : 0);
+            int diff = ((current_dow - target_dow + 7 + offset) % 7 - offset) + (7 * nAgo) - (beginning ? 0 : 6);
+            return new Date(ref.getTime() - diff * DAY_IN_MS);
+        }
+
         public String preloadHandled() {
             return "date";
         }
@@ -150,7 +180,7 @@ public interface IPreloadHandler {
                         nAgo = 1;
                     }
 
-                    d = DateUtils.getPastPeriodDate(new Date(), type, start, beginning, includeToday, nAgo);
+                    d = pastPeriodDateFrom(new Date(), type, start, beginning, includeToday, nAgo);
                 } catch (Exception e) {
                     throw new IllegalArgumentException("invalid preload params for preload mode 'date'", e);
                 }
@@ -161,6 +191,16 @@ public interface IPreloadHandler {
 
         public boolean handlePostProcess(TreeElement node, String params) {
             return false;
+        }
+
+        //convenience, should go away soon
+        private enum DOW {
+            sun(0), mon(1), tue(2), wed(3), thu(4), fri(5), sat(6);
+            final int order;
+
+            DOW(int ordinal) {
+                this.order = ordinal;
+            }
         }
     }
 
