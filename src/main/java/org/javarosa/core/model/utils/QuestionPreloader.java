@@ -16,22 +16,11 @@
 
 package org.javarosa.core.model.utils;
 
-import org.javarosa.core.model.data.DateData;
-import org.javarosa.core.model.data.DateTimeData;
 import org.javarosa.core.model.data.IAnswerData;
-import org.javarosa.core.model.data.StringData;
 import org.javarosa.core.model.instance.TreeElement;
-import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.util.Map;
-import org.javarosa.core.util.PropertyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Date;
-import java.util.List;
-
-import static org.javarosa.core.model.utils.DateUtils.localDateFrom;
-import static org.javarosa.core.model.utils.StringUtils.split;
 
 /**
  * The Question Preloader is responsible for maintaining a set of handlers which are capable
@@ -42,7 +31,6 @@ import static org.javarosa.core.model.utils.StringUtils.split;
 public class QuestionPreloader {
     private static final Logger logger = LoggerFactory.getLogger(QuestionPreloader.class);
 
-    /* String -> IPreloadHandler */
     // NOTE: this is not java.util.Map!!!
     private final Map<String, IPreloadHandler> preloadHandlers = new Map<>();
 
@@ -51,74 +39,10 @@ public class QuestionPreloader {
     }
 
     private void initPreloadHandlers() {
-        IPreloadHandler date = new IPreloadHandler() {
-            public String preloadHandled() {
-                return "date";
-            }
-
-            public IAnswerData handlePreload(String preloadParams) {
-                return preloadDate(preloadParams);
-            }
-
-            public boolean handlePostProcess(TreeElement node, String params) {
-                //do nothing
-                return false;
-            }
-        };
-
-        IPreloadHandler property = new IPreloadHandler() {
-            public String preloadHandled() {
-                return "property";
-            }
-
-            public IAnswerData handlePreload(String preloadParams) {
-                return preloadProperty(preloadParams);
-            }
-
-            public boolean handlePostProcess(TreeElement node, String params) {
-                saveProperty(params, node);
-                return false;
-            }
-        };
-
-        IPreloadHandler timestamp = new IPreloadHandler() {
-            public String preloadHandled() {
-                return "timestamp";
-            }
-
-            public IAnswerData handlePreload(String preloadParams) {
-                return ("start".equals(preloadParams) ? getTimestamp() : null);
-            }
-
-            public boolean handlePostProcess(TreeElement node, String params) {
-                if ("end".equals(params)) {
-                    node.setAnswer(getTimestamp());
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-        };
-
-        IPreloadHandler uid = new IPreloadHandler() {
-            public String preloadHandled() {
-                return "uid";
-            }
-
-            // Generates an RFC 4122 UUID with a "uuid:" prefix
-            public IAnswerData handlePreload(String preloadParams) {
-                return new StringData("uuid:" + PropertyUtils.genUUID());
-            }
-
-            public boolean handlePostProcess(TreeElement node, String params) {
-                return false;
-            }
-        };
-
-        addPreloadHandler(date);
-        addPreloadHandler(property);
-        addPreloadHandler(timestamp);
-        addPreloadHandler(uid);
+        addPreloadHandler(new IPreloadHandler.DatePreloadHandler());
+        addPreloadHandler(new IPreloadHandler.PropertyPreloadHandler());
+        addPreloadHandler(new IPreloadHandler.TimeStampPreloadHandler());
+        addPreloadHandler(new IPreloadHandler.UIDPreloadHandler());
     }
 
     /**
@@ -157,84 +81,5 @@ public class QuestionPreloader {
             logger.error("Do not know how to handle preloader [{}]", preloadType);
             return false;
         }
-    }
-
-    /**
-     * Preloads a DateData object for the preload type 'date'
-     *
-     * @param preloadParams The parameters determining the date
-     * @return A preload date value if the parameters can be parsed,
-     * null otherwise
-     */
-    private IAnswerData preloadDate(String preloadParams) {
-        //TODO - use LocalDate
-        Date d;
-        if (preloadParams.equals("today")) {
-            d = new Date();
-        } else if (preloadParams.startsWith("prevperiod-")) {
-            List<String> v = split(preloadParams.substring(11), "-", false);
-            String[] params = new String[v.size()];
-            for (int i = 0; i < params.length; i++)
-                params[i] = v.get(i);
-
-            try {
-                String type = params[0];
-                String start = params[1];
-
-                boolean beginning;
-                if (params[2].equals("head")) beginning = true;
-                else if (params[2].equals("tail")) beginning = false;
-                else throw new RuntimeException();
-
-                boolean includeToday;
-                if (params.length >= 4) {
-                    if (params[3].equals("x")) includeToday = true;
-                    else if (params[3].equals("")) includeToday = false;
-                    else throw new RuntimeException();
-                } else {
-                    includeToday = false;
-                }
-
-                int nAgo;
-                if (params.length >= 5) {
-                    nAgo = Integer.parseInt(params[4]);
-                } else {
-                    nAgo = 1;
-                }
-
-                d = DateUtils.getPastPeriodDate(new Date(), type, start, beginning, includeToday, nAgo);
-            } catch (Exception e) {
-                throw new IllegalArgumentException("invalid preload params for preload mode 'date'");
-            }
-        } else return null;
-
-        return new DateData(localDateFrom(d));
-    }
-
-    /**
-     * Preloads a StringData object for the preload type 'property'
-     *
-     * @param preloadParams The parameters determining the property to be retrieved
-     * @return A preload property value if the parameters can be parsed,
-     * null otherwise
-     */
-    private IAnswerData preloadProperty(String preloadParams) {
-        String propval = PropertyManager.__().getSingularProperty(preloadParams);
-        StringData data = null;
-        if (propval != null && propval.length() > 0) {
-            data = new StringData(propval);
-        }
-        return data;
-    }
-
-    private void saveProperty(String propName, TreeElement node) {
-        IAnswerData answer = node.getValue();
-        String value = (answer == null ? null : answer.getDisplayText());
-        if (propName != null && propName.length() > 0 && value != null && value.length() > 0)
-            PropertyManager.__().setProperty(propName, value);
-    }
-
-    private DateTimeData getTimestamp() {
-        return new DateTimeData(new Date());
     }
 }
