@@ -7,11 +7,10 @@ import java.util.Date;
 
 import static org.javarosa.core.model.utils.DateUtilsForTesting.dateFromLocalDate;
 import static org.javarosa.core.model.utils.IPreloadHandler.DatePreloadHandler.pastPeriodDateFrom;
+import static org.javarosa.core.model.utils.SupportedPeriod.week;
 import static org.junit.Assert.assertEquals;
 
-public class DateUtils_GetPastPeriodDateIncludeTodayTest {
-    /** TODO - Not sure of the use case for this. It needs to be vetted.
-     * The tests exist to document the functionality as I found it - JB  */
+public class DatePreloadHandlerGetPastPeriodDateIncludeTodayTest {
     @Test
     public void includeTodayReturnsNextLaterPeriodIfTrueAndRefDateIsTheEndOfAPeriod() {
         LocalDate endOfPeriod = LocalDate.of(2023, 6, 10);//a saturday, end of period
@@ -19,24 +18,24 @@ public class DateUtils_GetPastPeriodDateIncludeTodayTest {
 
         boolean includeToday = true;
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 6, 11)),
-                pastPeriodDateFrom(endOfPeriodDate, "week", "sun", true, !includeToday, -1));
+                pastPeriodDateFrom(endOfPeriodDate, week, "sun", true, !includeToday, -1));
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 6, 18)),
-                pastPeriodDateFrom(endOfPeriodDate, "week", "sun", true, includeToday, -1));
+                pastPeriodDateFrom(endOfPeriodDate, week, "sun", true, includeToday, -1));
 
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 6, 4)),
-                pastPeriodDateFrom(endOfPeriodDate, "week", "sun", true, !includeToday, 0));
+                pastPeriodDateFrom(endOfPeriodDate, week, "sun", true, !includeToday, 0));
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 6, 11)),
-                pastPeriodDateFrom(endOfPeriodDate, "week", "sun", true, includeToday, 0));
+                pastPeriodDateFrom(endOfPeriodDate, week, "sun", true, includeToday, 0));
 
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 5, 28)),
-                pastPeriodDateFrom(endOfPeriodDate, "week", "sun", true, !includeToday, 1));
+                pastPeriodDateFrom(endOfPeriodDate, week, "sun", true, !includeToday, 1));
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 6, 4)),
-                pastPeriodDateFrom(endOfPeriodDate, "week", "sun", true, includeToday, 1));
+                pastPeriodDateFrom(endOfPeriodDate, week, "sun", true, includeToday, 1));
 
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 5, 21)),
-                pastPeriodDateFrom(endOfPeriodDate, "week", "sun", true, !includeToday, 2));
+                pastPeriodDateFrom(endOfPeriodDate, week, "sun", true, !includeToday, 2));
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 5, 28)),
-                pastPeriodDateFrom(endOfPeriodDate, "week", "sun", true, includeToday, 2));
+                pastPeriodDateFrom(endOfPeriodDate, week, "sun", true, includeToday, 2));
     }
 
     @Test
@@ -46,30 +45,29 @@ public class DateUtils_GetPastPeriodDateIncludeTodayTest {
 
         boolean includeToday = true;
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 6, 11)),
-                pastPeriodDateFrom(startOfPeriodDate, "week", "sun", true, !includeToday, -1));
+                pastPeriodDateFrom(startOfPeriodDate, week, "sun", true, !includeToday, -1));
 
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 6, 11)),
-                pastPeriodDateFrom(startOfPeriodDate, "week", "sun", true, includeToday, -1));
+                pastPeriodDateFrom(startOfPeriodDate, week, "sun", true, includeToday, -1));
 
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 6, 4)),
-                pastPeriodDateFrom(startOfPeriodDate, "week", "sun", true, !includeToday, 0));
+                pastPeriodDateFrom(startOfPeriodDate, week, "sun", true, !includeToday, 0));
 
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 6, 4)),
-                pastPeriodDateFrom(startOfPeriodDate, "week", "sun", true, includeToday, 0));
+                pastPeriodDateFrom(startOfPeriodDate, week, "sun", true, includeToday, 0));
 
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 5, 28)),
-                pastPeriodDateFrom(startOfPeriodDate, "week", "sun", true, !includeToday, 1));
+                pastPeriodDateFrom(startOfPeriodDate, week, "sun", true, !includeToday, 1));
 
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 5, 28)),
-                pastPeriodDateFrom(startOfPeriodDate, "week", "sun", true, includeToday, 1));
+                pastPeriodDateFrom(startOfPeriodDate, week, "sun", true, includeToday, 1));
 
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 5, 21)),
-                pastPeriodDateFrom(startOfPeriodDate, "week", "sun", true, !includeToday, 2));
+                pastPeriodDateFrom(startOfPeriodDate, week, "sun", true, !includeToday, 2));
 
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 5, 21)),
-                pastPeriodDateFrom(startOfPeriodDate, "week", "sun", true, includeToday, 2));
+                pastPeriodDateFrom(startOfPeriodDate, week, "sun", true, includeToday, 2));
     }
-
 
     @Test
     public void includeTodayReturnsSamePeriodIfTrueOrFalseAndRefDateIsTheMiddleOfAPeriod() {
@@ -78,28 +76,27 @@ public class DateUtils_GetPastPeriodDateIncludeTodayTest {
 
         boolean includeToday = true;
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 6, 11)),
-                pastPeriodDateFrom(startOfPeriodDate, "week", "sun", true, !includeToday, -1));
+                pastPeriodDateFrom(startOfPeriodDate, week, "sun", true, !includeToday, -1));
 
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 6, 11)),
-                pastPeriodDateFrom(startOfPeriodDate, "week", "sun", true, includeToday, -1));
+                pastPeriodDateFrom(startOfPeriodDate, week, "sun", true, includeToday, -1));
 
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 6, 4)),
-                pastPeriodDateFrom(startOfPeriodDate, "week", "sun", true, !includeToday, 0));
+                pastPeriodDateFrom(startOfPeriodDate, week, "sun", true, !includeToday, 0));
 
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 6, 4)),
-                pastPeriodDateFrom(startOfPeriodDate, "week", "sun", true, includeToday, 0));
+                pastPeriodDateFrom(startOfPeriodDate, week, "sun", true, includeToday, 0));
 
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 5, 28)),
-                pastPeriodDateFrom(startOfPeriodDate, "week", "sun", true, !includeToday, 1));
+                pastPeriodDateFrom(startOfPeriodDate, week, "sun", true, !includeToday, 1));
 
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 5, 28)),
-                pastPeriodDateFrom(startOfPeriodDate, "week", "sun", true, includeToday, 1));
+                pastPeriodDateFrom(startOfPeriodDate, week, "sun", true, includeToday, 1));
 
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 5, 21)),
-                pastPeriodDateFrom(startOfPeriodDate, "week", "sun", true, !includeToday, 2));
+                pastPeriodDateFrom(startOfPeriodDate, week, "sun", true, !includeToday, 2));
 
         assertEquals(dateFromLocalDate(LocalDate.of(2023, 5, 21)),
-                pastPeriodDateFrom(startOfPeriodDate, "week", "sun", true, includeToday, 2));
+                pastPeriodDateFrom(startOfPeriodDate, week, "sun", true, includeToday, 2));
     }
-
 }

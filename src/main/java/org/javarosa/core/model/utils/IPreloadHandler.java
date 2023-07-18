@@ -85,20 +85,20 @@ public interface IPreloadHandler {
         public static final long DAY_IN_MS = 86400000L;
 
         /**
-         * Creates a Date object representing the amount of time between the
-         * reference date, and the given parameters.
-         *
-         * @param ref          The starting reference date
-         * @param type         "week", or "month", representing the time period which is to be returned.
-         * @param start        "sun", "mon", ... etc. representing the start of the time period.
-         * @param beginning    true=return first day of period, false=return last day of period
-         * @param includeToday Whether today's date can count as the last day of the period
-         * @param nAgo         How many periods ago. 1=most recent period, 0=period in progress
-         * @return a Date object representing the amount of time between the
-         * reference date, and the given parameters.
-         */
-        public static Date pastPeriodDateFrom(Date ref, String type, String start, boolean beginning, boolean includeToday, int nAgo) {
-            if (!type.equals("week")) {
+             * Creates a Date object representing the amount of time between the
+             * reference date, and the given parameters.
+             *
+             * @param ref          The starting reference date
+             * @param type         "week", or "month", representing the time period which is to be returned.
+             * @param start        "sun", "mon", ... etc. representing the start of the time period.
+             * @param beginning    true=return first day of period, false=return last day of period
+             * @param includeToday Whether today's date can count as the last day of the period
+             * @param nAgo         How many periods ago. 1=most recent period, 0=period in progress
+             * @return a Date object representing the amount of time between the
+             * reference date, and the given parameters.
+             */
+        public static Date pastPeriodDateFrom(Date ref, SupportedPeriod type, String start, boolean beginning, boolean includeToday, int nAgo) {
+            if (!type.equals(SupportedPeriod.week)) {
                 throw new IllegalArgumentException();
             }
 
@@ -156,7 +156,7 @@ public interface IPreloadHandler {
                     params[i] = v.get(i);
 
                 try {
-                    String type = params[0];
+                    SupportedPeriod supportedPeriod = SupportedPeriod.valueOf(params[0]);
                     String start = params[1];
 
                     boolean beginning;
@@ -180,7 +180,7 @@ public interface IPreloadHandler {
                         nAgo = 1;
                     }
 
-                    d = pastPeriodDateFrom(new Date(), type, start, beginning, includeToday, nAgo);
+                    d = pastPeriodDateFrom(new Date(), supportedPeriod, start, beginning, includeToday, nAgo);
                 } catch (Exception e) {
                     throw new IllegalArgumentException("invalid preload params for preload mode 'date'", e);
                 }
@@ -266,3 +266,4 @@ public interface IPreloadHandler {
         }
     }
 }
+

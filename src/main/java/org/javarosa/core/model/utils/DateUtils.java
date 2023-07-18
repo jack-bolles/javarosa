@@ -36,11 +36,6 @@ public class DateUtils {
     public static final String TIME_OFFSET_REGEX = "(?=[Z+\\-])";
     public static final String DATE_TIME_SPLIT_REGEX = "([T\\s])";
 
-    @NotNull
-    public static Date dateFrom(LocalDateTime someDateTime, ZoneId zoneId) {
-        return Date.from(someDateTime.atZone(zoneId).toInstant());
-    }
-
     /**
      * Full ISO string interpreted into a Date.
      * Defaults to start of day, in UTC if time and/or offset are missing
@@ -100,20 +95,21 @@ public class DateUtils {
 
 
     /* ==== DATE UTILITY FUNCTIONS ==== */
+    @NotNull
+    public static Date dateFrom(LocalDateTime someDateTime, ZoneId zoneId) {
+        return Date.from(someDateTime.atZone(zoneId).toInstant());
+    }
 
     /** Same as RoundDate(), without the Date instance */
     public static Date getDate(int year, int month, int day) {
-        TimeZone tz = TimeZone.getDefault();
         LocalDate localDate = LocalDate.of(year, month, day);
-        return dateFrom(of(localDate, LocalTime.MIDNIGHT), tz.toZoneId());
+        return dateFrom(of(localDate, LocalTime.MIDNIGHT), TimeZone.getDefault().toZoneId());
     }
 
     /** @return new Date object with same date but time set to midnight (in current timezone) */
     public static Date roundDate(Date d) {
         if (d == null) return null;
-
-        TimeZone tz = TimeZone.getDefault();
-        return dateFrom(of(localDateFrom(d), LocalTime.MIDNIGHT), tz.toZoneId());
+        return dateFrom(of(localDateFrom(d), LocalTime.MIDNIGHT), TimeZone.getDefault().toZoneId());
     }
 
     public static LocalDate localDateFrom(Date d) {
