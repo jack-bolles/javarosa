@@ -45,13 +45,13 @@ public class Map<K, V> extends OrderedMap<K,V> {
     V[] elementsSealed;
 
     public Map() {
-        keys = new Vector<K>();
-        elements = new Vector<V>();
+        keys = new Vector<>();
+        elements = new Vector<>();
     }
 
     public Map(int sizeHint) {
-        keys = new Vector<K>(sizeHint);
-        elements = new Vector<V>(sizeHint);
+        keys = new Vector<>(sizeHint);
+        elements = new Vector<>(sizeHint);
     }
 
     public Map(K[] keysSealed, V[] elementsSealed) {
@@ -140,8 +140,8 @@ public class Map<K, V> extends OrderedMap<K,V> {
         } else {
             keysSealed = null;
             elementsSealed = null;
-            keys = new Vector<K>();
-            elements = new Vector<V>();
+            keys = new Vector<>();
+            elements = new Vector<>();
         }
     }
 
@@ -285,16 +285,12 @@ public class Map<K, V> extends OrderedMap<K,V> {
         if(!sealed) {
             return elements.contains((V)value);
         } else {
-            for(int i = 0; i < elementsSealed.length ; ++i) {
-                if(elementsSealed[i].equals(value)) {
+            for (V v : elementsSealed) {
+                if (v.equals(value)) {
                     return true;
                 }
             }
         }
         return false;
-    }
-
-    public void seal() {
-
     }
 }

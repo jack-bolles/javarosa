@@ -16,13 +16,6 @@
 
 package org.javarosa.xpath.expr;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.condition.pivot.UnpivotableExpressionException;
 import org.javarosa.core.model.instance.DataInstance;
@@ -32,6 +25,14 @@ import org.javarosa.core.util.externalizable.ExtWrapListPoly;
 import org.javarosa.core.util.externalizable.ExtWrapTagged;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.xpath.XPathUnsupportedException;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class XPathFilterExpr extends XPathExpression {
     public XPathExpression x;
@@ -68,12 +69,10 @@ public class XPathFilterExpr extends XPathExpression {
         if (o instanceof XPathFilterExpr) {
             XPathFilterExpr fe = (XPathFilterExpr)o;
 
-         List<XPathExpression> a = new ArrayList<XPathExpression>(predicates.length);
-            for (int i = 0; i < predicates.length; i++)
-                a.add(predicates[i]);
-         List<XPathExpression> b = new ArrayList<XPathExpression>(fe.predicates.length);
-            for (int i = 0; i < fe.predicates.length; i++)
-                b.add(fe.predicates[i]);
+         List<XPathExpression> a = new ArrayList<>(predicates.length);
+            a.addAll(Arrays.asList(predicates));
+         List<XPathExpression> b = new ArrayList<>(fe.predicates.length);
+            Collections.addAll(b, fe.predicates);
 
             return x.equals(fe.x) && ExtUtil.listEquals(a, b);
         } else {

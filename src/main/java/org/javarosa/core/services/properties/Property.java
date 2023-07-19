@@ -16,18 +16,18 @@
 
 package org.javarosa.core.services.properties;
 
+import org.javarosa.core.services.storage.IMetaData;
+import org.javarosa.core.services.storage.Persistable;
+import org.javarosa.core.util.externalizable.PrototypeFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import org.javarosa.core.services.storage.IMetaData;
-import org.javarosa.core.services.storage.Persistable;
-import org.javarosa.core.util.externalizable.PrototypeFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Property is an encapsulation of a record containing a property in the J2ME
@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
  * @date Jan-20-2008
  *
  */
+@SuppressWarnings("JavadocReference")
 public class Property implements Persistable, IMetaData {
     private static final Logger logger = LoggerFactory.getLogger(Property.class);
 
@@ -54,21 +55,21 @@ public class Property implements Persistable, IMetaData {
         byte[] inputarray = new byte[in.available()];
         in.readFully(inputarray);
 
-        for(int i = 0; i < inputarray.length ; i++ ) {
-            char c = (char)inputarray[i];
+        for (byte item : inputarray) {
+            char c = (char) item;
             b.append(c);
         }
         String fullString = b.toString();
         int nameindex = fullString.indexOf(",");
-        value = new ArrayList<String>();
+        value = new ArrayList<>();
         if(nameindex == -1) {
             logger.warn("Property in RMS with no value: {}", fullString);
-            name = fullString.substring(0, fullString.length());
+            name = fullString;
         }
         else {
             name = fullString.substring(0, nameindex);
         // The format of the properties should be each one in a list, comma delimited
-        String packedvalue = fullString.substring(fullString.indexOf(",")+1,fullString.length());
+        String packedvalue = fullString.substring(fullString.indexOf(",")+1);
         while(packedvalue.length() != 0) {
             int index = packedvalue.indexOf(",");
             if(index == -1) {
@@ -77,7 +78,7 @@ public class Property implements Persistable, IMetaData {
             }
             else {
                 value.add(packedvalue.substring(0,index));
-                packedvalue = packedvalue.substring(index + 1, packedvalue.length());
+                packedvalue = packedvalue.substring(index + 1);
             }
         }
         }
@@ -114,10 +115,10 @@ public class Property implements Persistable, IMetaData {
     }
 
     public HashMap<String,Object> getMetaData() {
-        HashMap<String,Object> metadata = new HashMap<String,Object>();
+        HashMap<String,Object> metadata = new HashMap<>();
         String[] fields = getMetaDataFields();
-        for (int i = 0; i < fields.length; i++) {
-            metadata.put(fields[i], getMetaData(fields[i]));
+        for (String field : fields) {
+            metadata.put(field, getMetaData(field));
         }
         return metadata;
     }

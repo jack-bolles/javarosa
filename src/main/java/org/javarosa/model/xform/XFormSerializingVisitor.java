@@ -16,10 +16,6 @@ package org.javarosa.model.xform;
  * the License.
  */
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.javarosa.core.data.IDataPointer;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.IAnswerDataSerializer;
@@ -37,6 +33,11 @@ import org.javarosa.xform.util.XFormSerializer;
 import org.kxml2.kdom.Document;
 import org.kxml2.kdom.Element;
 import org.kxml2.kdom.Node;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A visitor-esque class which walks a FormInstance and constructs an XML document
@@ -64,7 +65,7 @@ public class XFormSerializingVisitor implements IInstanceSerializingVisitor {
 
         List<IDataPointer> dataPointers;
 
-        boolean respectRelevance = true;
+        boolean respectRelevance;
 
         public XFormSerializingVisitor() {
             this(true);
@@ -76,10 +77,10 @@ public class XFormSerializingVisitor implements IInstanceSerializingVisitor {
         private void init() {
             theXmlDoc = null;
             schema = null;
-            dataPointers = new ArrayList<IDataPointer>(0);
+            dataPointers = new ArrayList<>(0);
         }
 
-        public byte[] serializeInstance(FormInstance model, FormDef formDef) throws IOException {
+        public byte[] serializeInstance(FormInstance model, FormDef formDef) {
 
             //LEGACY: Should remove
             init();
@@ -87,7 +88,7 @@ public class XFormSerializingVisitor implements IInstanceSerializingVisitor {
             return serializeInstance(model);
         }
 
-        public byte[] serializeInstance(FormInstance model) throws IOException {
+        public byte[] serializeInstance(FormInstance model) {
             return serializeInstance(model, new XPathReference("/"));
         }
 
@@ -95,7 +96,7 @@ public class XFormSerializingVisitor implements IInstanceSerializingVisitor {
          * (non-Javadoc)
          * @see org.javarosa.core.model.utils.IInstanceSerializingVisitor#serializeDataModel(org.javarosa.core.model.IFormDataModel)
          */
-        public byte[] serializeInstance(FormInstance model, IDataReference ref) throws IOException {
+        public byte[] serializeInstance(FormInstance model, IDataReference ref) {
             init();
             rootRef = FormInstance.unpackReference(ref);
             if(this.serializer == null) {
@@ -115,7 +116,7 @@ public class XFormSerializingVisitor implements IInstanceSerializingVisitor {
             return createSerializedPayload(model, new XPathReference("/"));
         }
 
-        public IDataPayload createSerializedPayload(FormInstance model, IDataReference ref) throws IOException {
+        public IDataPayload createSerializedPayload(FormInstance model, IDataReference ref) {
             init();
             rootRef = FormInstance.unpackReference(ref);
             if(this.serializer == null) {
@@ -163,8 +164,8 @@ public class XFormSerializingVisitor implements IInstanceSerializingVisitor {
         Element top = theXmlDoc.getElement(0);
 
         String[] prefixes = tree.getNamespacePrefixes();
-        for(int i = 0 ; i < prefixes.length; ++i ) {
-            top.setPrefix(prefixes[i], tree.getNamespaceURI(prefixes[i]));
+        for (String prefix : prefixes) {
+            top.setPrefix(prefix, tree.getNamespaceURI(prefix));
         }
         if (tree.schema != null) {
             top.setNamespace(tree.schema);
@@ -185,38 +186,35 @@ public class XFormSerializingVisitor implements IInstanceSerializingVisitor {
             try {
                 serializedAnswer = serializer.serializeAnswerData(instanceNode.getValue(), instanceNode.getDataType());
             } catch (RuntimeException ex) {
-                throw new RuntimeException("Unable to serialize " + instanceNode.getValue().toString() + ". Exception: " + ex.toString());
+                throw new RuntimeException("Unable to serialize " + instanceNode.getValue().toString() + ". Exception: " + ex);
             }
 
             if (serializedAnswer instanceof Element) {
                 e = (Element)serializedAnswer;
             } else if (serializedAnswer instanceof String) {
                 e = new Element();
-                e.addChild(Node.TEXT, (String)serializedAnswer);
+                e.addChild(Node.TEXT, serializedAnswer);
             } else {
                 throw new RuntimeException("Can't handle serialized output for" + instanceNode.getValue().toString() + ", " + serializedAnswer);
             }
 
-            if(serializer.containsExternalData(instanceNode.getValue()).booleanValue()) {
+            if(serializer.containsExternalData(instanceNode.getValue())) {
                 IDataPointer[] pointer = serializer.retrieveExternalDataPointer(instanceNode.getValue());
-                for(int i = 0 ; i < pointer.length ; ++i) {
-                    dataPointers.add(pointer[i]);
-                }
+                Collections.addAll(dataPointers, pointer);
             }
         } else {
             //make sure all children of the same tag name are written en bloc
-            List<String> childNames = new ArrayList<String>(instanceNode.getNumChildren());
+            List<String> childNames = new ArrayList<>(instanceNode.getNumChildren());
             for (int i = 0; i < instanceNode.getNumChildren(); i++) {
                 String childName = instanceNode.getChildAt(i).getName();
                 if (!childNames.contains(childName))
                     childNames.add(childName);
             }
 
-            for (int i = 0; i < childNames.size(); i++) {
-                String childName = (String)childNames.get(i);
-                int mult = instanceNode.getChildMultiplicity(childName);
+            for (String name : childNames) {
+                int mult = instanceNode.getChildMultiplicity(name);
                 for (int j = 0; j < mult; j++) {
-                    Element child = serializeNode(instanceNode.getChild(childName, j));
+                    Element child = serializeNode(instanceNode.getChild(name, j));
                     if (child != null) {
                         e.addChild(Node.ELEMENT, child);
                     }

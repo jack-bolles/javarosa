@@ -63,23 +63,19 @@ public class XFormAnswerDataSerializer implements IAnswerDataSerializer {
 
     public final static String DELIMITER = " ";
 
-   List<IAnswerDataSerializer> additionalSerializers = new ArrayList<IAnswerDataSerializer>(1);
+   List<IAnswerDataSerializer> additionalSerializers = new ArrayList<>(1);
 
     public void registerAnswerSerializer(IAnswerDataSerializer ads) {
         additionalSerializers.add(ads);
     }
 
     public boolean canSerialize(IAnswerData data) {
-        if (data instanceof StringData || data instanceof DateData || data instanceof TimeData ||
-            data instanceof MultipleItemsData || data instanceof SelectOneData ||
-            data instanceof IntegerData || data instanceof DecimalData || data instanceof PointerAnswerData    ||
-            data instanceof MultiPointerAnswerData ||
-            data instanceof GeoPointData || data instanceof GeoTraceData || data instanceof GeoShapeData ||
-            data instanceof LongData || data instanceof DateTimeData || data instanceof UncastData) {
-            return true;
-        } else {
-            return false;
-        }
+        return  data instanceof StringData || data instanceof DateData || data instanceof TimeData ||
+                data instanceof MultipleItemsData || data instanceof SelectOneData ||
+                data instanceof IntegerData || data instanceof DecimalData || data instanceof PointerAnswerData ||
+                data instanceof MultiPointerAnswerData ||
+                data instanceof GeoPointData || data instanceof GeoTraceData || data instanceof GeoShapeData ||
+                data instanceof LongData || data instanceof DateTimeData || data instanceof UncastData;
     }
 
     /**
@@ -96,7 +92,7 @@ public class XFormAnswerDataSerializer implements IAnswerDataSerializer {
      * @return A String which contains the given answer
      */
     public Object serializeAnswerData(StringData data) {
-        return (String)data.getValue();
+        return data.getValue();
     }
 
     /**
@@ -153,11 +149,11 @@ public class XFormAnswerDataSerializer implements IAnswerDataSerializer {
             return pointers[0].getDisplayText();
         }
         Element parent = new Element();
-        for(int i = 0; i < pointers.length; ++i) {
+        for (IDataPointer pointer : pointers) {
             Element datael = new Element();
             datael.setName("data");
 
-            datael.addChild(Element.TEXT, pointers[i].getDisplayText());
+            datael.addChild(Element.TEXT, pointer.getDisplayText());
             parent.addChild(Element.ELEMENT, datael);
         }
         return parent;
@@ -216,11 +212,7 @@ public class XFormAnswerDataSerializer implements IAnswerDataSerializer {
      }
 
     public Object serializeAnswerData(BooleanData data) {
-        if(((Boolean)data.getValue()).booleanValue()) {
-            return "1";
-        } else {
-            return "0";
-        }
+        return (Boolean) data.getValue() ? "1" : "0";
     }
 
     public Object serializeAnswerData(IAnswerData data, int dataType) {
@@ -231,9 +223,7 @@ public class XFormAnswerDataSerializer implements IAnswerDataSerializer {
                 return serializer.serializeAnswerData(data, dataType);
             }
         }
-        //Defaults
-        Object result = serializeAnswerData(data);
-        return result;
+        return serializeAnswerData(data);
     }
 
     public Object serializeAnswerData(IAnswerData data) {
@@ -303,11 +293,11 @@ public class XFormAnswerDataSerializer implements IAnswerDataSerializer {
         }
         if( data instanceof PointerAnswerData) {
             IDataPointer[] pointer = new IDataPointer[1];
-            pointer[0] = (IDataPointer)((PointerAnswerData)data).getValue();
+            pointer[0] = (IDataPointer) data.getValue();
             return pointer;
         }
         else if (data instanceof MultiPointerAnswerData ) {
-            return (IDataPointer[])((MultiPointerAnswerData)data).getValue();
+            return (IDataPointer[]) data.getValue();
         }
         //This shouldn't have been called.
         return null;

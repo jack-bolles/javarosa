@@ -26,7 +26,7 @@ import java.util.List;
 //list of objects of single (non-polymorphic) type
 public class ExtWrapList extends ExternalizableWrapper {
     public ExternalizableWrapper type;
-    private boolean sealed;
+    private final boolean sealed;
 
     /* serialization */
 
@@ -94,8 +94,8 @@ public class ExtWrapList extends ExternalizableWrapper {
       List v = (List)val;
 
         ExtUtil.writeNumeric(out, v.size());
-        for (int i = 0; i < v.size(); i++) {
-            ExtUtil.write(out, type == null ? v.get(i) : type.clone(v.get(i)));
+        for (Object o : v) {
+            ExtUtil.write(out, type == null ? o : type.clone(o));
         }
     }
 

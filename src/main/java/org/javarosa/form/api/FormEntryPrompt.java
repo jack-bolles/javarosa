@@ -105,19 +105,17 @@ public class FormEntryPrompt extends FormEntryCaption {
 
                     TreeReference destRef = itemset.getDestRef().contextualize(mTreeElement.getRef());
                     List<TreeReference> subNodes = form.getEvaluationContext().expandReference(destRef);
-                    for (int i = 0; i < subNodes.size(); i++) {
-                        TreeElement node = form.getMainInstance().resolveReference(subNodes.get(i));
+                    for (TreeReference subNode : subNodes) {
+                        TreeElement node = form.getMainInstance().resolveReference(subNode);
                         String value = itemset.getRelativeValue().evalReadable(form.getMainInstance(), new EvaluationContext(form.getEvaluationContext(), node.getRef()));
                         preselectedValues.add(value);
                     }
 
                     //populate 'selection' with the corresponding choices (matching 'value') from the dynamic choiceset
-                    List<Selection> selection = new ArrayList<Selection>();
-                    for (int i = 0; i < preselectedValues.size(); i++) {
-                        String value = preselectedValues.get(i);
+                    List<Selection> selection = new ArrayList<>();
+                    for (String value : preselectedValues) {
                         SelectChoice choice = null;
-                        for (int j = 0; j < choices.size(); j++) {
-                            SelectChoice ch = choices.get(j);
+                        for (SelectChoice ch : choices) {
                             if (value.equals(ch.getValue())) {
                                 choice = ch;
                                 break;

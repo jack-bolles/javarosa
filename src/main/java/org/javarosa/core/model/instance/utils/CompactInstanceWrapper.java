@@ -83,7 +83,7 @@ public class CompactInstanceWrapper implements WrappingStorageUtility.Serializat
 
     public static final int CHOICE_MODE = CHOICE_INDEX;
 
-    private InstanceTemplateManager templateMgr;    /* instance template provider; provides templates needed for deserialization. */
+    private final InstanceTemplateManager templateMgr;    /* instance template provider; provides templates needed for deserialization. */
     private FormInstance instance;                    /* underlying FormInstance to serialize/deserialize */
 
     public CompactInstanceWrapper () {
@@ -122,7 +122,7 @@ public class CompactInstanceWrapper implements WrappingStorageUtility.Serializat
         //formID, name, schema, versions, and namespaces are all invariants of the template instance
 
         TreeElement root = instance.getRoot();
-        readTreeElement(root, in, pf);
+        readTreeElement(root, in);
     }
 
     /**
@@ -166,18 +166,16 @@ public class CompactInstanceWrapper implements WrappingStorageUtility.Serializat
     /**
      * recursively read in a node of the instance, by filling out the template instance
      * @param e
-     * @param ref
      * @param in
-     * @param pf
      * @throws IOException
      * @throws DeserializationException
      */
-    private void readTreeElement (TreeElement e, DataInputStream in, PrototypeFactory pf) throws IOException, DeserializationException {
+    private void readTreeElement (TreeElement e, DataInputStream in) throws IOException, DeserializationException {
         TreeElement templ = instance.getTemplatePath(e.getRef());
         boolean isGroup = !templ.isLeaf();
 
         if (isGroup) {
-            List<String> childTypes = new ArrayList<String>(templ.getNumChildren());
+            List<String> childTypes = new ArrayList<>(templ.getNumChildren());
             for (int i = 0; i < templ.getNumChildren(); i++) {
                 String childName = templ.getChildAt(i).getName();
                 if (!childTypes.contains(childName)) {
@@ -185,9 +183,7 @@ public class CompactInstanceWrapper implements WrappingStorageUtility.Serializat
                 }
             }
 
-            for (int i = 0; i < childTypes.size(); i++) {
-                String childName = childTypes.get(i);
-
+            for (String childName : childTypes) {
                 TreeReference childTemplRef = e.getRef().extendRef(childName, 0);
                 TreeElement childTempl = instance.getTemplatePath(childTemplRef);
 
@@ -209,27 +205,27 @@ public class CompactInstanceWrapper implements WrappingStorageUtility.Serializat
                         TreeReference dstRef = e.getRef().extendRef(childName, j);
                         try {
                             instance.copyNode(childTempl, dstRef);
-                        } catch(InvalidReferenceException ire) {
+                        } catch (InvalidReferenceException ire) {
                             //If there is an invalid reference, this is a malformed instance,
                             //so we'll throw a Deserialization exception.
                             TreeReference r = ire.getInvalidReference();
-                            if(r == null) {
+                            if (r == null) {
                                 throw new DeserializationException("Null Reference while attempting to deserialize! " + ire.getMessage());
-                            } else{
-                                throw new DeserializationException("Invalid Reference while attemtping to deserialize! Reference: " + r.toString(true) + " | "+ ire.getMessage());
+                            } else {
+                                throw new DeserializationException("Invalid Reference while attemtping to deserialize! Reference: " + r.toString(true) + " | " + ire.getMessage());
                             }
 
                         }
 
                         TreeElement child = e.getChild(childName, j);
                         child.setRelevant(true);
-                        readTreeElement(child, in, pf);
+                        readTreeElement(child, in);
                     }
                 } else {
                     TreeElement child = e.getChild(childName, 0);
                     child.setRelevant(relevant);
                     if (relevant) {
-                        readTreeElement(child, in, pf);
+                        readTreeElement(child, in);
                     }
                 }
             }
@@ -242,7 +238,6 @@ public class CompactInstanceWrapper implements WrappingStorageUtility.Serializat
      * recursively write out a node of the instance
      * @param out
      * @param e
-     * @param ref
      * @throws IOException
      */
     private void writeTreeElement (DataOutputStream out, TreeElement e) throws IOException {
@@ -250,7 +245,7 @@ public class CompactInstanceWrapper implements WrappingStorageUtility.Serializat
         boolean isGroup = !templ.isLeaf();
 
         if (isGroup) {
-           List<String> childTypesHandled = new ArrayList<String>(templ.getNumChildren());
+           List<String> childTypesHandled = new ArrayList<>(templ.getNumChildren());
             for (int i = 0; i < templ.getNumChildren(); i++) {
                 String childName = templ.getChildAt(i).getName();
                 if (!childTypesHandled.contains(childName)) {
@@ -304,17 +299,9 @@ public class CompactInstanceWrapper implements WrappingStorageUtility.Serializat
                     //custom data types
                     val = ExtUtil.read(in, new ExtWrapTagged(), pf);
                 } else if (answerType == SelectOneData.class) {
-                    if ( CHOICE_MODE == CHOICE_VALUE ) {
-                        val = getSelectOne(ExtUtil.read(in, String.class));
-                    } else {
-                        val = getSelectOne(ExtUtil.read(in, Integer.class));
-                    }
+                    val = getSelectOne(ExtUtil.read(in, Integer.class));
                 } else if (answerType == MultipleItemsData.class) {
-                    if ( CHOICE_MODE == CHOICE_VALUE ) {
-                        val = getSelectMulti((List<Object>)ExtUtil.read(in, new ExtWrapList(String.class)));
-                    } else {
-                        val = getSelectMulti((List<Object>)ExtUtil.read(in, new ExtWrapList(Integer.class)));
-                    }
+                    val = getSelectMulti((List<Object>) ExtUtil.read(in, new ExtWrapList(Integer.class)));
                 } else {
                     switch (flag) {
                     case 0x40: answerType = StringData.class; break;
@@ -324,7 +311,7 @@ public class CompactInstanceWrapper implements WrappingStorageUtility.Serializat
                     case 0x44: answerType = BooleanData.class; break;
                     }
 
-                    val = (IAnswerData)ExtUtil.read(in, answerType);
+                    val = ExtUtil.read(in, answerType);
                 }
             }
         }
@@ -373,11 +360,11 @@ public class CompactInstanceWrapper implements WrappingStorageUtility.Serializat
             throw new RuntimeException("not supported");
         }
 
-        public void metaReadExternal(DataInputStream in, PrototypeFactory pf) throws IOException, DeserializationException {
+        public void metaReadExternal(DataInputStream in, PrototypeFactory pf) {
             throw new RuntimeException("not supported");
         }
 
-        public void metaWriteExternal(DataOutputStream out) throws IOException {
+        public void metaWriteExternal(DataOutputStream out) {
             throw new RuntimeException("not supported");
         }
     }
@@ -399,9 +386,9 @@ public class CompactInstanceWrapper implements WrappingStorageUtility.Serializat
      */
     private List<Object> compactSelectMulti (MultipleItemsData data) {
        List<Selection> val = (List<Selection>)data.getValue();
-        List<Object> choices = new ArrayList<Object>(val.size());
-        for (int i = 0; i < val.size(); i++) {
-            choices.add(extractSelection((Selection)val.get(i)));
+        List<Object> choices = new ArrayList<>(val.size());
+        for (Selection selection : val) {
+            choices.add(extractSelection(selection));
         }
         return choices;
     }
@@ -417,9 +404,9 @@ public class CompactInstanceWrapper implements WrappingStorageUtility.Serializat
      * create a MultipleItemsData from a list of integers (index mode) or strings (value mode)
      */
     private MultipleItemsData getSelectMulti (List<Object> v) {
-       List<Selection> choices = new ArrayList<Selection>(v.size());
-        for (int i = 0; i < v.size(); i++) {
-            choices.add(makeSelection(v.get(i)));
+       List<Selection> choices = new ArrayList<>(v.size());
+        for (Object o : v) {
+            choices.add(makeSelection(o));
         }
         return new MultipleItemsData(choices);
     }
@@ -437,7 +424,7 @@ public class CompactInstanceWrapper implements WrappingStorageUtility.Serializat
             if (s.index == -1) {
                 throw new RuntimeException("trying to serialize in choice-index mode but selections do not have indexes set!");
             }
-            return Integer.valueOf(s.index);
+            return s.index;
         default: throw new IllegalArgumentException();
         }
     }
@@ -451,7 +438,7 @@ public class CompactInstanceWrapper implements WrappingStorageUtility.Serializat
         if (o instanceof String) {
             return new Selection((String)o);
         } else if (o instanceof Integer) {
-            return new Selection(((Integer)o).intValue());
+            return new Selection((Integer) o);
         } else {
             throw new RuntimeException();
         }

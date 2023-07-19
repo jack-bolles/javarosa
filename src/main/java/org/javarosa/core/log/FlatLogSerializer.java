@@ -14,9 +14,6 @@
  * the License.
  */
 
-/**
- *
- */
 package org.javarosa.core.log;
 
 /**
@@ -38,10 +35,9 @@ public class FlatLogSerializer implements IFullLogSerializer<String> {
      */
     public String serializeLogs(LogEntry[] logs) {
         StringBuilder log = new StringBuilder();
-        for(int i = 0; i < logs.length; ++i ) {
-            log.append(this.serializeLog(logs[i]));
+        for (LogEntry logEntry : logs) {
+            log.append(this.serializeLog(logEntry));
         }
         return log.toString();
     }
-
 }

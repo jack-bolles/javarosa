@@ -32,7 +32,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,11 +88,7 @@ public class XFormUtils {
     public static FormDef getFormFromInputStream(InputStream is, String lastSavedSrc) throws ParseException {
         InputStreamReader isr = null;
         try {
-            try {
-                isr = new InputStreamReader(is, "UTF-8");
-            } catch (UnsupportedEncodingException uee) {
-                throw new ParseException("IO Exception during parse! " + uee.getMessage());
-            }
+            isr = new InputStreamReader(is, StandardCharsets.UTF_8);
 
             XFormParser xFormParser = _factory.getXFormParser(isr);
             return xFormParser.parse(lastSavedSrc);
@@ -168,7 +164,7 @@ public class XFormUtils {
     /////Parser Attribute warning stuff
 
     public static List<String> getAttributeList(Element e){
-        List<String> atts = new ArrayList<String>(e.getAttributeCount());
+        List<String> atts = new ArrayList<>(e.getAttributeCount());
         for(int i=0;i<e.getAttributeCount();i++){
             atts.add(e.getAttributeName(i));
         }
@@ -178,10 +174,8 @@ public class XFormUtils {
 
     public static List<String> getUnusedAttributes(Element e,List<String> usedAtts){
         List<String> unusedAtts = getAttributeList(e);
-        for(int i=0;i<usedAtts.size();i++){
-            if(unusedAtts.contains(usedAtts.get(i))){
-                unusedAtts.remove(usedAtts.get(i));
-            }
+        for (String usedAtt : usedAtts) {
+            unusedAtts.remove(usedAtt);
         }
 
         return unusedAtts;
@@ -206,14 +200,8 @@ public class XFormUtils {
         return getUnusedAttributes(e,usedAtts).size()>0;
     }
 
-    /**
-     * Is this element an Output tag?
-     * @param e
-     * @return
-     */
     public static boolean isOutput(Element e){
-        if(e.getName().toLowerCase().equals("output")) return true;
-        else return false;
+        return e.getName().equalsIgnoreCase("output");
     }
 
 }

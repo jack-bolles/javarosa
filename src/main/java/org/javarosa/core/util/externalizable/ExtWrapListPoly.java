@@ -61,8 +61,8 @@ public class ExtWrapListPoly extends ExternalizableWrapper {
       List v = (List)val;
 
         ExtUtil.writeNumeric(out, v.size());
-        for (int i = 0; i < v.size(); i++) {
-            ExtUtil.write(out, new ExtWrapTagged(v.get(i)));
+        for (Object o : v) {
+            ExtUtil.write(out, new ExtWrapTagged(o));
         }
     }
 
