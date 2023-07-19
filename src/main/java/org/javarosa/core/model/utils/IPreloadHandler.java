@@ -29,7 +29,6 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
-import static org.javarosa.core.model.utils.DateUtils.localDateFrom;
 import static org.javarosa.core.model.utils.StringUtils.split;
 
 /**
@@ -119,9 +118,8 @@ public interface IPreloadHandler {
         @SuppressWarnings("JavadocReference")
         public IAnswerData handlePreload(String preloadParams) {
             //TODO - use LocalDate
-            Date d;
             if (preloadParams.equals("today")) {
-                d = new Date();
+                return new DateData(LocalDate.now());
             } else if (preloadParams.startsWith("prevperiod-")) {
                 List<String> v = split(preloadParams.substring(11), "-", false);
                 String[] params = new String[v.size()];
@@ -153,13 +151,11 @@ public interface IPreloadHandler {
                         nAgo = 1;
                     }
 
-                    d = supportedPeriod.pastPeriodFrom(LocalDate.now(), start, beginning, includeToday, nAgo);
+                    return new DateData(supportedPeriod.pastPeriodFrom(LocalDate.now(), start, beginning, includeToday, nAgo));
                 } catch (Exception e) {
                     throw new IllegalArgumentException("invalid preload params for preload mode 'date'", e);
                 }
             } else return null;
-
-            return new DateData(localDateFrom(d));
         }
 
         public boolean handlePostProcess(TreeElement node, String params) {

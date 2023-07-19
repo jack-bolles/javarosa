@@ -4,7 +4,6 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.AbstractMap;
-import java.util.Date;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -20,7 +19,7 @@ import static java.time.DayOfWeek.WEDNESDAY;
 public enum SupportedPeriod {
     week() {
         @Override
-        Date pastPeriodFrom(LocalDate anchorDate, String start, boolean beginning, boolean includeToday, int nAgo) {
+        LocalDate pastPeriodFrom(LocalDate anchorDate, String start, boolean beginning, boolean includeToday, int nAgo) {
             DayOfWeek currentDOW = anchorDate.getDayOfWeek();
             DayOfWeek targetDOWStart = dayToDay.get(start);
             DayOfWeek targetDOWEnd = targetDOWStart.plus(6);
@@ -30,7 +29,7 @@ public enum SupportedPeriod {
             LocalDate theDate = anchorDate.minusWeeks(nAgo).with(TemporalAdjusters.previousOrSame(targetDOWStart));
             if (!beginning) theDate = theDate.plusDays(6);
 
-            return DateUtils.dateFrom(theDate);
+            return theDate;
         }
     };
 
@@ -45,8 +44,8 @@ public enum SupportedPeriod {
      * @param beginning    true=return first day of period, false=return last day of period
      * @param includeToday Whether today's date can count as the last day of the period
      * @param nAgo         How many periods ago. 1=most recent period, 0=period in progress
-     * @return a Date object representing the amount of time between the
+     * @return a LocalDate object representing the amount of time between the
      * reference date, and the given parameters.
      */
-    abstract Date pastPeriodFrom(LocalDate anchorDate, String start, boolean beginning, boolean includeToday, int nAgo);
+    abstract LocalDate pastPeriodFrom(LocalDate anchorDate, String start, boolean beginning, boolean includeToday, int nAgo);
 }
