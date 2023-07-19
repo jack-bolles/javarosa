@@ -449,11 +449,6 @@ public class CompactInstanceWrapper implements WrappingStorageUtility.Serializat
 
     }
 
-    /**
-     * map xforms data types to the Class that represents that data in a FormInstance
-     * @param dataType
-     * @return
-     */
     public static Class classForDataType(int dataType) {
         return DataTypeClasses.classForType(DataType.from(dataType));
     }

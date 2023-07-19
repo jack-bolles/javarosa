@@ -16,10 +16,6 @@
 
 package org.javarosa.core.services;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-
 import org.javarosa.core.services.properties.IPropertyRules;
 import org.javarosa.core.services.properties.Property;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
@@ -29,82 +25,69 @@ import org.javarosa.core.util.externalizable.Externalizable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+
 /**
  * PropertyManager is a class that is used to set and retrieve name/value pairs
  * from persistent storage.
- *
+ * <p>
  * Which properties are allowed, and what they can be set to, can be specified by an implementation of
  * the IPropertyRules interface, any number of which can be registered with a property manager. All
  * property rules are inclusive, and can only increase the number of potential properties or property
  * values.
  *
  * @author Clayton Sims
- *
  */
 public class PropertyManager implements IPropertyManager {
     private static final Logger logger = LoggerFactory.getLogger(PropertyManager.class);
 
-    ///// manage global property manager /////
-
     private static IPropertyManager instance; //a global instance of the property manager
 
-    public static void setPropertyManager (IPropertyManager pm) {
+    public static void setPropertyManager(IPropertyManager pm) {
         instance = pm;
     }
 
-    public static void initDefaultPropertyManager () {
+    public static void initDefaultPropertyManager() {
         StorageManager.registerStorage(PropertyManager.STORAGE_KEY, Property.class);
-           setPropertyManager(new PropertyManager());
+        setPropertyManager(new PropertyManager());
     }
 
     public static IPropertyManager __() {
-           if (instance == null) {
-               initDefaultPropertyManager();
-           }
-          return instance;
+        if (instance == null) {
+            initDefaultPropertyManager();
+        }
+        return instance;
     }
 
-    //////////////////////////////////////////
-
-    /**
-     * The name for the Persistent storage utility name
-     */
     public static final String STORAGE_KEY = "PROPERTY";
 
-    /**
-     * The list of rules
-     */
-    private List<IPropertyRules> rulesList;
+    private final List<IPropertyRules> rulesList;
 
-    /**
-     * The persistent storage utility
-     */
-    private IStorageUtilityIndexed<? extends Externalizable> properties;
+    private final IStorageUtilityIndexed<? extends Externalizable> properties;
 
-    /**
-     * Constructor for this PropertyManager
-     */
     public PropertyManager() {
-        this.properties = (IStorageUtilityIndexed<? extends Externalizable>)StorageManager.getStorage(STORAGE_KEY);
-        rulesList = new ArrayList<IPropertyRules>(0);
+        this.properties = (IStorageUtilityIndexed<? extends Externalizable>) StorageManager.getStorage(STORAGE_KEY);
+        rulesList = new ArrayList<>(0);
     }
 
     /**
-     * Retrieves the singular property specified, as long as it exists in one of the current rulesets
+     * Retrieves the singular property specified, as long as it exists in one of the current rules
      *
      * @param propertyName the name of the property being retrieved
-     * @return The String value of the property specified if it exists, is singluar, and is in one the current
-     * rulessets. null if the property is denied by the current ruleset, or is a vector.
+     * @return The String value of the property specified if it exists, is singular, and is in one the current
+     * rules. null if the property is denied by the current ruleset, or is a vector.
      */
     public String getSingularProperty(String propertyName) {
         String retVal = null;
-        if((rulesList.size() == 0 || checkPropertyAllowed(propertyName))) {
-         List<String> value = getValue(propertyName);
-            if(value != null && value.size() == 1) {
+        if ((rulesList.size() == 0 || checkPropertyAllowed(propertyName))) {
+            List<String> value = getValue(propertyName);
+            if (value != null && value.size() == 1) {
                 retVal = value.get(0);
             }
         }
-        if(retVal == null) {
+        if (retVal == null) {
             logger.warn("Singular property request failed for property {}", propertyName);
         }
         return retVal;
@@ -112,22 +95,19 @@ public class PropertyManager implements IPropertyManager {
 
 
     /**
-     * Retrieves the property specified, as long as it exists in one of the current rulesets
+     * Retrieves the property specified, as long as it exists in one of the current rules
      *
      * @param propertyName the name of the property being retrieved
      * @return The String value of the property specified if it exists, and is the current ruleset, if one exists.
      * null if the property is denied by the current ruleset.
      */
     public List<String> getProperty(String propertyName) {
-        if(rulesList.size() == 0) {
+        if (rulesList.size() == 0) {
             return getValue(propertyName);
-        }
-        else {
-            if(checkPropertyAllowed(propertyName)) {
+        } else {
+            if (checkPropertyAllowed(propertyName)) {
                 return getValue(propertyName);
-            }
-            else
-            {
+            } else {
                 return null;
             }
         }
@@ -135,38 +115,39 @@ public class PropertyManager implements IPropertyManager {
 
     /**
      * Sets the given property to the given string value, if both are allowed by any existing ruleset
-     * @param propertyName The property to be set
+     *
+     * @param propertyName  The property to be set
      * @param propertyValue The value that the property will be set to
      */
     public void setProperty(String propertyName, String propertyValue) {
-       List<String> wrapper = new ArrayList<String>(1);
+        List<String> wrapper = new ArrayList<>(1);
         wrapper.add(propertyValue);
         setProperty(propertyName, wrapper);
     }
 
     /**
      * Sets the given property to the given vector value, if both are allowed by any existing ruleset
-     * @param propertyName The property to be set
+     *
+     * @param propertyName  The property to be set
      * @param propertyValue The value that the property will be set to
      */
     public void setProperty(String propertyName, List<String> propertyValue) {
-      List<String> oldValue = getProperty(propertyName);
-        if(oldValue != null && listEquals(oldValue, propertyValue)) {
+        List<String> oldValue = getProperty(propertyName);
+        if (oldValue != null && listEquals(oldValue, propertyValue)) {
             //No point in redundantly setting values!
             return;
         }
-        if(rulesList.size() == 0) {
-           writeValue(propertyName, propertyValue);
-        }
-        else {
+        if (rulesList.size() == 0) {
+            writeValue(propertyName, propertyValue);
+        } else {
             boolean valid = true;
-            for ( String pv : propertyValue ) {
-               // RL - checkPropertyAllowed is implicit in checkValueAllowed
-               if ( !checkValueAllowed(propertyName, pv)) {
-                  valid = false;
-               }
+            for (String pv : propertyValue) {
+                // RL - checkPropertyAllowed is implicit in checkValueAllowed
+                if (!checkValueAllowed(propertyName, pv)) {
+                    valid = false;
+                }
             }
-            if(valid) {
+            if (valid) {
                 writeValue(propertyName, propertyValue);
                 notifyChanges(propertyName);
             } else {
@@ -177,11 +158,11 @@ public class PropertyManager implements IPropertyManager {
     }
 
     private boolean listEquals(List<String> v1, List<String> v2) {
-        if(v1.size() != v2.size()) {
+        if (v1.size() != v2.size()) {
             return false;
         } else {
-            for(int i = 0; i < v1.size() ; ++i ) {
-                if(!v1.get(i).equals(v2.get(i))) {
+            for (int i = 0; i < v1.size(); ++i) {
+                if (!v1.get(i).equals(v2.get(i))) {
                     return false;
                 }
             }
@@ -192,9 +173,9 @@ public class PropertyManager implements IPropertyManager {
     /**
      * Retrieves the set of rules being used by this property manager if any exist.
      *
-     * @return The rulesets being used by this property manager
+     * @return The rules being used by this property manager
      */
-    public List<IPropertyRules> getRules(){
+    public List<IPropertyRules> getRules() {
         return rulesList;
     }
 
@@ -217,7 +198,7 @@ public class PropertyManager implements IPropertyManager {
      * @param rules The set of rules to be added to the permitted list
      */
     public void addRules(IPropertyRules rules) {
-        if(rules != null) {
+        if (rules != null) {
             this.rulesList.add(rules);
         }
     }
@@ -229,16 +210,16 @@ public class PropertyManager implements IPropertyManager {
      * @return true if the property is permitted to store values. false otherwise
      */
     public boolean checkPropertyAllowed(String propertyName) {
-        if(rulesList.size() == 0) {
+        if (rulesList.size() == 0) {
             return true;
         } else {
             boolean allowed = false;
-         //We're fine if we return true, inclusive rules sets
-            for ( IPropertyRules rules : rulesList ) {
-               if (rules.checkPropertyAllowed(propertyName)) {
-                  allowed = true;
-                  break;
-               }
+            //We're fine if we return true, inclusive rules sets
+            for (IPropertyRules rules : rulesList) {
+                if (rules.checkPropertyAllowed(propertyName)) {
+                    allowed = true;
+                    break;
+                }
             }
             return allowed;
         }
@@ -247,23 +228,23 @@ public class PropertyManager implements IPropertyManager {
     /**
      * Checks that a property is allowed to store a certain value.
      *
-     * @param propertyName The name of the property to be set
+     * @param propertyName  The name of the property to be set
      * @param propertyValue The value to be stored in the given property
      * @return true if the property given is allowed to be stored. false otherwise.
      */
     public boolean checkValueAllowed(String propertyName,
-            String propertyValue) {
+                                     String propertyValue) {
         if (rulesList.size() == 0) {
             return true;
         } else {
             boolean allowed = false;
-            for ( IPropertyRules rules : rulesList ) {
-               if (rules.checkPropertyAllowed(propertyName)) {
-                  if (rules.checkValueAllowed(propertyName, propertyValue)) {
-                     allowed = true;
-                     break;
-                  }
-               }
+            for (IPropertyRules rules : rulesList) {
+                if (rules.checkPropertyAllowed(propertyName)) {
+                    if (rules.checkValueAllowed(propertyName, propertyValue)) {
+                        allowed = true;
+                        break;
+                    }
+                }
             }
             return allowed;
         }
@@ -276,23 +257,22 @@ public class PropertyManager implements IPropertyManager {
      * @param property The property that has been changed
      */
     private void notifyChanges(String property) {
-        if(rulesList.size() ==0 ) {
+        if (rulesList.size() == 0) {
             return;
         }
 
-        for ( IPropertyRules therules : rulesList ) {
-         if(therules.checkPropertyAllowed(property)) {
-            therules.handlePropertyChanges(property);
-         }
+        for (IPropertyRules therules : rulesList) {
+            if (therules.checkPropertyAllowed(property)) {
+                therules.handlePropertyChanges(property);
+            }
         }
-
     }
 
-    public List<String> getValue (String name) {
+    public List<String> getValue(String name) {
         try {
-            Property p = (Property)properties.getRecordForValue("NAME", name);
-               return p.value;
-        } catch(NoSuchElementException nsee) {
+            Property p = (Property) properties.getRecordForValue("NAME", name);
+            return p.value;
+        } catch (NoSuchElementException nsee) {
             return null;
         }
     }
@@ -304,7 +284,7 @@ public class PropertyManager implements IPropertyManager {
 
         List<Integer> IDs = properties.getIDsForValue("NAME", propertyName);
         if (IDs.size() == 1) {
-            theProp.setID(IDs.get(0).intValue());
+            theProp.setID(IDs.get(0));
         }
 
         try {

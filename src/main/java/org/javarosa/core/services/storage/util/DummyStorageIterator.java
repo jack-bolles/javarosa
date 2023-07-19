@@ -3,17 +3,13 @@
  */
 package org.javarosa.core.services.storage.util;
 
-import java.util.Enumeration;
-import java.util.Hashtable;
-
 import org.javarosa.core.services.storage.IStorageIterator;
 import org.javarosa.core.services.storage.Persistable;
 import org.javarosa.core.util.DataUtil;
 
-/**
- * @author ctsims
- *
- */
+import java.util.Enumeration;
+import java.util.Hashtable;
+
 public class DummyStorageIterator<T extends Persistable> implements IStorageIterator<T> {
     Hashtable<Integer, T> data;
     int count;
@@ -31,31 +27,19 @@ public class DummyStorageIterator<T extends Persistable> implements IStorageIter
         count = 0;
     }
 
-    /* (non-Javadoc)
-     * @see org.javarosa.core.services.storage.IStorageIterator#hasMore()
-     */
     public boolean hasMore() {
         return count < keys.length;
     }
 
-    /* (non-Javadoc)
-     * @see org.javarosa.core.services.storage.IStorageIterator#nextID()
-     */
     public int nextID() {
         count++;
-        return keys[count -1].intValue();
+        return keys[count - 1];
     }
 
-    /* (non-Javadoc)
-     * @see org.javarosa.core.services.storage.IStorageIterator#nextRecord()
-     */
     public T nextRecord() {
         return data.get(DataUtil.integer(nextID()));
     }
 
-    /* (non-Javadoc)
-     * @see org.javarosa.core.services.storage.IStorageIterator#numRecords()
-     */
     public int numRecords() {
         return data.size();
     }
@@ -63,5 +47,4 @@ public class DummyStorageIterator<T extends Persistable> implements IStorageIter
     public int peekID() {
         return keys[count];
     }
-
 }

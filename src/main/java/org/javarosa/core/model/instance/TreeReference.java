@@ -16,13 +16,6 @@
 
 package org.javarosa.core.model.instance;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 import org.javarosa.core.util.DataUtil;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.ExtUtil;
@@ -31,6 +24,14 @@ import org.javarosa.core.util.externalizable.Externalizable;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.xpath.XPathException;
 import org.javarosa.xpath.expr.XPathExpression;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class TreeReference implements Externalizable, Serializable {
     /**
@@ -85,8 +86,8 @@ public class TreeReference implements Externalizable, Serializable {
      */
     private int refLevel;
     private int contextType;
-    private String instanceName = null;
-    private List<TreeReferenceLevel> data = null;
+    private String instanceName;
+    private List<TreeReferenceLevel> data;
 
 
     public static TreeReference rootRef() {
@@ -107,7 +108,7 @@ public class TreeReference implements Externalizable, Serializable {
         instanceName = null; // null means the default instance
         refLevel = 0;
         contextType = CONTEXT_ABSOLUTE;
-        data = new ArrayList<TreeReferenceLevel>(0);
+        data = new ArrayList<>(0);
     }
 
     public String getInstanceName() {
@@ -188,7 +189,6 @@ public class TreeReference implements Externalizable, Serializable {
         return false;
     }
 
-    //return a copy of the ref
     @Override
     public TreeReference clone() {
         TreeReference newRef = new TreeReference();
@@ -427,9 +427,7 @@ public class TreeReference implements Externalizable, Serializable {
                     if (!nameA.equals(nameB)) {
                         return false;
                     } else if (multA != multB) {
-                        if (i == 0 && (multA == 0 || multA == INDEX_UNBOUND) && (multB == 0 || multB == INDEX_UNBOUND)) {
-                            // /data and /data[0] are functionally the same
-                        } else {
+                        if (i != 0 || (multA != 0 && multA != INDEX_UNBOUND) || (multB != 0 && multB != INDEX_UNBOUND)) {
                             return false;
                         }
                     } else if (predA != null && predB != null) {
@@ -441,7 +439,7 @@ public class TreeReference implements Externalizable, Serializable {
                                 return false;
                             }
                         }
-                    } else if ((predA == null && predB != null) || (predA != null && predB == null)) {
+                    } else if (predA != null || predB != null) {
                         return false;
                     }
                 }
@@ -464,7 +462,7 @@ public class TreeReference implements Externalizable, Serializable {
             //this should potentially just be replaced by
             //an int.
             Integer mult = DataUtil.integer(getMultiplicity(i));
-            if (i == 0 && mult.intValue() == INDEX_UNBOUND)
+            if (i == 0 && mult == INDEX_UNBOUND)
                 mult = DataUtil.integer(0);
 
             hash ^= getName(i).hashCode();
@@ -494,7 +492,7 @@ public class TreeReference implements Externalizable, Serializable {
     public String toString(boolean includePredicates, boolean zeroIndexMult) {
         StringBuilder sb = new StringBuilder();
         if (instanceName != null) {
-            sb.append("instance(" + instanceName + ")");
+            sb.append("instance(").append(instanceName).append(")");
         } else if (contextType == CONTEXT_ORIGINAL) {
             sb.append("current()");
         } else if (contextType == CONTEXT_INHERITED) {
@@ -566,7 +564,7 @@ public class TreeReference implements Externalizable, Serializable {
             }
         }
 
-        return getNameLast() + " [" + sb.toString() + "]";
+        return getNameLast() + " [" + sb + "]";
     }
 
     @Override
@@ -692,7 +690,7 @@ public class TreeReference implements Externalizable, Serializable {
         ret.refLevel = this.refLevel;
         ret.contextType = this.contextType;
         ret.instanceName = this.instanceName;
-        ret.data = new ArrayList<TreeReferenceLevel>(level);
+        ret.data = new ArrayList<>(level);
         for (int i = 0; i <= level; ++i) {
             ret.data.add(this.data.get(i));
         }
@@ -710,9 +708,7 @@ public class TreeReference implements Externalizable, Serializable {
 
     public TreeReference removePredicates() {
         TreeReference predicateless = clone();
-        for (int i = 0; i < predicateless.data.size(); ++i) {
-            predicateless.data.set(i, predicateless.data.get(i).setPredicates(null));
-        }
+        predicateless.data.replaceAll(treeReferenceLevel -> treeReferenceLevel.setPredicates(null));
         return predicateless;
     }
 

@@ -42,15 +42,15 @@ import java.util.Locale;
 public class FormEntryModel {
     private static final Logger logger = LoggerFactory.getLogger(FormEntryModel.class);
 
-    private FormDef form;
+    private final FormDef form;
     private FormIndex currentFormIndex;
 
     /**
-     * One of "REPEAT_STRUCUTRE_" in this class's static types,
+     * One of "REPEAT_STRUCTURE_" in this class's static types,
      * represents what abstract structure repeat events should
-     * be broadacast as.
+     * be broadcast as.
      */
-    private int repeatStructure = -1;
+    private final int repeatStructure;
 
     /**
      * Repeats should be a prompted linear set of questions, either
@@ -303,7 +303,7 @@ public class FormEntryModel {
      * @return list of FormEntryCaptions in hierarchical order
      */
     public FormEntryCaption[] getCaptionHierarchy(FormIndex index) {
-        List<FormEntryCaption> captions = new ArrayList<FormEntryCaption>();
+        List<FormEntryCaption> captions = new ArrayList<>();
         FormIndex remaining = index;
         while (remaining != null) {
             remaining = remaining.getNextLevel();
@@ -330,7 +330,7 @@ public class FormEntryModel {
      * Returns a hierarchical list of FormEntryCaption objects for the current
      * FormIndex
      *
-     * @return list of FormEntryCaptions in hierarchical order
+     * @return array of FormEntryCaptions in hierarchical order
      */
     public FormEntryCaption[] getCaptionHierarchy() {
         return getCaptionHierarchy(currentFormIndex);
@@ -433,7 +433,7 @@ public class FormEntryModel {
                     TreeReference contextualized = countRef.contextualize(index.getReference());
                     IAnswerData count = getForm().getMainInstance().resolveReference(contextualized).getValue();
                     if (count != null) {
-                        long fullcount = ((Integer) count.getValue()).intValue();
+                        long fullcount = (Integer) count.getValue();
                         TreeReference ref = getForm().getChildInstanceRef(index);
                         TreeElement element = getForm().getMainInstance().resolveReference(ref);
                         if (element == null) {
@@ -493,7 +493,7 @@ public class FormEntryModel {
 
     public FormIndex[] getCompoundIndices(FormIndex container) {
         //ArrayLists are a no-go for J2ME
-        List<FormIndex> indices = new ArrayList<FormIndex>();
+        List<FormIndex> indices = new ArrayList<>();
         FormIndex walker = incrementIndex(container);
         while (FormIndex.isSubElement(container, walker)) {
             if (isIndexRelevant(walker)) {

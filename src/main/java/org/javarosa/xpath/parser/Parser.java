@@ -16,9 +16,6 @@
 
 package org.javarosa.xpath.parser;
 
-import java.util.Enumeration;
-import java.util.Vector;
-
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.expr.XPathQName;
 import org.javarosa.xpath.parser.ast.ASTNode;
@@ -30,6 +27,9 @@ import org.javarosa.xpath.parser.ast.ASTNodeLocPath;
 import org.javarosa.xpath.parser.ast.ASTNodePathStep;
 import org.javarosa.xpath.parser.ast.ASTNodePredicate;
 import org.javarosa.xpath.parser.ast.ASTNodeUnaryOp;
+
+import java.util.Enumeration;
+import java.util.Vector;
 
 /* if you try to edit this code, you will likely break it */
 
@@ -102,10 +102,7 @@ public class Parser {
         }
 
         ASTNodeAbstractExpr.Partition args = node.partitionBalanced(Token.COMMA, funcStart + 1, Token.LPAREN, Token.RPAREN);
-        if (args.pieces.size() == 1 && ((ASTNodeAbstractExpr)args.pieces.elementAt(0)).content.size() == 0) {
-            //no arguments
-        } else {
-            //process arguments
+        if (args.pieces.size() != 1 || ((ASTNodeAbstractExpr) args.pieces.elementAt(0)).content.size() != 0) {
             funcCall.args = args.pieces;
         }
 
@@ -163,9 +160,7 @@ public class Parser {
             ASTNodeAbstractExpr absNode = (ASTNodeAbstractExpr)node;
             ASTNodeAbstractExpr.Partition part = absNode.partition(ops, 0, absNode.content.size());
 
-            if (part.separators.size() == 0) {
-                //no occurrences of op
-            } else {
+            if (part.separators.size() != 0) {
                 ASTNodeBinaryOp binOp = new ASTNodeBinaryOp();
                 binOp.associativity = associativity;
                 binOp.exprs = part.pieces;
@@ -222,9 +217,7 @@ public class Parser {
                 ASTNodeLocPath path = new ASTNodeLocPath();
                 path.separators = part.separators;
 
-                if (part.separators.size() == 1 && absNode.content.size() == 1 && vectInt(part.separators, 0) == Token.SLASH) {
-                    //empty absolute path
-                } else {
+                if (part.separators.size() != 1 || absNode.content.size() != 1 || vectInt(part.separators, 0) != Token.SLASH) {
                     for (int i = 0; i < part.pieces.size(); i++) {
                         ASTNodeAbstractExpr x = (ASTNodeAbstractExpr)part.pieces.elementAt(i);
                         if (isStep(x)) {
@@ -232,10 +225,7 @@ public class Parser {
                             path.clauses.addElement(step);
                         } else {
                             if (i == 0) {
-                                if (x.content.size() == 0) {
-                                    //absolute path expr; first clause is null
-                                    /* do nothing */
-                                } else {
+                                if (x.content.size() != 0) {
                                     //filter expr
                                     ASTNodeFilterExpr filt = parseFilterExp(x);
                                     if (filt != null)
@@ -295,9 +285,9 @@ public class Parser {
                 step.axisType = ASTNodePathStep.AXIS_TYPE_ABBR;
                 i += 1;
             } else if (node.content.size() > 1 && node.getTokenType(0) == Token.QNAME && node.getTokenType(1) == Token.DBL_COLON) {
-                int axisVal = ASTNodePathStep.validateAxisName(((XPathQName)node.getToken(0).val).toString());
+                int axisVal = ASTNodePathStep.validateAxisName(node.getToken(0).val.toString());
                 if (axisVal == -1) {
-                    throw new XPathSyntaxException("Invalid Axis: " + ((XPathQName)node.getToken(0).val).toString());
+                    throw new XPathSyntaxException("Invalid Axis: " + node.getToken(0).val.toString());
                 }
                 step.axisType = ASTNodePathStep.AXIS_TYPE_EXPLICIT;
                 step.axisVal = axisVal;
@@ -338,7 +328,7 @@ public class Parser {
         return step;
     }
 
-    private static ASTNodeFilterExpr parseFilterExp (ASTNodeAbstractExpr node) throws XPathSyntaxException {
+    private static ASTNodeFilterExpr parseFilterExp (ASTNodeAbstractExpr node) {
         ASTNodeFilterExpr filt = new ASTNodeFilterExpr();
         int i;
         for (i = node.content.size() - 1; i >= 0; i--) {
@@ -361,7 +351,7 @@ public class Parser {
             ASTNodeAbstractExpr absNode = (ASTNodeAbstractExpr)node;
 
             if (!absNode.isNormalized()) {
-                throw new XPathSyntaxException("Bad node: " + absNode.toString());
+                throw new XPathSyntaxException("Bad node: " + absNode);
             }
         }
 
@@ -371,6 +361,6 @@ public class Parser {
     }
 
     public static int vectInt (Vector<Integer> v, int i) {
-        return v.elementAt(i).intValue();
+        return v.elementAt(i);
     }
 }
