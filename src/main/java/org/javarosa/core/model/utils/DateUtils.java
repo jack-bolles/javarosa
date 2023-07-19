@@ -83,6 +83,10 @@ public class DateUtils {
         return LocalDate.of(Integer.parseInt(pieces.get(0)), Integer.parseInt(pieces.get(1)), Integer.parseInt(pieces.get(2)));
     }
 
+    public static Date dateFrom(LocalDate localDate) {
+        return dateFrom(of(localDate, LocalTime.NOON), ZoneId.systemDefault());
+    }
+
     public static class TimeAndOffset {
         public final LocalTime localTime;
         public final ZoneOffset zoneOffset;

@@ -1,30 +1,46 @@
 package org.javarosa.core.model.utils;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.util.Calendar;
+import java.time.temporal.TemporalAdjusters;
+import java.util.AbstractMap;
 import java.util.Date;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.time.DayOfWeek.FRIDAY;
+import static java.time.DayOfWeek.MONDAY;
+import static java.time.DayOfWeek.SATURDAY;
+import static java.time.DayOfWeek.SUNDAY;
+import static java.time.DayOfWeek.THURSDAY;
+import static java.time.DayOfWeek.TUESDAY;
+import static java.time.DayOfWeek.WEDNESDAY;
 
 public enum SupportedPeriod {
-    week(){
-        public Date pastPeriodFrom(Date ref, String start, boolean beginning, boolean includeToday, int nAgo){
-            Calendar cd = Calendar.getInstance();
-            cd.setTime(ref);
-            int current_dow = cd.get(Calendar.DAY_OF_WEEK) - 1;
-            int target_dow = DOW.valueOf(start).order;
-            int offset = (includeToday ? 1 : 0);
-            int diff = ((current_dow - target_dow + 7 + offset) % 7 - offset) + (7 * nAgo) - (beginning ? 0 : 6);
-            return new Date(ref.getTime() - diff * IPreloadHandler.DatePreloadHandler.DAY_IN_MS);
+    week() {
+        @Override
+        Date pastPeriodFrom(LocalDate anchorDate, String start, boolean beginning, boolean includeToday, int nAgo) {
+            DayOfWeek currentDOW = anchorDate.getDayOfWeek();
+            DayOfWeek targetDOWStart = dayToDay.get(start);
+            DayOfWeek targetDOWEnd = targetDOWStart.plus(6);
+
+            if (!beginning && !includeToday && currentDOW.equals(targetDOWEnd)) nAgo = nAgo >= 0 ? nAgo + 1 : nAgo - 1;
+
+            LocalDate theDate = anchorDate.minusWeeks(nAgo).with(TemporalAdjusters.previousOrSame(targetDOWStart));
+            if (!beginning) theDate = theDate.plusDays(6);
+
+            return DateUtils.dateFrom(theDate);
         }
     };
+
+    private static final Map<String, DayOfWeek> dayToDay = Stream.of(new AbstractMap.SimpleImmutableEntry<>("sun", SUNDAY), new AbstractMap.SimpleImmutableEntry<>("mon", MONDAY), new AbstractMap.SimpleImmutableEntry<>("tue", TUESDAY), new AbstractMap.SimpleImmutableEntry<>("wed", WEDNESDAY), new AbstractMap.SimpleImmutableEntry<>("thu", THURSDAY), new AbstractMap.SimpleImmutableEntry<>("fri", FRIDAY), new AbstractMap.SimpleImmutableEntry<>("sat", SATURDAY)).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     /**
      * Creates a Date object representing the amount of time between the
      * reference date, and the given parameters.
      *
-     * @param ref          The starting reference date
+     * @param anchorDate   The starting point of reference date
      * @param start        "sun", "mon", ... etc. representing the start of the time period.
      * @param beginning    true=return first day of period, false=return last day of period
      * @param includeToday Whether today's date can count as the last day of the period
@@ -32,24 +48,5 @@ public enum SupportedPeriod {
      * @return a Date object representing the amount of time between the
      * reference date, and the given parameters.
      */
-    abstract Date pastPeriodFrom(Date ref, String start, boolean beginning, boolean includeToday, int nAgo);
-
-    public Date pastPeriodFrom(LocalDate testDate, String start, boolean beginning, boolean includeToday, int nAgo) {
-        return pastPeriodFrom(gimme(testDate), start, beginning, includeToday, nAgo);
-    }
-    private static  Date gimme(LocalDate localDate){
-        ZoneId zoneId = ZoneId.systemDefault();
-        LocalTime noon = LocalTime.NOON;
-        return DateUtils.dateFrom(LocalDateTime.of(localDate, noon), zoneId);
-    }
-
-}
-
-enum DOW {
-    sun(0), mon(1), tue(2), wed(3), thu(4), fri(5), sat(6);
-    final int order;
-
-    DOW(int ordinal) {
-        this.order = ordinal;
-    }
+    abstract Date pastPeriodFrom(LocalDate anchorDate, String start, boolean beginning, boolean includeToday, int nAgo);
 }
