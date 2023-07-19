@@ -4,6 +4,8 @@
 
 + `TimeData` uses the `java.time.LocalTime` as its underlying data structure. This solves the problem identified by these tests : [TimeDataLimitationsTest](https://github.com/getodk/javarosa/blob/6d077f57e53c26c862e666b22325b090e1190895/src/test/java/org/javarosa/core/model/data/test/TimeDataLimitationsTest.java)
 
++ Moved Period math from DateUtils to IPreLoader, where's its used.
++ 
 + *Ongoing - Upgraded parts of the codebase to take advantage of `Java8` features* - done largely taking advantage of Intellij's code analysis and low-hanging fruit as I was working on the Date migration.
 
 + `build.gradle` no longer uses syntax deprecated for v8.+ 
@@ -11,7 +13,6 @@
 
 ### More work to do 
 + Convert `DateTimeData` to use `java.time.*`
-+ Look at Duration in DateUtil
 
 ## Hangover from previous
 ### More work to do
