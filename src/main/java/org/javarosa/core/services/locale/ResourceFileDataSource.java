@@ -14,22 +14,20 @@
  * the License.
  */
 
-/**
- *
- */
 package org.javarosa.core.services.locale;
 
 import org.javarosa.core.util.OrderedMap;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author Clayton Sims
@@ -91,11 +89,11 @@ public class ResourceFileDataSource implements LocaleDataSource {
     private OrderedMap<String,String> loadLocaleResource(String resourceName) {
         InputStream is = System.class.getResourceAsStream(resourceName);
         // TODO: This might very well fail. Best way to handle?
-        OrderedMap<String,String> locale = new OrderedMap<String,String>();
+        OrderedMap<String,String> locale = new OrderedMap<>();
         int chunk = 100;
         InputStreamReader isr;
         try {
-            isr = new InputStreamReader(is,"UTF-8");
+            isr = new InputStreamReader(is, StandardCharsets.UTF_8);
         }
         catch (Exception e) {
             throw new RuntimeException("Failed to load locale resource " + resourceName + ". Is it in the jar?");
@@ -155,27 +153,18 @@ public class ResourceFileDataSource implements LocaleDataSource {
     }
 
     private void parseAndAdd(OrderedMap<String,String> locale, String line, int curline) {
-
-        //trim whitespace.
         line = line.trim();
 
         //clear comments
-        while(line.indexOf("#") != -1) {
+        while(line.contains("#")) {
             line = line.substring(0, line.indexOf("#"));
         }
-        if(line.indexOf('=') == -1) {
-            // TODO: Invalid line. Empty lines are fine, especially with comments,
-            // but it might be hard to get all of those.
-            if(line.trim().equals("")) {
-                //Empty Line
-            } else {
-                logger.info("Invalid line (#{}) read: {}", curline, line);
-            }
-        } else {
+
+        if (line.indexOf('=') != -1) {
             //Check to see if there's anything after the '=' first. Otherwise there
             //might be some big problems.
             if(line.indexOf('=') != line.length()-1) {
-                String value = line.substring(line.indexOf('=') + 1,line.length());
+                String value = line.substring(line.indexOf('=') + 1);
                 locale.put(line.substring(0, line.indexOf('=')), value);
             }
              else {

@@ -16,13 +16,6 @@
 
 package org.javarosa.xpath;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.List;
-
 import org.javarosa.core.log.FatalException;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.condition.IConditionExpr;
@@ -40,16 +33,20 @@ import org.javarosa.xpath.expr.XPathPathExpr;
 import org.javarosa.xpath.expr.XPathUnaryOpExpr;
 import org.javarosa.xpath.parser.XPathSyntaxException;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 public class XPathConditional implements IConditionExpr {
     private XPathExpression expr;
     public String xpath; //not serialized!
     public boolean hasNow; //indicates whether this XpathConditional contains the now() function (used for timestamping)
 
     public XPathConditional (String xpath) throws XPathSyntaxException {
-        hasNow = false;
-        if(xpath.indexOf("now()") > -1) {
-            hasNow = true;
-        }
+        hasNow = xpath.contains("now()");
         this.expr = XPathParseTool.parseXPath(xpath);
         this.xpath = xpath;
     }
@@ -152,7 +149,7 @@ public class XPathConditional implements IConditionExpr {
 
     public void readExternal(DataInputStream in, PrototypeFactory pf) throws IOException, DeserializationException {
         expr = (XPathExpression)ExtUtil.read(in, new ExtWrapTagged(), pf);
-        hasNow = (boolean)ExtUtil.readBool(in);
+        hasNow = ExtUtil.readBool(in);
     }
 
     public void writeExternal(DataOutputStream out) throws IOException {
