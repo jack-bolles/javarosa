@@ -40,8 +40,7 @@ import static org.javarosa.core.model.utils.DateUtils.localDateFrom;
 import static org.javarosa.core.model.utils.DateUtils.localTimeFrom;
 
 /**
- * An IAnswerData object represents an answer to a question
- * posed to a user.
+ * An IAnswerData object represents an answer to a question posed to a user.
  * <p>
  * IAnswerData objects should never in any circumstances contain
  * a null data value. In cases of empty or non-existent responses,
@@ -56,6 +55,7 @@ public interface IAnswerData extends Externalizable {
      * DataType is the primary; some vals can be coerced into a specific type.
      * @see org.javarosa.core.model.data.AnswerDataTest in Test module
      */
+    @SuppressWarnings("JavadocReference")
     static IAnswerData wrapData(Object val, int intDataType) {
         //droos 1/29/10: we need to come up with a consistent rule for whether the resulting data is determined
         //by the type of the instance node, or the type of the expression result. right now it's a mix and a mess

@@ -34,7 +34,7 @@ import static org.javarosa.core.model.utils.StringUtils.split;
 public class DateUtils {
 
     public static final String TIME_OFFSET_REGEX = "(?=[Z+\\-])";
-    public static final String DATE_TIME_SPLIT_REGEX = "([T\\s])";
+    private static final String DATE_TIME_SPLIT_REGEX = "([T\\s])";
 
     /**
      * Full ISO string interpreted into a Date.
@@ -81,10 +81,6 @@ public class DateUtils {
             throw new IllegalArgumentException("Wrong number of fields to parse date: " + dateString);
 
         return LocalDate.of(Integer.parseInt(pieces.get(0)), Integer.parseInt(pieces.get(1)), Integer.parseInt(pieces.get(2)));
-    }
-
-    public static Date dateFrom(LocalDate localDate) {
-        return dateFrom(of(localDate, LocalTime.NOON), ZoneId.systemDefault());
     }
 
     public static class TimeAndOffset {
