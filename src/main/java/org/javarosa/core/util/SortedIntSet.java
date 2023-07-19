@@ -16,24 +16,24 @@
 
 package org.javarosa.core.util;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.ExtUtil;
 import org.javarosa.core.util.externalizable.ExtWrapList;
 import org.javarosa.core.util.externalizable.Externalizable;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 //maintain an array of integers in sorted order. no duplicates allowed.
 public class SortedIntSet implements Externalizable {
     List<Integer> v;
 
     public SortedIntSet () {
-        v = new ArrayList<Integer>(0);
+        v = new ArrayList<>(0);
     }
 
     //add new value; return index inserted at if value was not already present, -1 if it was
@@ -42,12 +42,11 @@ public class SortedIntSet implements Externalizable {
         if (i != -1 && get(i) == n) {
             return -1;
         } else {
-            v.add(i+1,Integer.valueOf(n));
+            v.add(i+1, n);
             return i + 1;
         }
     }
 
-    //remove a value; return index of item just removed if it was present, -1 if it was not
     public int remove (int n) {
         int i = indexOf(n, true);
         if (i != -1)
@@ -55,12 +54,10 @@ public class SortedIntSet implements Externalizable {
         return i;
     }
 
-    //return value at index
     public int get (int i) {
-        return v.get(i).intValue();
+        return v.get(i);
     }
 
-    //return whether value is present
     public boolean contains (int n) {
         return (indexOf(n, true) != -1);
     }
@@ -87,12 +84,10 @@ public class SortedIntSet implements Externalizable {
         return exact ? -1 : lo - 1;
     }
 
-    //return number of values
     public int size () {
         return v.size();
     }
 
-    //return underlying vector (outside modification may corrupt the datastructure)
     public List<Integer> getList () {
         return v;
     }

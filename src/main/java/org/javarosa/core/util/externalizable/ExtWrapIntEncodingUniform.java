@@ -25,7 +25,7 @@ public class ExtWrapIntEncodingUniform extends ExtWrapIntEncoding {
     /* serialization */
 
     public ExtWrapIntEncodingUniform (long l) {
-        val = new Long(l);
+        val = l;
     }
 
     /* deserialization */
@@ -54,7 +54,7 @@ public class ExtWrapIntEncodingUniform extends ExtWrapIntEncoding {
             l = (l << 7) | (b & 0x7f);
         } while (((b >> 7) & 0x01) == 1);
 
-        val = new Long(l);
+        val = l;
     }
 
     /**
@@ -64,7 +64,7 @@ public class ExtWrapIntEncodingUniform extends ExtWrapIntEncoding {
      * there are more bytes to follow, or 0 to indicate the last byte
      **/
     public void writeExternal(DataOutputStream out) throws IOException {
-        long l = ((Long)val).longValue();
+        long l = (Long) val;
 
         int sig = -1;
         long k;

@@ -36,6 +36,7 @@ import java.util.List;
  *
  * @author Simon Kelly
  */
+@SuppressWarnings("JavadocReference")
 public class FormEntryCaption implements FormElementStateListener {
 
     FormDef form;
@@ -43,11 +44,9 @@ public class FormEntryCaption implements FormElementStateListener {
     protected IFormElement element;
     private String textID;
 
-    public static final String TEXT_FORM_LONG = "long";
     public static final String TEXT_FORM_SHORT = "short";
     public static final String TEXT_FORM_AUDIO = "audio";
     public static final String TEXT_FORM_IMAGE = "image";
-    public static final String TEXT_FORM_VIDEO = "video";
 
     protected IQuestionWidget viewWidget;
 
@@ -127,7 +126,6 @@ public class FormEntryCaption implements FormElementStateListener {
      * If no textID is specified, method will return THIS element's labelInnerText.
      * @param textID - The textID of the text you're trying to retrieve. if <code>textID == null</code> will get LabelInnerText for current element
      * @return Question Text.  <code>null</code> if no text for this element exists (after all fallbacks).
-     * @throws RunTimeException if this method is called on an element that is NOT a QuestionDef
      */
     public String getQuestionText(String textID){
         String tid = textID;
@@ -137,8 +135,7 @@ public class FormEntryCaption implements FormElementStateListener {
         if(tid == null) return substituteStringArgs(element.getLabelInnerText());
 
         //otherwise check for 'long' form of the textID, then for the default form and return
-        String returnText;
-        returnText = getIText(tid, "long");
+        String returnText = getIText(tid, "long");
         if(returnText == null) returnText = getIText(tid,null);
 
         return substituteStringArgs(returnText);
@@ -259,9 +256,9 @@ public class FormEntryCaption implements FormElementStateListener {
             }
         }
 
-        HashMap<String, Object> vars = new HashMap<String, Object>();
+        HashMap<String, Object> vars = new HashMap<>();
         vars.put("name", title);
-        vars.put("n", Integer.valueOf(count));
+        vars.put("n", count);
         return form.fillTemplateString(caption, index.getReference(), vars);
     }
 
@@ -295,11 +292,11 @@ public class FormEntryCaption implements FormElementStateListener {
                 return title + " " + ix + "/" + count;
             }
 
-            HashMap<String, Object> vars = new HashMap<String, Object>();
+            HashMap<String, Object> vars = new HashMap<>();
             vars.put("name", title);
-            vars.put("i", Integer.valueOf(ix));
-            vars.put("n", Integer.valueOf(count));
-            vars.put("new", new Boolean(newrep));
+            vars.put("i", ix);
+            vars.put("n", count);
+            vars.put("new", newrep);
             return form.fillTemplateString(caption, index.getReference(), vars);
         } else {
             return null;
@@ -313,14 +310,14 @@ public class FormEntryCaption implements FormElementStateListener {
         }
 
         int numRepetitions = getNumRepetitions();
-      List<String> reps = new ArrayList<String>(numRepetitions);
+      List<String> reps = new ArrayList<>(numRepetitions);
         for (int i = 0; i < numRepetitions; i++) {
             reps.add(getRepetitionText("choose", form.descendIntoRepeat(index, i), false));
         }
         return reps;
     }
 
-    public class RepeatOptions {
+    public static class RepeatOptions {
         public String header;
         public String add;
         public String delete;

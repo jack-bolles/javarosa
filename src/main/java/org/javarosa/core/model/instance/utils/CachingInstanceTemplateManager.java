@@ -1,9 +1,9 @@
 package org.javarosa.core.model.instance.utils;
 
+import org.javarosa.core.model.instance.FormInstance;
+
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import org.javarosa.core.model.instance.FormInstance;
 
 /**
  * Instance template manager that caches the template instances in memory. Useful for when deserializing
@@ -23,9 +23,9 @@ import org.javarosa.core.model.instance.FormInstance;
  */
 public class CachingInstanceTemplateManager implements InstanceTemplateManager {
 
-    private HashMap<Integer, FormInstance> templateCache;
-    private ArrayList<Integer> allowedFormTypes;
-    private boolean restrictFormTypes;
+    private final HashMap<Integer, FormInstance> templateCache;
+    private final ArrayList<Integer> allowedFormTypes;
+    private final boolean restrictFormTypes;
 
     public CachingInstanceTemplateManager () {
         this(true);
@@ -38,9 +38,9 @@ public class CachingInstanceTemplateManager implements InstanceTemplateManager {
      *     form types with addFormType(). if false, all form types will be handled and cached
      */
     public CachingInstanceTemplateManager (boolean restrictFormTypes) {
-        this.templateCache = new HashMap<Integer, FormInstance>();
+        this.templateCache = new HashMap<>();
         this.restrictFormTypes = restrictFormTypes;
-        this.allowedFormTypes = new ArrayList<Integer>(0);
+        this.allowedFormTypes = new ArrayList<>(0);
     }
 
     /**
@@ -55,8 +55,8 @@ public class CachingInstanceTemplateManager implements InstanceTemplateManager {
      * @param formID
      */
     public void addFormType (int formID) {
-        if (!allowedFormTypes.contains(Integer.valueOf(formID))) {
-            allowedFormTypes.add(Integer.valueOf(formID));
+        if (!allowedFormTypes.contains(formID)) {
+            allowedFormTypes.add(formID);
         }
     }
 
@@ -72,17 +72,17 @@ public class CachingInstanceTemplateManager implements InstanceTemplateManager {
      * fresh and caches it otherwise. If form types are restricted and the given form type is not allowed, throw an error
      */
     public FormInstance getTemplateInstance (int formID) {
-        if (restrictFormTypes && !allowedFormTypes.contains(Integer.valueOf(formID))) {
+        if (restrictFormTypes && !allowedFormTypes.contains(formID)) {
             throw new RuntimeException ("form ID [" + formID + "] is not an allowed form type!");
         }
 
-        FormInstance template = templateCache.get(Integer.valueOf(formID));
+        FormInstance template = templateCache.get(formID);
         if (template == null) {
             template = CompactInstanceWrapper.loadTemplateInstance(formID);
             if (template == null) {
                 throw new RuntimeException("no formdef found for form id [" + formID + "]");
             }
-            templateCache.put(Integer.valueOf(formID), template);
+            templateCache.put(formID, template);
         }
         return template;
     }

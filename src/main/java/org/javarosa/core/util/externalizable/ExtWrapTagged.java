@@ -27,14 +27,14 @@ public class ExtWrapTagged extends ExternalizableWrapper {
     public static HashMap<Class, Integer> WRAPPER_CODES;
 
     static {
-        WRAPPER_CODES = new HashMap<Class, Integer>();
-        WRAPPER_CODES.put(ExtWrapNullable.class, Integer.valueOf(0x00));
-        WRAPPER_CODES.put(ExtWrapList.class, Integer.valueOf(0x20));
-        WRAPPER_CODES.put(ExtWrapListPoly.class, Integer.valueOf(0x21));
-        WRAPPER_CODES.put(ExtWrapMap.class, Integer.valueOf(0x22));
-        WRAPPER_CODES.put(ExtWrapMapPoly.class, Integer.valueOf(0x23));
-        WRAPPER_CODES.put(ExtWrapIntEncodingUniform.class, Integer.valueOf(0x40));
-        WRAPPER_CODES.put(ExtWrapIntEncodingSmall.class, Integer.valueOf(0x41));
+        WRAPPER_CODES = new HashMap<>();
+        WRAPPER_CODES.put(ExtWrapNullable.class, 0x00);
+        WRAPPER_CODES.put(ExtWrapList.class, 0x20);
+        WRAPPER_CODES.put(ExtWrapListPoly.class, 0x21);
+        WRAPPER_CODES.put(ExtWrapMap.class, 0x22);
+        WRAPPER_CODES.put(ExtWrapMapPoly.class, 0x23);
+        WRAPPER_CODES.put(ExtWrapIntEncodingUniform.class, 0x40);
+        WRAPPER_CODES.put(ExtWrapIntEncodingSmall.class, 0x41);
     }
 
     /* serialization */

@@ -39,7 +39,7 @@ public class ExtWrapIntEncodingSmall extends ExtWrapIntEncoding {
     }
 
     public ExtWrapIntEncodingSmall (long l, int bias) {
-        val = new Long(l);
+        val = l;
         this.bias = bias;
     }
 
@@ -68,7 +68,7 @@ public class ExtWrapIntEncodingSmall extends ExtWrapIntEncoding {
             l = (b < 0 ? b + 256 : b) - bias;
         }
 
-        val = new Long(l);
+        val = l;
     }
 
     /**
@@ -78,7 +78,7 @@ public class ExtWrapIntEncodingSmall extends ExtWrapIntEncoding {
      * there are more bytes to follow, or 0 to indicate the last byte
      **/
     public void writeExternal(DataOutputStream out) throws IOException {
-        int n = ExtUtil.toInt(((Long)val).longValue());
+        int n = ExtUtil.toInt((Long) val);
 
         if (n >= -bias && n < 255 - bias) {
             n += bias;

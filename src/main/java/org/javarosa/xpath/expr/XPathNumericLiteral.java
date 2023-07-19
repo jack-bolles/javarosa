@@ -16,15 +16,15 @@
 
 package org.javarosa.xpath.expr;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.DataInstance;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.ExtUtil;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 public class XPathNumericLiteral extends XPathExpression {
     public double d;
@@ -32,11 +32,11 @@ public class XPathNumericLiteral extends XPathExpression {
     public XPathNumericLiteral () { } //for deserialization
 
     public XPathNumericLiteral (Double d) {
-        this.d = d.doubleValue();
+        this.d = d;
     }
 
     public Object eval (DataInstance model, EvaluationContext evalContext) {
-        return new Double(d);
+        return d;
     }
 
     @Override
@@ -45,7 +45,7 @@ public class XPathNumericLiteral extends XPathExpression {
     }
 
     public String toString () {
-        return "{num:" + Double.toString(d) + "}";
+        return "{num:" + d + "}";
     }
 
     public boolean equals (Object o) {

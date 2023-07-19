@@ -18,7 +18,7 @@ public class DataUtil {
         if(iarray == null) {
             iarray = new Integer[high - low];
             for(int i = 0; i < iarray.length; ++i) {
-                iarray[i] = Integer.valueOf(i + low);
+                iarray[i] = i + low;
             }
         }
         return ivalue < high && ivalue >= low ? iarray[ivalue + offset] : Integer.valueOf(ivalue);
