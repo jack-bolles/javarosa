@@ -210,8 +210,8 @@ public class XPathParseTest {
     @org.junit.Test
     public void doTests() {
         for (String[] parseTestCase : parseTestCases) {
-            final String expr = parseTestCase[0];
-            final String expected = parseTestCase[1];
+            String expr = parseTestCase[0];
+            String expected = parseTestCase[1];
 
             //System.out.println("XPath Parsing Test [" + expr +"]");
             testParse(expr, expected);
@@ -240,7 +240,7 @@ public class XPathParseTest {
     private void testXPathInvalid (String expr) {
         try {
             XPathExpression xpe = XPathParseTool.parseXPath(expr);
-            String result = (xpe != null ? xpe.toString() : null);
+            String result = (null == xpe ? null : xpe.toString());
 
             fail("XPath Parse Failed! Did not get syntax error as expected." +
                         "\n    expression:[" + expr + "]" +
@@ -251,12 +251,10 @@ public class XPathParseTest {
     }
 
     public void testParse (String expr, String expected) {
-        if (expected != null) {
+        if (null != expected) {
             testXPathValid(expr, expected);
         } else {
             testXPathInvalid(expr);
         }
     }
 }
-
-

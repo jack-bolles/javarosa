@@ -19,10 +19,14 @@ package org.javarosa.xpath.parser.ast;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.expr.XPathQName;
 import org.javarosa.xpath.expr.XPathStep;
-import org.javarosa.xpath.parser.Token;
 import org.javarosa.xpath.parser.XPathSyntaxException;
 
 import java.util.Vector;
+
+import static org.javarosa.xpath.expr.XPathStep.TEST_TYPE_COMMENT;
+import static org.javarosa.xpath.expr.XPathStep.TEST_TYPE_NODE;
+import static org.javarosa.xpath.expr.XPathStep.TEST_TYPE_PROCESSING_INSTRUCTION;
+import static org.javarosa.xpath.expr.XPathStep.TEST_TYPE_TEXT;
 
 public class ASTNodePathStep extends ASTNode {
     public static final int AXIS_TYPE_ABBR = 1;
@@ -57,46 +61,46 @@ public class ASTNodePathStep extends ASTNode {
     }
 
     public XPathStep getStep () throws XPathSyntaxException {
-        if (nodeTestType == NODE_TEST_TYPE_ABBR_DOT) {
+        if (NODE_TEST_TYPE_ABBR_DOT == nodeTestType) {
             return XPathStep.ABBR_SELF();
-        } else if (nodeTestType == NODE_TEST_TYPE_ABBR_DBL_DOT) {
+        } else if (NODE_TEST_TYPE_ABBR_DBL_DOT == nodeTestType) {
             return XPathStep.ABBR_PARENT();
         } else {
             XPathStep step;
 
-            if (axisType == AXIS_TYPE_NULL)
+            if (AXIS_TYPE_NULL == axisType)
                 axisVal = XPathStep.AXIS_CHILD;
-            else if (axisType == AXIS_TYPE_ABBR)
+            else if (AXIS_TYPE_ABBR == axisType)
                 axisVal = XPathStep.AXIS_ATTRIBUTE;
 
-            if (nodeTestType == NODE_TEST_TYPE_QNAME)
+            if (NODE_TEST_TYPE_QNAME == nodeTestType)
                 step = new XPathStep(axisVal, nodeTestQName);
-            else if (nodeTestType == NODE_TEST_TYPE_WILDCARD)
+            else if (NODE_TEST_TYPE_WILDCARD == nodeTestType)
                 step = new XPathStep(axisVal, XPathStep.TEST_NAME_WILDCARD);
-            else if (nodeTestType == NODE_TEST_TYPE_NSWILDCARD)
+            else if (NODE_TEST_TYPE_NSWILDCARD == nodeTestType)
                 step = new XPathStep(axisVal, nodeTestNamespace);
             else {
                 String funcName = nodeTestFunc.name.toString();
                 int type;
                 switch (funcName) {
                     case "node":
-                        type = XPathStep.TEST_TYPE_NODE;
+                        type = TEST_TYPE_NODE;
                         break;
                     case "text":
-                        type = XPathStep.TEST_TYPE_TEXT;
+                        type = TEST_TYPE_TEXT;
                         break;
                     case "comment":
-                        type = XPathStep.TEST_TYPE_COMMENT;
+                        type = TEST_TYPE_COMMENT;
                         break;
                     case "processing-instruction":
-                        type = XPathStep.TEST_TYPE_PROCESSING_INSTRUCTION;
+                        type = TEST_TYPE_PROCESSING_INSTRUCTION;
                         break;
                     default:
                         throw new RuntimeException();
                 }
 
                 step = new XPathStep(axisVal, type);
-                if (nodeTestFunc.args.size() > 0) {
+                if (!nodeTestFunc.args.isEmpty()) {
                     step.literal = (String)((ASTNodeAbstractExpr)nodeTestFunc.args.elementAt(0)).getToken(0).val;
                 }
             }
@@ -109,69 +113,4 @@ public class ASTNodePathStep extends ASTNode {
             return step;
         }
     }
-
-    public static int validateAxisName (String axisName) {
-        int axis = -1;
-
-        switch (axisName) {
-            case "child":
-                axis = XPathStep.AXIS_CHILD;
-                break;
-            case "descendant":
-                axis = XPathStep.AXIS_DESCENDANT;
-                break;
-            case "parent":
-                axis = XPathStep.AXIS_PARENT;
-                break;
-            case "ancestor":
-                axis = XPathStep.AXIS_ANCESTOR;
-                break;
-            case "following-sibling":
-                axis = XPathStep.AXIS_FOLLOWING_SIBLING;
-                break;
-            case "preceding-sibling":
-                axis = XPathStep.AXIS_PRECEDING_SIBLING;
-                break;
-            case "following":
-                axis = XPathStep.AXIS_FOLLOWING;
-                break;
-            case "preceding":
-                axis = XPathStep.AXIS_PRECEDING;
-                break;
-            case "attribute":
-                axis = XPathStep.AXIS_ATTRIBUTE;
-                break;
-            case "namespace":
-                axis = XPathStep.AXIS_NAMESPACE;
-                break;
-            case "self":
-                axis = XPathStep.AXIS_SELF;
-                break;
-            case "descendant-or-self":
-                axis = XPathStep.AXIS_DESCENDANT_OR_SELF;
-                break;
-            case "ancestor-or-self":
-                axis = XPathStep.AXIS_ANCESTOR_OR_SELF;
-                break;
-        }
-
-        return axis;
-    }
-
-    public static boolean validateNodeTypeTest (ASTNodeFunctionCall f) {
-        String name = f.name.toString();
-        if (name.equals("node") || name.equals("text") || name.equals("comment") || name.equals("processing-instruction")) {
-            if (f.args.size() == 0) {
-                return true;
-            } else if (name.equals("processing-instruction") && f.args.size() == 1) {
-                ASTNodeAbstractExpr x = (ASTNodeAbstractExpr)f.args.elementAt(0);
-                return x.content.size() == 1 && x.getTokenType(0) == Token.STR;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
-    }
-
 }

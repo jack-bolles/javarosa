@@ -16,12 +16,6 @@
 
 package org.javarosa.xpath.expr;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
 import org.javarosa.core.util.CacheTable;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.ExtUtil;
@@ -29,6 +23,12 @@ import org.javarosa.core.util.externalizable.ExtWrapListPoly;
 import org.javarosa.core.util.externalizable.ExtWrapNullable;
 import org.javarosa.core.util.externalizable.Externalizable;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 public class XPathStep implements Externalizable {
     public static final int AXIS_CHILD = 0;
@@ -96,6 +96,42 @@ public class XPathStep implements Externalizable {
     public XPathStep (int axis, String namespace) {
         this(axis, TEST_NAMESPACE_WILDCARD);
         this.namespace = namespace;
+    }
+
+    //TODO - this wants to be an enum or a sealed class
+    @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
+    public static int lookUpStepByName(String axisName) {
+        switch (axisName) {
+            case "child":
+                return AXIS_CHILD;
+            case "descendant":
+                return AXIS_DESCENDANT;
+            case "parent":
+                return AXIS_PARENT;
+            case "ancestor":
+                return AXIS_ANCESTOR;
+            case "following-sibling":
+                return AXIS_FOLLOWING_SIBLING;
+            case "preceding-sibling":
+                return AXIS_PRECEDING_SIBLING;
+            case "following":
+                return AXIS_FOLLOWING;
+            case "preceding":
+                return AXIS_PRECEDING;
+            case "attribute":
+                return AXIS_ATTRIBUTE;
+            case "namespace":
+                return AXIS_NAMESPACE;
+            case "self":
+                return AXIS_SELF;
+            case "descendant-or-self":
+                return AXIS_DESCENDANT_OR_SELF;
+            case "ancestor-or-self":
+                return AXIS_ANCESTOR_OR_SELF;
+            default:
+                //TODO handle this better
+                return -1;
+        }
     }
 
     public String toString () {

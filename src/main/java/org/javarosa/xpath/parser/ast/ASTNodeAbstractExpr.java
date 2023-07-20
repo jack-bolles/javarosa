@@ -21,7 +21,6 @@ import org.javarosa.xpath.expr.XPathNumericLiteral;
 import org.javarosa.xpath.expr.XPathQName;
 import org.javarosa.xpath.expr.XPathStringLiteral;
 import org.javarosa.xpath.expr.XPathVariableReference;
-import org.javarosa.xpath.parser.Parser;
 import org.javarosa.xpath.parser.Token;
 import org.javarosa.xpath.parser.XPathSyntaxException;
 
@@ -33,11 +32,11 @@ public class ASTNodeAbstractExpr extends ASTNode {
 
     public Vector<Object> content; //mixture of tokens and ASTNodes
 
-    public ASTNodeAbstractExpr () {
+    public ASTNodeAbstractExpr() {
         content = new Vector<>();
     }
 
-    public Vector<ASTNode> getChildren () {
+    public Vector<ASTNode> getChildren() {
         Vector<ASTNode> children = new Vector<>();
         for (int i = 0; i < content.size(); i++) {
             if (getType(i) == CHILD) {
@@ -50,13 +49,17 @@ public class ASTNodeAbstractExpr extends ASTNode {
     public XPathExpression build() throws XPathSyntaxException {
         if (content.size() == 1) {
             if (getType(0) == CHILD) {
-                return ((ASTNode)content.elementAt(0)).build();
+                return ((ASTNode) content.elementAt(0)).build();
             } else {
                 switch (getTokenType(0)) {
-                case Token.NUM: return new XPathNumericLiteral((Double)getToken(0).val);
-                case Token.STR: return new XPathStringLiteral((String)getToken(0).val);
-                case Token.VAR: return new XPathVariableReference((XPathQName)getToken(0).val);
-                default: throw new XPathSyntaxException();
+                    case Token.NUM:
+                        return new XPathNumericLiteral((Double) getToken(0).val);
+                    case Token.STR:
+                        return new XPathStringLiteral((String) getToken(0).val);
+                    case Token.VAR:
+                        return new XPathVariableReference((XPathQName) getToken(0).val);
+                    default:
+                        throw new XPathSyntaxException();
                 }
             }
         } else {
@@ -64,7 +67,7 @@ public class ASTNodeAbstractExpr extends ASTNode {
         }
     }
 
-    public boolean isTerminal () {
+    public boolean isTerminal() {
         if (content.size() == 1) {
             int type = getTokenType(0);
             return (type == Token.NUM || type == Token.STR || type == Token.VAR);
@@ -73,9 +76,9 @@ public class ASTNodeAbstractExpr extends ASTNode {
         }
     }
 
-    public boolean isNormalized () {
+    public boolean isNormalized() {
         if (content.size() == 1 && getType(0) == CHILD) {
-            ASTNode child = (ASTNode)content.elementAt(0);
+            ASTNode child = (ASTNode) content.elementAt(0);
             if (child instanceof ASTNodePathStep || child instanceof ASTNodePredicate)
                 throw new RuntimeException("shouldn't happen");
             return true;
@@ -84,27 +87,24 @@ public class ASTNodeAbstractExpr extends ASTNode {
         }
     }
 
-    public int getType (int i) {
+    public int getType(int i) {
         Object o = content.elementAt(i);
-        if (o instanceof Token)
-            return TOKEN;
-        else if (o instanceof ASTNode)
-            return CHILD;
-        else
-            return -1;
+        if (o instanceof Token) return TOKEN;
+        else if (o instanceof ASTNode) return CHILD;
+        else return -1;
     }
 
-    public Token getToken (int i) {
-        return (getType(i) == TOKEN ? (Token)content.elementAt(i) : null);
+    public Token getToken(int i) {
+        return (getType(i) == TOKEN ? (Token) content.elementAt(i) : null);
     }
 
-    public int getTokenType (int i) {
+    public int getTokenType(int i) {
         Token t = getToken(i);
         return (t == null ? -1 : t.type);
     }
 
     //create new node containing children from [start,end)
-    public ASTNodeAbstractExpr extract (int start, int end) {
+    public ASTNodeAbstractExpr extract(int start, int end) {
         ASTNodeAbstractExpr node = new ASTNodeAbstractExpr();
         for (int i = start; i < end; i++) {
             node.content.addElement(content.elementAt(i));
@@ -113,7 +113,7 @@ public class ASTNodeAbstractExpr extends ASTNode {
     }
 
     //remove children from [start,end) and replace with node n
-    public void condense (ASTNode node, int start, int end) {
+    public void condense(ASTNode node, int start, int end) {
         for (int i = end - 1; i >= start; i--) {
             content.removeElementAt(i);
         }
@@ -122,7 +122,7 @@ public class ASTNodeAbstractExpr extends ASTNode {
 
     //find the next incidence of 'target' at the current stack level
     //start points to the opening of the current stack level
-    public int indexOfBalanced (int start, int target, int leftPush, int rightPop) {
+    public int indexOfBalanced(int start, int target, int leftPush, int rightPop) {
         int depth = 0;
         int i = start + 1;
         boolean found = false;
@@ -135,10 +135,8 @@ public class ASTNodeAbstractExpr extends ASTNode {
                 break;
             }
 
-            if (type == leftPush)
-                depth++;
-            else if (type == rightPop)
-                depth--;
+            if (type == leftPush) depth++;
+            else if (type == rightPop) depth--;
 
             i++;
         }
@@ -147,7 +145,7 @@ public class ASTNodeAbstractExpr extends ASTNode {
     }
 
     public static class Partition {
-        public Partition () {
+        public Partition() {
             pieces = new Vector<>();
             separators = new Vector<>();
         }
@@ -157,7 +155,7 @@ public class ASTNodeAbstractExpr extends ASTNode {
     }
 
     //partition the range [start,end), separating by any occurrence of separator
-    public Partition partition (int[] separators, int start, int end) {
+    public Partition partition(int[] separators, int start, int end) {
         Partition part = new Partition();
         Vector<Integer> sepIdxs = new Vector<>();
 
@@ -172,8 +170,12 @@ public class ASTNodeAbstractExpr extends ASTNode {
         }
 
         for (int i = 0; i <= sepIdxs.size(); i++) {
-            int pieceStart = (i == 0 ? start : Parser.vectInt(sepIdxs, i - 1) + 1);
-            int pieceEnd = (i == sepIdxs.size() ? end : Parser.vectInt(sepIdxs, i));
+            int pieceStart = i == 0
+                    ? start
+                    : sepIdxs.elementAt(i - 1) + 1;
+            int pieceEnd = i == sepIdxs.size()
+                    ? end
+                    : sepIdxs.elementAt(i);
             part.pieces.addElement(extract(pieceStart, pieceEnd));
         }
 
@@ -182,12 +184,11 @@ public class ASTNodeAbstractExpr extends ASTNode {
 
     //partition by sep, to the end of the current stack level
     //start is the opening token of the current stack level
-    public Partition partitionBalanced (int sep, int start, int leftPush, int rightPop) {
+    public Partition partitionBalanced(int sep, int start, int leftPush, int rightPop) {
         Partition part = new Partition();
         Vector<Integer> sepIdxs = new Vector<>();
         int end = indexOfBalanced(start, rightPop, leftPush, rightPop);
-        if (end == -1)
-            return null;
+        if (end == -1) return null;
 
         int k = start;
         do {
@@ -199,11 +200,14 @@ public class ASTNodeAbstractExpr extends ASTNode {
         } while (k != -1);
 
         for (int i = 0; i <= sepIdxs.size(); i++) {
-            int pieceStart = (i == 0 ? start + 1 : Parser.vectInt(sepIdxs, i - 1) + 1);
-            int pieceEnd = (i == sepIdxs.size() ? end : Parser.vectInt(sepIdxs, i));
+            int pieceStart = i == 0
+                    ? start + 1
+                    : sepIdxs.elementAt(i - 1) + 1;
+            int pieceEnd = i == sepIdxs.size()
+                    ? end
+                    : sepIdxs.elementAt(i);
             part.pieces.addElement(extract(pieceStart, pieceEnd));
         }
-
         return part;
     }
 }

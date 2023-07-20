@@ -23,15 +23,14 @@ import org.javarosa.xpath.expr.XPathCmpExpr;
 import org.javarosa.xpath.expr.XPathEqExpr;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.expr.XPathUnionExpr;
-import org.javarosa.xpath.parser.Parser;
 import org.javarosa.xpath.parser.Token;
 import org.javarosa.xpath.parser.XPathSyntaxException;
 
 import java.util.Vector;
 
+import static org.javarosa.xpath.parser.Parser.ASSOC_LEFT;
+
 public class ASTNodeBinaryOp extends ASTNode {
-    public static final int ASSOC_LEFT = 1;
-    public static final int ASSOC_RIGHT = 2;
 
     public int associativity;
     public Vector<ASTNode> exprs;
@@ -49,15 +48,15 @@ public class ASTNodeBinaryOp extends ASTNode {
     public XPathExpression build() throws XPathSyntaxException {
         XPathExpression x;
 
-        if (associativity == ASSOC_LEFT) {
+        if (ASSOC_LEFT == associativity) {
             x = exprs.elementAt(0).build();
             for (int i = 1; i < exprs.size(); i++) {
-                x = getBinOpExpr(Parser.vectInt(ops, i - 1), x, exprs.elementAt(i).build());
+                x = getBinOpExpr(ops.elementAt(i - 1), x, exprs.elementAt(i).build());
             }
         } else {
             x = exprs.elementAt(exprs.size() - 1).build();
             for (int i = exprs.size() - 2; i >= 0; i--) {
-                x = getBinOpExpr(Parser.vectInt(ops, i), exprs.elementAt(i).build(), x);
+                x = getBinOpExpr(ops.elementAt(i), exprs.elementAt(i).build(), x);
             }
         }
 
