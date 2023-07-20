@@ -53,9 +53,8 @@ public class PredicateCachingTest {
             )
         ));
 
-        int evaluations = Measure.withMeasure(asList("PredicateEvaluation", "IndexEvaluation"), () -> {
-            scenario.answer("/data/choice", "a");
-        });
+        int evaluations = Measure.withMeasure(asList("PredicateEvaluation", "IndexEvaluation"), ()
+                -> scenario.answer("/data/choice", "a"));
 
         // Check that we do less than (size of secondary instance) * (number of calculates with a filter)
         assertThat(evaluations, lessThan(4));
@@ -88,9 +87,8 @@ public class PredicateCachingTest {
             )
         ));
 
-        int evaluations = Measure.withMeasure(asList("PredicateEvaluation", "IndexEvaluation"), () -> {
-            scenario.answer("/data/choice", "2");
-        });
+        int evaluations = Measure.withMeasure(asList("PredicateEvaluation", "IndexEvaluation"), ()
+                -> scenario.answer("/data/choice", "2"));
 
         // Check that we do less than (size of secondary instance) * (number of calculates with a filter)
         assertThat(evaluations, lessThan(4));
@@ -123,9 +121,8 @@ public class PredicateCachingTest {
             )
         ));
 
-        int evaluations = Measure.withMeasure(asList("PredicateEvaluation", "IndexEvaluation"), () -> {
-            scenario.answer("/data/choice", "1");
-        });
+        int evaluations = Measure.withMeasure(asList("PredicateEvaluation", "IndexEvaluation"), ()
+                -> scenario.answer("/data/choice", "1"));
 
         // Check that we do less than (size of secondary instance) * (number of calculates with a filter)
         assertThat(evaluations, lessThan(4));

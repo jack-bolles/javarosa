@@ -16,12 +16,6 @@
 
 package org.javarosa.core.model.data.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.javarosa.core.model.QuestionDef;
 import org.javarosa.core.model.SelectChoice;
 import org.javarosa.core.model.data.MultipleItemsData;
@@ -29,6 +23,13 @@ import org.javarosa.core.model.data.SelectOneData;
 import org.javarosa.core.model.data.helper.Selection;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 public class MultipleItemsDataTests {
     QuestionDef question;
@@ -42,12 +43,8 @@ public class MultipleItemsDataTests {
    List invalid;
 
 
-    /* (non-Javadoc)
-     * @see j2meunit.framework.TestCase#setUp()
-     */
     @Before
     public void setUp() throws Exception {
-
         question = new QuestionDef();
 
         for (int i = 0; i < 4; i++) {
@@ -61,17 +58,17 @@ public class MultipleItemsDataTests {
         three = new Selection("Selection 3");
         three.attachChoice(question);
 
-        firstTwo = new ArrayList<Selection>();
+        firstTwo = new ArrayList<>();
         firstTwo.add(one);
         firstTwo.add(two);
 
-        lastTwo = new ArrayList<Selection>();
+        lastTwo = new ArrayList<>();
         lastTwo.add(two);
         lastTwo.add(three);
 
-        invalid = new ArrayList<Object>();
+        invalid = new ArrayList<>();
         invalid.add(three);
-        invalid.add(new Integer(12));
+        invalid.add(12);
         invalid.add(one);
     }
 
@@ -87,11 +84,11 @@ public class MultipleItemsDataTests {
         MultipleItemsData data = new MultipleItemsData(firstTwo);
         data.setValue(lastTwo);
 
-        assertTrue("MultipleItemsData did not set value properly. Maintained old value.", !(data.getValue().equals(firstTwo)));
+        assertNotEquals("MultipleItemsData did not set value properly. Maintained old value.", data.getValue(), firstTwo);
         assertEquals("MultipleItemsData did not properly set value ", data.getValue(), lastTwo);
 
         data.setValue(firstTwo);
-        assertTrue("MultipleItemsData did not set value properly. Maintained old value.", !(data.getValue().equals(lastTwo)));
+        assertNotEquals("MultipleItemsData did not set value properly. Maintained old value.", data.getValue(), lastTwo);
         assertEquals("MultipleItemsData did not properly reset value ", data.getValue(), firstTwo);
 
     }
@@ -107,7 +104,7 @@ public class MultipleItemsDataTests {
             exceptionThrown = true;
         }
         assertTrue("MultipleItemsData failed to throw an exception when setting null data", exceptionThrown);
-        assertTrue("MultipleItemsData overwrote existing value on incorrect input", data.getValue().equals(firstTwo));
+        assertEquals("MultipleItemsData overwrote existing value on incorrect input", data.getValue(), firstTwo);
     }
 
     @Test

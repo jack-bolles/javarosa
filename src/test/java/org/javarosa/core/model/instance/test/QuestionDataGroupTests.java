@@ -17,14 +17,6 @@
 package org.javarosa.core.model.instance.test;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 import org.javarosa.core.model.IDataReference;
 import org.javarosa.core.model.data.IntegerData;
 import org.javarosa.core.model.data.StringData;
@@ -32,14 +24,19 @@ import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.instance.utils.ITreeVisitor;
-import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 public class QuestionDataGroupTests {
-    private final String stringElementName = "String Data Element";
-    private final String groupName = "TestGroup";
 
     StringData stringData;
     IntegerData integerData;
@@ -88,14 +85,14 @@ public class QuestionDataGroupTests {
                 return newReference;
             }
             */
-            public void readExternal(DataInputStream in, PrototypeFactory pf) throws IOException, DeserializationException {}
+            public void readExternal(DataInputStream in, PrototypeFactory pf) {}
 
-            public void writeExternal(DataOutputStream out) throws IOException {};
+            public void writeExternal(DataOutputStream out) {}
 
         };
 
         integerReference = new IDataReference() {
-            Integer intReference = new Integer(15);
+            Integer intReference = 15;
 
             public Object getReference() {
                 return intReference;
@@ -123,25 +120,27 @@ public class QuestionDataGroupTests {
                 return newReference;
             }
             */
-            public void readExternal(DataInputStream in, PrototypeFactory pf) throws IOException, DeserializationException {}
+            public void readExternal(DataInputStream in, PrototypeFactory pf) {}
 
-            public void writeExternal(DataOutputStream out) throws IOException {};
+            public void writeExternal(DataOutputStream out) {}
 
         };
 
         intElement  = new TreeElement("intElement");
         intElement.setValue(integerData);
 
+        String stringElementName = "String Data Element";
         stringElement = new TreeElement(stringElementName);
         stringElement.setValue(stringData);
 
+        String groupName = "TestGroup";
         group = new TreeElement(groupName);
     }
     @Test
     public void testIsLeaf() {
         assertTrue("A Group with no children should report being a leaf", group.isLeaf());
         group.addChild(stringElement);
-        assertTrue("A Group with children should not report being a leaf", !group.isLeaf());
+        assertFalse("A Group with children should not report being a leaf", group.isLeaf());
     }
 
     @Test
@@ -161,7 +160,7 @@ public class QuestionDataGroupTests {
         assertEquals("Question Data Group did not properly get its name", group.getName(), newName);
     }
 
-    private class MutableBoolean {
+    private static class MutableBoolean {
         private boolean bool;
 
         public MutableBoolean(boolean bool) {
@@ -194,27 +193,16 @@ public class QuestionDataGroupTests {
 
         stringElement.accept(sampleVisitor);
         assertTrue("The visitor's visit method was not called correctly by the QuestionDataElement",visitorAccepted.getValue());
-
-        assertTrue("The visitor was dispatched incorrectly by the QuestionDataElement",!dispatchedWrong.getValue());
-    }
-
-    @Test
-    public void testSuperclassMethods() {
-        //stringElement should not have a root at this point.
-
-        //TODO: Implement tests for the 'attribute' system.
+        assertFalse("The visitor was dispatched incorrectly by the QuestionDataElement", dispatchedWrong.getValue());
     }
 
     @Test
     public void testAddLeafChild() {
-
-
-        //boolean threw = false;
         boolean added = false;
         try {
             group.addChild(stringElement);
             group.getChildAt(0);
-            assertTrue("Added element was not in Question Data Group's children!",group.getChildAt(0).equals(stringElement));
+            assertEquals("Added element was not in Question Data Group's children!", group.getChildAt(0), stringElement);
         }
         catch(RuntimeException e) {
             if(!added) {
@@ -225,14 +213,12 @@ public class QuestionDataGroupTests {
         try {
             TreeElement leafGroup = new TreeElement("leaf group");
             group.addChild(leafGroup);
-            assertTrue("Added element was not in Question Data Group's children",group.getChildAt(1).equals(leafGroup));
+            assertEquals("Added element was not in Question Data Group's children", group.getChildAt(1), leafGroup);
         }
         catch (RuntimeException e) {
             if(!added) {
                 fail("Group did not report success adding a valid child");
             }
-            //threw = true;
-
         }
     }
 

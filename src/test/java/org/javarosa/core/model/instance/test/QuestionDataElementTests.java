@@ -17,14 +17,6 @@
 package org.javarosa.core.model.instance.test;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 import org.javarosa.core.model.IDataReference;
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.data.IntegerData;
@@ -33,10 +25,18 @@ import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.instance.utils.ITreeVisitor;
-import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class QuestionDataElementTests {
     private final String stringElementName = "String Data Element";
@@ -86,14 +86,14 @@ public class QuestionDataElementTests {
                 return newReference;
             }
             */
-            public void readExternal(DataInputStream in, PrototypeFactory pf) throws IOException, DeserializationException {}
+            public void readExternal(DataInputStream in, PrototypeFactory pf) {}
 
-            public void writeExternal(DataOutputStream out) throws IOException {}
+            public void writeExternal(DataOutputStream out) {}
 
         };
 
         integerReference = new IDataReference() {
-            Integer intReference = new Integer(15);
+            Integer intReference = 15;
 
             public Object getReference() {
                 return intReference;
@@ -121,9 +121,9 @@ public class QuestionDataElementTests {
                 return newReference;
             }
             */
-            public void readExternal(DataInputStream in, PrototypeFactory pf) throws IOException, DeserializationException {}
+            public void readExternal(DataInputStream in, PrototypeFactory pf) {}
 
-            public void writeExternal(DataOutputStream out) throws IOException {}
+            public void writeExternal(DataOutputStream out) {}
 
         };
 
@@ -146,7 +146,7 @@ public class QuestionDataElementTests {
 
     @Test
     public void testSetName() {
-        String newName = new String("New Name");
+        String newName = "New Name";
         stringElement.setName(newName);
 
         assertEquals("Question Data Element 'string' did not properly set its name", stringElement.getName(), newName);
@@ -169,19 +169,15 @@ public class QuestionDataElementTests {
             fail("Question Data Element did not allow for its value to be set as null");
         }
 
-        assertEquals("Question Data Element did not return a null value correctly", stringElement.getValue(),null);
+        assertNull("Question Data Element did not return a null value correctly", stringElement.getValue());
 
     }
 
 
-    private class MutableBoolean {
+    private static class MutableBoolean {
         private boolean bool;
 
         public MutableBoolean(boolean bool) {
-            this.bool = bool;
-        }
-
-        void setValue(boolean bool) {
             this.bool = bool;
         }
 
@@ -207,7 +203,7 @@ public class QuestionDataElementTests {
         stringElement.accept(sampleVisitor);
         assertTrue("The visitor's visit method was not called correctly by the QuestionDataElement",visitorAccepted.getValue());
 
-        assertTrue("The visitor was dispatched incorrectly by the QuestionDataElement",!dispatchedWrong.getValue());
+        assertFalse("The visitor was dispatched incorrectly by the QuestionDataElement", dispatchedWrong.getValue());
     }
 
     @Test

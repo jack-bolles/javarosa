@@ -459,7 +459,6 @@ public class LocalizerTest {
         switch (localeCase) {
             case DEFAULT_LOCALE:
                 ourLocale = "default";
-                otherLocale = null;
                 break;
             case NON_DEFAULT_LOCALE:
                 ourLocale = "other";
@@ -467,7 +466,6 @@ public class LocalizerTest {
                 break;
             case NEUTRAL_LOCALE:
                 ourLocale = "neutral";
-                otherLocale = null;
                 break;
         }
 
@@ -549,7 +547,7 @@ public class LocalizerTest {
         boolean[] searchOrder = new boolean[4];
         boolean fallbackLocale = l.getFallbackLocale();
         boolean fallbackForm = l.getFallbackForm();
-        boolean hasForm = (textID.indexOf(";") != -1);
+        boolean hasForm = (textID.contains(";"));
         boolean hasDefault = (l.getDefaultLocale() != null && !l.getDefaultLocale().equals(l.getLocale()));
         String baseTextID = (hasForm ? textID.substring(0, textID.indexOf(";")) : textID);
 
@@ -601,7 +599,7 @@ public class LocalizerTest {
         }
     }
 
-    private class LocalizationObserver implements Localizable {
+    private static class LocalizationObserver implements Localizable {
         public boolean flag = false;
         public String locale;
         public Localizer l;
@@ -837,36 +835,20 @@ public class LocalizerTest {
 
         final String[] holder = new String[1];
 
-        runAsync(new Runnable() {
-            public void run() {
-                holder[0] = Localizer.processArguments("${0}", new String[]{C});
-            }
-        });
+        runAsync(() -> holder[0] = Localizer.processArguments("${0}", new String[]{C}));
 
         assertEquals(holder[0], C);
 
 
-        runAsync(new Runnable() {
-            public void run() {
-                holder[0] = Localizer.processArguments("${0}", new String[]{D});
-            }
-        });
+        runAsync(() -> holder[0] = Localizer.processArguments("${0}", new String[]{D}));
 
         assertEquals(holder[0], D);
 
-        runAsync(new Runnable() {
-            public void run() {
-                holder[0] = Localizer.processArguments(holder[0], res);
-            }
-        });
+        runAsync(() -> holder[0] = Localizer.processArguments(holder[0], res));
 
         assertEquals(holder[0], res[1] + res[0]);
 
-        runAsync(new Runnable() {
-            public void run() {
-                holder[0] = Localizer.processArguments("$ {0} ${1}", res);
-            }
-        });
+        runAsync(() -> holder[0] = Localizer.processArguments("$ {0} ${1}", res));
 
         assertEquals(holder[0], "$ {0} " + res[1]);
 
@@ -889,7 +871,7 @@ public class LocalizerTest {
     public void testHashSub() {
         final String F = "first";
         final String S = "second";
-        HashMap<String, String> h = new HashMap<String, String>();
+        HashMap<String, String> h = new HashMap<>();
         h.put("fir", F);
         h.put("also first", F);
         h.put("sec", S);

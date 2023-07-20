@@ -17,26 +17,23 @@
 package org.javarosa.core.model.data.test;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.javarosa.core.model.data.IntegerData;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 public class IntegerDataTests {
 
     Integer one;
     Integer two;
 
-    /* (non-Javadoc)
-     * @see j2meunit.framework.TestCase#setUp()
-     */
     @Before
     public void setUp() throws Exception {
-
-        one = new Integer(1);
-        two = new Integer(2);
+        one = 1;
+        two = 2;
     }
 
 
@@ -50,11 +47,11 @@ public class IntegerDataTests {
         IntegerData data = new IntegerData(one);
         data.setValue(two);
 
-        assertTrue("IntegerData did not set value properly. Maintained old value.", !(data.getValue().equals(one)));
+        assertNotEquals("IntegerData did not set value properly. Maintained old value.", data.getValue(), one);
         assertEquals("IntegerData did not properly set value ", data.getValue(), two);
 
         data.setValue(one);
-        assertTrue("IntegerData did not set value properly. Maintained old value.", !(data.getValue().equals(two)));
+        assertNotEquals("IntegerData did not set value properly. Maintained old value.", data.getValue(), two);
         assertEquals("IntegerData did not properly reset value ", data.getValue(), one);
 
     }
@@ -69,6 +66,6 @@ public class IntegerDataTests {
             exceptionThrown = true;
         }
         assertTrue("IntegerData failed to throw an exception when setting null data", exceptionThrown);
-        assertTrue("IntegerData overwrote existing value on incorrect input", data.getValue().equals(one));
+        assertEquals("IntegerData overwrote existing value on incorrect input", data.getValue(), one);
     }
 }

@@ -25,7 +25,7 @@ import org.junit.Test;
 public class NumericEncodingTest {
 
     private void testNumericEncoding (long val, ExtWrapIntEncoding encoding) {
-        ExternalizableTest.testExternalizable(encoding.clone(new Long(val)), encoding, null, null);
+        ExternalizableTest.testExternalizable(encoding.clone(val), encoding, null, null);
     }
 
     @Test
@@ -71,14 +71,14 @@ public class NumericEncodingTest {
 
             ExtWrapIntEncoding enc = new ExtWrapIntEncodingSmall(bias);
 
-            for (int j = 0; j < smallTests.length; j++) {
-                testNumericEncoding(smallTests[j], enc);
+            for (int smallTest : smallTests) {
+                testNumericEncoding(smallTest, enc);
                 if (bias != 0)
-                    testNumericEncoding(smallTests[j] - bias, enc);
+                    testNumericEncoding(smallTest - bias, enc);
             }
 
-            for (int j = 0; j < largeTests.length; j++) {
-                testNumericEncoding(largeTests[j], enc);
+            for (int largeTest : largeTests) {
+                testNumericEncoding(largeTest, enc);
             }
         }
     }

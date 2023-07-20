@@ -16,10 +16,6 @@
 
 package org.javarosa.xpath.test;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.util.externalizable.ExtUtil;
 import org.javarosa.core.util.externalizable.ExtWrapTagged;
@@ -28,12 +24,12 @@ import org.javarosa.core.util.test.ExternalizableTest;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.parser.XPathSyntaxException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static org.junit.Assert.fail;
 
 
-public class XPathParseTest extends TestCase {
-    private static final Logger logger = LoggerFactory.getLogger(XPathParseTest.class);
+public class XPathParseTest {
+
     public static String[][] parseTestCases = {
         /* no null expressions */
         {"", null},
@@ -211,24 +207,13 @@ public class XPathParseTest extends TestCase {
         pf = ExtUtil.defaultPrototypes();
     }
 
-    public XPathParseTest(String name) {
-        super(name);
-        logger.info("Running {} test: {}...", this.getClass().getName(), name);
-    }
-
-    public static Test suite() {
-        TestSuite aSuite = new TestSuite();
-        aSuite.addTest(new XPathParseTest("doTests"));
-
-        return aSuite;
-    }
-
+    @org.junit.Test
     public void doTests() {
-        for (int i = 0; i < parseTestCases.length; i++) {
-            final String expr = parseTestCases[i][0];
-            final String expected = parseTestCases[i][1];
+        for (String[] parseTestCase : parseTestCases) {
+            final String expr = parseTestCase[0];
+            final String expected = parseTestCase[1];
 
-            logger.info("XPath Parsing Test [{}]", expr);
+            //System.out.println("XPath Parsing Test [" + expr +"]");
             testParse(expr, expected);
         }
     }
@@ -245,7 +230,6 @@ public class XPathParseTest extends TestCase {
                             "\n    result:[" + result + "]");
             }
 
-            //test serialization of parse tree
             ExternalizableTest.testExternalizable(new ExtWrapTagged(xpe), new ExtWrapTagged(), pf, "XPath");
         } catch (XPathSyntaxException xse) {
             fail("XPath Parse Failed! Unexpected syntax error." +
