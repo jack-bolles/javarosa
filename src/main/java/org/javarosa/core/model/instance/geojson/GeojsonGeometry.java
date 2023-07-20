@@ -30,31 +30,29 @@ public class GeojsonGeometry {
     private ArrayList<Object> coordinates;
 
     public String getOdkCoordinates() throws IOException {
-        if (type.equals("Point")) {
-            return coordinates.get(1) + " " + coordinates.get(0) + " 0 0";
-        } else if (type.equals("LineString")) {
-            StringJoiner stringJoiner = new StringJoiner("; ");
-            for (Object item : coordinates) {
-                List<Object> point = (List<Object>) item;
-                stringJoiner.add(point.get(1) + " " + point.get(0) + " 0 0");
-            }
-
-            return stringJoiner.toString();
-        } else if (type.equals("Polygon")) {
-            if (!coordinates.isEmpty()) {
-                StringJoiner stringJoiner = new StringJoiner("; ");
-                for (Object item : (List<Object>) coordinates.get(0)) {
+        StringJoiner stringJoiner = new StringJoiner("; ");
+        switch (type) {
+            case "Point":
+                return coordinates.get(1) + " " + coordinates.get(0) + " 0 0";
+            case "LineString":
+                for (Object item : coordinates) {
                     List<Object> point = (List<Object>) item;
                     stringJoiner.add(point.get(1) + " " + point.get(0) + " 0 0");
                 }
-
                 return stringJoiner.toString();
-            } else {
-                return "";
-            }
+            case "Polygon":
+                if (!coordinates.isEmpty()) {
+                    for (Object item : (List<Object>) coordinates.get(0)) {
+                        List<Object> point = (List<Object>) item;
+                        stringJoiner.add(point.get(1) + " " + point.get(0) + " 0 0");
+                    }
+                    return stringJoiner.toString();
+                } else {
+                    return "";
+                }
 
-        } else {
-            throw new IOException("Only Points, LineStrings and Polygons are currently supported");
+            default:
+                throw new IOException("Only Points, LineStrings and Polygons are currently supported");
         }
     }
 }

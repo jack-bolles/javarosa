@@ -9,9 +9,7 @@ public class Measure {
     private static final Map<String, Integer> counts = new HashMap<>();
     private static boolean measuring;
 
-    private Measure() {
-
-    }
+    private Measure() { }
 
     public static int withMeasure(List<String> events, Runnable work) {
         start();
@@ -48,10 +46,6 @@ public class Measure {
     }
 
     private static int getCount(String event) {
-        if (counts.containsKey(event)) {
-            return counts.get(event);
-        } else {
-            return 0;
-        }
+        return counts.getOrDefault(event, 0);
     }
 }

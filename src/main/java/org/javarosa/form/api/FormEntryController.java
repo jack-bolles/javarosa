@@ -21,7 +21,6 @@ import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.GroupDef;
 import org.javarosa.core.model.IFormElement;
 import org.javarosa.core.model.QuestionDef;
-import org.javarosa.core.model.condition.PredicateFilter;
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.instance.InvalidReferenceException;
 import org.javarosa.core.model.instance.TreeElement;
@@ -54,28 +53,12 @@ public class FormEntryController {
 
     private final List<FormEntryFinalizationProcessor> formEntryFinalizationProcessors = new ArrayList<>();
 
-    /**
-     * Creates a new form entry controller for the model provided
-     *
-     * @param model
-     */
     public FormEntryController(FormEntryModel model) {
         this.model = model;
     }
 
     public FormEntryModel getModel() {
         return model;
-    }
-
-
-    /**
-     * Attempts to save answer at the current FormIndex into the datamodel.
-     *
-     * @param data
-     * @return
-     */
-    public int answerQuestion(IAnswerData data, boolean midSurvey) {
-        return answerQuestion(model.getFormIndex(), data, midSurvey);
     }
 
     /**
@@ -90,7 +73,7 @@ public class FormEntryController {
      * Side effects: When it returns {@link #ANSWER_OK}, it mutates
      * the {@link TreeElement} corresponding to the given {@link FormIndex} by
      * setting its value to the given {@link IAnswerData} or by copying an
-     * itemset answer if the question is complex.
+     * item-set answer if the question is complex.
      *
      * @param index The index of the question/prompt that is being currently evaluated
      * @param data  The data to attempt to answer the question with.
@@ -107,7 +90,6 @@ public class FormEntryController {
         TreeElement element = model.getTreeElement(index);
         boolean complexQuestion = q.isComplex();
 
-        boolean hasConstraints = false;
         if (element.isRequired() && data == null) {
             return ANSWER_REQUIRED_BUT_EMPTY;
         } else if (!complexQuestion && !model.getForm().evaluateConstraint(index.getReference(), data)) {
@@ -115,16 +97,13 @@ public class FormEntryController {
         } else if (!complexQuestion) {
             commitAnswer(element, index, data, midSurvey);
             return ANSWER_OK;
-        } else if (complexQuestion && hasConstraints) {
-            //TODO: itemsets: don't currently evaluate constraints for itemset/copy -- haven't figured out how handle it yet
-            throw new RuntimeException("Itemsets do not currently evaluate constraints. Your constraint will not work, please remove it before proceeding.");
         } else {
             try {
-                // TODO Design a test that exercizes this branch.
+                // TODO Design a test that exercises this branch.
                 model.getForm().copyItemsetAnswer(q, element, data);
             } catch (InvalidReferenceException ire) {
                 logger.error("Error", ire);
-                throw new RuntimeException("Invalid reference while copying itemset answer: " + ire.getMessage());
+                throw new RuntimeException("Invalid reference while copying item-set answer: " + ire.getMessage());
             }
             return ANSWER_OK;
         }
@@ -136,50 +115,21 @@ public class FormEntryController {
      * without doing any constraint checking. Only use this if you know what
      * you're doing. For normal form filling you should always use
      * answerQuestion or answerCurrentQuestion.
-     *
-     * @param index
-     * @param data
-     * @return true if saved successfully, false otherwise.
      */
-    public boolean saveAnswer(FormIndex index, IAnswerData data, boolean midSurvey) {
+    public void saveAnswer(FormIndex index, IAnswerData data, boolean midSurvey) {
         if (model.getEvent(index) != FormEntryController.EVENT_QUESTION) {
             throw new RuntimeException("Non-Question object at the form index.");
         }
         TreeElement element = model.getTreeElement(index);
-        return commitAnswer(element, index, data, midSurvey);
+        commitAnswer(element, index, data, midSurvey);
     }
 
 
-    /**
-     * saveAnswer attempts to save the current answer into the data model
-     * without doing any constraint checking. Only use this if you know what
-     * you're doing. For normal form filling you should always use
-     * answerQuestion().
-     *
-     * @param data
-     * @return true if saved successfully, false otherwise.
-     */
-    public boolean saveAnswer(IAnswerData data, boolean midSurvey) {
-        return saveAnswer(model.getFormIndex(), data, midSurvey);
-    }
-
-
-    /**
-     * commitAnswer actually saves the data into the datamodel.
-     *
-     * @param element
-     * @param index
-     * @param data
-     * @return true if saved successfully, false otherwise
-     */
-    private boolean commitAnswer(TreeElement element, FormIndex index, IAnswerData data, boolean midSurvey) {
+    private void commitAnswer(TreeElement element, FormIndex index, IAnswerData data, boolean midSurvey) {
         if (data != null || element.getValue() != null) {
             // we should check if the data to be saved is already the same as
             // the data in the model, but we can't (no IAnswerData.equals())
             model.getForm().setValue(data, index.getReference(), element, midSurvey);
-            return true;
-        } else {
-            return false;
         }
     }
 
@@ -205,21 +155,14 @@ public class FormEntryController {
 
     public void finalizeFormEntry() {
         model.getForm().postProcessInstance();
-        formEntryFinalizationProcessors.stream().forEach(formEntryFinalizationProcessor -> {
-            formEntryFinalizationProcessor.processForm(model);
-        });
+        formEntryFinalizationProcessors.forEach(formEntryFinalizationProcessor
+                -> formEntryFinalizationProcessor.processForm(model));
     }
 
     public void addPostProcessor(FormEntryFinalizationProcessor formEntryFinalizationProcessor) {
         formEntryFinalizationProcessors.add(formEntryFinalizationProcessor);
     }
 
-    /**
-     * Moves the current FormIndex to the next/previous relevant position.
-     *
-     * @param forward
-     * @return
-     */
     private int stepEvent(boolean forward) {
         FormIndex index = model.getFormIndex();
 
@@ -235,39 +178,21 @@ public class FormEntryController {
     }
 
 
-    /**
-     * Jumps to a given FormIndex.
-     *
-     * @param index
-     * @return EVENT for the specified Index.
-     */
     public int jumpToIndex(FormIndex index) {
         model.setQuestionIndex(index);
         return model.getEvent(index);
     }
 
-    public FormIndex descendIntoRepeat(int n) {
-        jumpToIndex(model.getForm().descendIntoRepeat(model.getFormIndex(), n));
-        return model.getFormIndex();
-    }
-
-    public FormIndex descendIntoNewRepeat() {
+    public void descendIntoNewRepeat() {
         jumpToIndex(model.getForm().descendIntoRepeat(model.getFormIndex(), -1));
         newRepeat(model.getFormIndex());
-        return model.getFormIndex();
     }
 
-    /**
-     * Creates a new repeated instance of the group referenced by the specified
-     * FormIndex.
-     *
-     * @param questionIndex
-     */
     public void newRepeat(FormIndex questionIndex) {
         try {
             model.getForm().createNewRepeat(questionIndex);
         } catch (InvalidReferenceException ire) {
-            throw new RuntimeException("Invalid reference while copying itemset answer: " + ire.getMessage());
+            throw new RuntimeException("Invalid reference while copying item-set answer: " + ire.getMessage());
         }
     }
 
@@ -280,38 +205,6 @@ public class FormEntryController {
         newRepeat(model.getFormIndex());
     }
 
-
-    /**
-     * Deletes a repeated instance of a group referenced by the specified
-     * FormIndex.
-     *
-     * @param questionIndex
-     * @return
-     */
-    public FormIndex deleteRepeat(FormIndex questionIndex) {
-        return model.getForm().deleteRepeat(questionIndex);
-    }
-
-
-    /**
-     * Deletes a repeated instance of a group referenced by the current
-     * FormIndex.
-     *
-     * @return
-     */
-    public FormIndex deleteRepeat() {
-        return deleteRepeat(model.getFormIndex());
-    }
-
-    public void deleteRepeat(int n) {
-        deleteRepeat(model.getForm().descendIntoRepeat(model.getFormIndex(), n));
-    }
-
-    /**
-     * Sets the current language.
-     *
-     * @param language
-     */
     public void setLanguage(String language) {
         model.setLanguage(language);
     }
@@ -345,13 +238,5 @@ public class FormEntryController {
                 return null;
             }
         }
-    }
-
-    public void disablePredicateCaching() {
-        model.getForm().disablePredicateCaching();
-    }
-
-    public void addPredicateFilter(PredicateFilter predicateFilter) {
-        model.getForm().addPredicateFilter(predicateFilter);
     }
 }

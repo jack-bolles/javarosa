@@ -15,11 +15,9 @@ public final class ProgramFlow {
 
         //depending on how the code was invoked, a straight 'throw' won't always reliably crash the app
         //throwing in a thread should work (at least on our nokias)
-        new Thread() {
-            public void run() {
-                throw crashException;
-            }
-        }.start();
+        new Thread(() -> {
+            throw crashException;
+        }).start();
 
         //still do plain throw as a fallback
         try {
@@ -29,4 +27,3 @@ public final class ProgramFlow {
         throw crashException;
     }
 }
-
