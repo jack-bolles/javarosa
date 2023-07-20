@@ -1,8 +1,7 @@
-package org.javarosa.core.model.test;
+package org.javarosa.form.api;
 
 import org.javarosa.core.model.QuestionDef;
 import org.javarosa.core.services.locale.Localizer;
-import org.javarosa.form.api.FormEntryPrompt;
 
 public class DummyFormEntryPrompt extends FormEntryPrompt {
     String textId;
