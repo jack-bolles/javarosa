@@ -16,8 +16,6 @@
 
 package org.javarosa.core.model.test;
 
-import java.util.ArrayList;
-
 import org.javarosa.core.model.Constants;
 import org.javarosa.core.model.FormElementStateListener;
 import org.javarosa.core.model.IDataReference;
@@ -38,6 +36,8 @@ import org.javarosa.form.api.FormEntryPrompt;
 import org.javarosa.xform.parse.ParseException;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
 
 import static junit.framework.TestCase.fail;
 
@@ -123,7 +123,7 @@ public class QuestionDefTest {
         }
 
         try {
-            q.setChildren(new ArrayList<IFormElement>());
+            q.setChildren(new ArrayList<>());
             fail("Set a question's children without exception");
         } catch (IllegalStateException ise) {
             //expected
@@ -157,7 +157,7 @@ public class QuestionDefTest {
 
     @Test
     public void testReferences() {
-        QuestionDef q = fpi.getFirstQuestionDef();
+        fpi.getFirstQuestionDef();
         FormEntryPrompt fep = fpi.getFormEntryModel().getQuestionPrompt();
 
         Localizer l = fpi.getFormDef().getLocalizer();
@@ -182,7 +182,7 @@ public class QuestionDefTest {
 
 
         ReferenceManager.instance().addRootTranslator(new RootTranslator("jr://images/", "jr://resource/"));
-        q = fpi.getNextQuestion();
+        fpi.getNextQuestion();
         fep = fpi.getFormEntryModel().getQuestionPrompt();
         String imURI = fep.getImageText();
         try {
@@ -197,7 +197,7 @@ public class QuestionDefTest {
         }
     }
 
-    private class QuestionObserver implements FormElementStateListener {
+    private static class QuestionObserver implements FormElementStateListener {
         boolean flag = false;
         public TreeElement e;
         QuestionDef q;
