@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.javarosa.core.model.utils.DateFormatter.xpathPatternAsJavaTimePattern;
 
+@SuppressWarnings("CommentedOutCode")
 public class XPathFuncExprTest {
 
     @Test //TODO xpathPatternAsJavaTimePattern() needs more testing
