@@ -29,6 +29,7 @@ import org.javarosa.core.util.test.ExternalizableTest;
 import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -490,7 +491,7 @@ public class LocalizerTest {
         String text, text2;
 
         text = l.getText(textID, ourLocale);
-        if (expected == null ? text != null : !expected.equals(text)) {
+        if (!Objects.equals(expected, text)) {
             fail("Did not retrieve expected text from localizer [" + localeCase + "," + formCase + "," + i + "," + j + "," + k + "]");
         }
 
