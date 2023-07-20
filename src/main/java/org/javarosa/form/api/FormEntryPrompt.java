@@ -29,7 +29,6 @@ import org.javarosa.core.model.data.SelectOneData;
 import org.javarosa.core.model.data.helper.Selection;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.instance.TreeReference;
-import org.javarosa.formmanager.view.IQuestionWidget;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -219,11 +218,6 @@ public class FormEntryPrompt extends FormEntryCaption {
 
     //==== observer pattern ====//
 
-    public void register (IQuestionWidget viewWidget) {
-        super.register(viewWidget);
-        mTreeElement.registerStateObserver(this);
-    }
-
     public void unregister () {
         mTreeElement.unregisterStateObserver(this);
         super.unregister();
@@ -232,8 +226,6 @@ public class FormEntryPrompt extends FormEntryCaption {
     public void formElementStateChanged(TreeElement instanceNode, int changeFlags) {
         if (this.mTreeElement != instanceNode)
             throw new IllegalStateException("Widget received event from foreign question");
-        if (viewWidget != null)
-            viewWidget.refreshWidget(changeFlags);
     }
 
     /**

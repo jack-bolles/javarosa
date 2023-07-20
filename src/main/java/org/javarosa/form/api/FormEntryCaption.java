@@ -23,7 +23,6 @@ import org.javarosa.core.model.GroupDef;
 import org.javarosa.core.model.IFormElement;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.services.locale.Localizer;
-import org.javarosa.formmanager.view.IQuestionWidget;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,8 +47,6 @@ public class FormEntryCaption implements FormElementStateListener {
     public static final String TEXT_FORM_AUDIO = "audio";
     public static final String TEXT_FORM_IMAGE = "image";
 
-    protected IQuestionWidget viewWidget;
-
     /**
      * This empty constructor exists for convenience of any supertypes of this
      * prompt
@@ -67,7 +64,6 @@ public class FormEntryCaption implements FormElementStateListener {
         this.form = form;
         this.index = index;
         this.element = form.getChild(index);
-        this.viewWidget = null;
         this.textID = this.element.getTextID();
     }
 
@@ -386,22 +382,13 @@ public class FormEntryCaption implements FormElementStateListener {
 
     // ==== observer pattern ====//
 
-    public void register(IQuestionWidget viewWidget) {
-        this.viewWidget = viewWidget;
-        element.registerStateObserver(this);
-    }
-
     public void unregister() {
-        this.viewWidget = null;
         element.unregisterStateObserver(this);
     }
 
     public void formElementStateChanged(IFormElement element, int changeFlags) {
         if (this.element != element) {
             throw new IllegalStateException("Widget received event from foreign question");
-        }
-        if (viewWidget != null) {
-            viewWidget.refreshWidget(changeFlags);
         }
     }
 
