@@ -2171,13 +2171,6 @@ public class XFormParser implements IXFormParserFunctions {
 
         // populated model to current form
         f.getMainInstance().setRoot(templateRoot);
-
-        // if the new instance is inserted into the formdef before f.initialize() is called, this
-        // locale refresh is unnecessary
-        //   Localizer loc = f.getLocalizer();
-        //   if (loc != null) {
-        //       f.localeChanged(loc.getLocale(), loc);
-        //     }
     }
 
     /**

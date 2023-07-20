@@ -30,7 +30,7 @@ public enum ConditionAction {
 
     private final int code;
     private final boolean cascading;
-    private String verb;
+    private final String verb;
 
     ConditionAction(int code, boolean cascading, String verb) {
         this.code = code;

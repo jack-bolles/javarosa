@@ -17,6 +17,16 @@
 package org.javarosa.smoketests;
 
 
+import org.javarosa.core.model.instance.TreeReference;
+import org.javarosa.core.test.Scenario;
+import org.javarosa.xform.parse.ParseException;
+import org.junit.Test;
+
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
+
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.is;
@@ -31,15 +41,6 @@ import static org.javarosa.smoketests.ChildVaccinationTest.Vaccines.MEASLES;
 import static org.javarosa.smoketests.ChildVaccinationTest.Vaccines.NONE;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
-
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
-import org.javarosa.core.model.instance.TreeReference;
-import org.javarosa.core.test.Scenario;
-import org.javarosa.xform.parse.ParseException;
-import org.junit.Test;
 
 public class ChildVaccinationTest {
 
@@ -230,7 +231,7 @@ public class ChildVaccinationTest {
         DIPHTERIA_FIRST_AND_MEASLES(true, false, true),
         DIPHTERIA_AND_MEASLES(true, true, true);
 
-        static List<TreeReference> END_OF_VISIT_REFS = Arrays.asList(NEXT_CHILD_REF, FINAL_FLAT_REF, CHILD_REPEAT_REF);
+        static final List<TreeReference> END_OF_VISIT_REFS = Arrays.asList(NEXT_CHILD_REF, FINAL_FLAT_REF, CHILD_REPEAT_REF);
 
         private final boolean diphteriaFirst;
         private final boolean diphteriaThird;

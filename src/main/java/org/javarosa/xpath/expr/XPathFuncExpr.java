@@ -916,7 +916,6 @@ public class XPathFuncExpr extends XPathExpression {
             }
         } else if (o instanceof String) {
             String s = (String) o;
-
             if (s.length() == 0) {
                 return s;
             }
@@ -924,12 +923,6 @@ public class XPathFuncExpr extends XPathExpression {
             try {
                 Date d = DateUtils.parseDateTime(s);
                 return decimalFromDate(d, keepDate);
-//                if (keepDate) {
-//                    long milli = d.getTime();
-//                    return (double) milli / DateUtils.DAY_IN_MS;
-//                } else {
-//                    return DateUtils.decimalTimeOfLocalDay(d);
-//                }
             } catch (IllegalArgumentException badArgs) {
                 throw new XPathTypeMismatchException("The value \"" + s + "\" can't be converted to a date.", badArgs);
             }

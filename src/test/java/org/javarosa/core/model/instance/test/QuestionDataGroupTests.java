@@ -16,7 +16,6 @@
 
 package org.javarosa.core.model.instance.test;
 
-
 import org.javarosa.core.model.IDataReference;
 import org.javarosa.core.model.data.IntegerData;
 import org.javarosa.core.model.data.StringData;
@@ -66,29 +65,10 @@ public class QuestionDataGroupTests {
             public void setReference(Object reference) {
                 this.reference = (String)reference;
             }
-            /*
-            public boolean referenceMatches(IDataReference reference) {
-                return this.reference.equals(reference.getReference());
-            }
 
-
-            public IDataReference clone()  {
-                IDataReference newReference = null;
-                try {
-                    newReference = (IDataReference)this.getClass().newInstance();
-                } catch (InstantiationException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-                newReference.setReference(reference);
-                return newReference;
-            }
-            */
             public void readExternal(DataInputStream in, PrototypeFactory pf) {}
 
             public void writeExternal(DataOutputStream out) {}
-
         };
 
         integerReference = new IDataReference() {
@@ -101,29 +81,10 @@ public class QuestionDataGroupTests {
             public void setReference(Object reference) {
                 this.intReference = (Integer)reference;
             }
-            /*
-            public boolean referenceMatches(IDataReference reference) {
-                return this.intReference.equals(reference.getReference());
-            }
 
-
-            public IDataReference clone()  {
-                IDataReference newReference = null;
-                try {
-                    newReference = (IDataReference)this.getClass().newInstance();
-                } catch (InstantiationException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-                newReference.setReference(intReference);
-                return newReference;
-            }
-            */
             public void readExternal(DataInputStream in, PrototypeFactory pf) {}
 
             public void writeExternal(DataOutputStream out) {}
-
         };
 
         intElement  = new TreeElement("intElement");
@@ -224,23 +185,8 @@ public class QuestionDataGroupTests {
 
     @Test
     public void testAddTreeChild() {
-        //TreeElement subTree = new TreeElement("subtree");
-        //TreeElement firstRootTree = new TreeElement("firstRoot");
-        //TreeElement secondRootTree = new TreeElement("secondRoot");
-
         TreeElement subElement = new TreeElement("SubElement");
         subElement.addChild(stringElement);
         subElement.addChild(intElement);
-
-        //assertTrue("Group did not add valid subtree group as a child",subTree.addChild(subElement));
-        //assertTrue("Group does not properly contain subtree group as a child",subTree.contains(subElement));
-
-        //Looks like these are not valid anymore after the last round of changes.
-
-    }
-
-    @Test
-    public void testContains() {
-
     }
 }

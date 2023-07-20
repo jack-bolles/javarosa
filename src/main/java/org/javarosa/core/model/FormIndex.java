@@ -297,25 +297,6 @@ public class FormIndex implements Serializable {
         FormIndex b = (FormIndex)o;
 
         return (a.compareTo(b) == 0);
-
-//        //TODO: while(true) loops freak me out, this should probably
-//        //get written more safely. -ctsims
-//
-//        //Iterate over each level of reference, and identify whether
-//        //each object stays in sync
-//        while(true) {
-//            if(index.isTerminal() != local.isTerminal() ||
-//                    index.getLocalIndex() != local.getLocalIndex() ||
-//                    index.getInstanceIndex() != local.getInstanceIndex()) {
-//                return false;
-//            }
-//            if(index.isTerminal()) {
-//                return true;
-//            }
-//            local = local.getNextLevel();
-//            index = index.getNextLevel();
-//        }
-//
     }
 
     @Override
@@ -356,41 +337,6 @@ public class FormIndex implements Serializable {
         } else {
             return 0;
         }
-
-//        int comp = 0;
-//
-//        //TODO: while(true) loops freak me out, this should probably
-//        //get written more safely. -ctsims
-//        while(comp == 0) {
-//            if(index.isTerminal() != local.isTerminal() ||
-//                    index.getLocalIndex() != local.getLocalIndex() ||
-//                    index.getInstanceIndex() != local.getInstanceIndex()) {
-//                if(local.localIndex > index.localIndex) {
-//                    return 1;
-//                } else if(local.localIndex < index.localIndex) {
-//                    return -1;
-//                } else if (local.instanceIndex > index.instanceIndex) {
-//                    return 1;
-//                } else if (local.instanceIndex < index.instanceIndex) {
-//                    return -1;
-//                }
-//
-//                //This case is here as a fallback, but it shouldn't really
-//                //ever be the case that two references have the same chain
-//                //of indices without terminating at the same level.
-//                else if (local.isTerminal() && !index.isTerminal()) {
-//                    return -1;
-//                } else {
-//                    return 1;
-//                }
-//            }
-//            else if(local.isTerminal()) {
-//                break;
-//            }
-//            local = local.getNextLevel();
-//            index = index.getNextLevel();
-//        }
-//        return comp;
     }
 
     /**

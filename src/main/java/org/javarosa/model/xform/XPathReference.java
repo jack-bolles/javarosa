@@ -19,10 +19,6 @@
  */
 package org.javarosa.model.xform;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 import org.javarosa.core.model.IDataReference;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.util.externalizable.DeserializationException;
@@ -37,9 +33,15 @@ import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- *
- */
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
+import static org.javarosa.core.util.externalizable.ExtUtil.nullIfEmpty;
+import static org.javarosa.core.util.externalizable.ExtUtil.read;
+import static org.javarosa.core.util.externalizable.ExtUtil.write;
+import static org.javarosa.core.util.externalizable.ExtUtil.writeString;
+
 public class XPathReference implements IDataReference {
     private static final Logger logger = LoggerFactory.getLogger(XPathReference.class);
 
@@ -107,19 +109,13 @@ public class XPathReference implements IDataReference {
         return ref.hashCode();
     }
 
-    /* (non-Javadoc)
-     * @see org.javarosa.core.services.storage.utilities.Externalizable#readExternal(java.io.DataInputStream)
-     */
     public void readExternal(DataInputStream in, PrototypeFactory pf) throws IOException, DeserializationException {
-        nodeset = ExtUtil.nullIfEmpty(ExtUtil.readString(in));
-        ref = (TreeReference)ExtUtil.read(in, TreeReference.class, pf);
+        nodeset = nullIfEmpty(ExtUtil.readString(in));
+        ref = (TreeReference) read(in, TreeReference.class, pf);
     }
 
-    /* (non-Javadoc)
-     * @see org.javarosa.core.services.storage.utilities.Externalizable#writeExternal(java.io.DataOutputStream)
-     */
     public void writeExternal(DataOutputStream out) throws IOException {
-        ExtUtil.writeString(out, ExtUtil.emptyIfNull(nodeset));
-        ExtUtil.write(out, ref);
+        writeString(out, ExtUtil.emptyIfNull(nodeset));
+        write(out, ref);
     }
 }
