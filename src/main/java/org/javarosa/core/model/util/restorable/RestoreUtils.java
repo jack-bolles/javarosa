@@ -30,7 +30,7 @@ import java.util.Date;
 public class RestoreUtils {
     public static final String RECORD_ID_TAG = "rec-id";
 
-    public static IXFormyFactory xfFact;
+    public static IXFormyFactory xfFact = new IXFormyFactory();
 
     public static TreeReference ref(String refStr) {
         return xfFact.ref(refStr);

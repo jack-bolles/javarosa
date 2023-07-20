@@ -13,29 +13,30 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.javarosa.test.utils.ResourcePathHelper.r;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 public class TreeElementParserTest {
 
-    private static Path SECONDARY_INSTANCE_XML;
+    private Path secondaryInstanceXML;
 
     @Before
     public void setUp() {
-        SECONDARY_INSTANCE_XML = r("secondary-instance.xml");
+        secondaryInstanceXML = r("secondary-instance.xml");
     }
 
     @Test
     public void parseInternalInstances() throws IOException, XmlPullParserException, InvalidStructureException {
-
-        InputStream inputStream = new FileInputStream(SECONDARY_INSTANCE_XML.toString());
+        InputStream inputStream = new FileInputStream(secondaryInstanceXML.toString());
         KXmlParser kXmlParser = ElementParser.instantiateParser(inputStream);
         TreeElementParser treeElementParser = new TreeElementParser(kXmlParser, 0, "");
         List<TreeElement> treeElementList = treeElementParser.parseInternalSecondaryInstances();
+
         assertEquals(treeElementList.size(), 1);
+
         TreeElement townsTreeElement = treeElementList.get(0);
         assertEquals(townsTreeElement.getInstanceName(), "towns");
         assertEquals(townsTreeElement.getNumChildren(), 1); // Has only one root node - <towndata z="1">
@@ -43,7 +44,6 @@ public class TreeElementParserTest {
         assertEquals(townsTreeElement.getChildAt(0)
             .getChildAt(0) // <data_set>us_east</data_set>
             .getValue().getDisplayText(), "us_east"); // Text Node - us_east
-
     }
 
     @Test

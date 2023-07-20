@@ -32,8 +32,6 @@ public class Event {
   private final String message;
   private final List<EvaluationResult> evaluationResults;
 
-  private static int id = 0;
-
   public Event(String message) {
     this(message, Collections.<EvaluationResult>emptyList());
   }
@@ -63,23 +61,10 @@ public class Event {
     }
   }
 
-  public String asMessage() {
-    return dump(" ---> ");
-  }
-
-  public String asLogLine() {
-    return dump("\t");
-  }
-
-  public String dump(String separator) {
-    String[] args = new String[]{String.format("%4d", ++id), this.getMessage(), getShortFieldNames(this.getEvaluationResults())};
-    return join(separator, args);
-  }
-
   private static String join(String separator, String... args) {
     StringBuilder sb = new StringBuilder();
     for (String arg : args) {
-      if (sb.length() > 0) {
+      if (!sb.isEmpty()) {
         sb.append(separator);
       }
       sb.append(arg);
@@ -88,13 +73,13 @@ public class Event {
   }
 
   private static String getShortFieldNames(Collection<EvaluationResult> evaluationResults) {
-    if (evaluationResults == null) {
+    if (null == evaluationResults) {
       return "";
     }
 
     StringBuilder sb = new StringBuilder();
     for (EvaluationResult evaluationResult : evaluationResults) {
-      if (sb.length() > 0) {
+      if (!sb.isEmpty()) {
         sb.append(", ");
       }
       sb.append(getShortFieldName(evaluationResult));
@@ -103,7 +88,7 @@ public class Event {
   }
 
   private static String getShortFieldName(EvaluationResult evaluationResult) {
-     if (evaluationResult == null) {
+     if (null == evaluationResult) {
         return "";
      } else {
        return evaluationResult.toString();

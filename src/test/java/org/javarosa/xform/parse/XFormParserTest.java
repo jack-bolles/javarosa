@@ -1,35 +1,5 @@
 package org.javarosa.xform.parse;
 
-import static java.nio.file.Files.copy;
-import static java.nio.file.Files.readAllBytes;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.javarosa.core.model.Constants.CONTROL_RANGE;
-import static org.javarosa.core.model.Constants.CONTROL_RANK;
-import static org.javarosa.core.test.AnswerDataMatchers.intAnswer;
-import static org.javarosa.core.util.BindBuilderXFormsElement.bind;
-import static org.javarosa.core.util.XFormsElement.body;
-import static org.javarosa.core.util.XFormsElement.head;
-import static org.javarosa.core.util.XFormsElement.html;
-import static org.javarosa.core.util.XFormsElement.input;
-import static org.javarosa.core.util.XFormsElement.mainInstance;
-import static org.javarosa.core.util.XFormsElement.model;
-import static org.javarosa.core.util.XFormsElement.t;
-import static org.javarosa.test.utils.ResourcePathHelper.r;
-import static org.javarosa.xform.parse.FormParserHelper.deserializeAndCleanUpSerializedForm;
-import static org.javarosa.xform.parse.FormParserHelper.getSerializedFormPath;
-import static org.javarosa.xform.parse.FormParserHelper.parse;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.GroupDef;
 import org.javarosa.core.model.IDataReference;
@@ -58,34 +28,55 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.kxml2.kdom.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+
+import static java.nio.file.Files.copy;
+import static java.nio.file.Files.readAllBytes;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.javarosa.core.model.Constants.CONTROL_RANGE;
+import static org.javarosa.core.model.Constants.CONTROL_RANK;
+import static org.javarosa.core.test.AnswerDataMatchers.intAnswer;
+import static org.javarosa.core.util.BindBuilderXFormsElement.bind;
+import static org.javarosa.core.util.XFormsElement.body;
+import static org.javarosa.core.util.XFormsElement.head;
+import static org.javarosa.core.util.XFormsElement.html;
+import static org.javarosa.core.util.XFormsElement.input;
+import static org.javarosa.core.util.XFormsElement.mainInstance;
+import static org.javarosa.core.util.XFormsElement.model;
+import static org.javarosa.core.util.XFormsElement.t;
+import static org.javarosa.test.utils.ResourcePathHelper.r;
+import static org.javarosa.xform.parse.FormParserHelper.deserializeAndCleanUpSerializedForm;
+import static org.javarosa.xform.parse.FormParserHelper.getSerializedFormPath;
+import static org.javarosa.xform.parse.FormParserHelper.parse;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class XFormParserTest {
-    private static final Logger logger = LoggerFactory.getLogger(XFormParserTest.class);
-
-    private static Path FORM_INSTANCE_XML_FILE_NAME;
-    private static Path SECONDARY_INSTANCE_XML;
-    private static Path SECONDARY_INSTANCE_LARGE_XML;
 
     private static final String AUDIT_NODE = "audit";
     private static final String AUDIT_ANSWER = "audit111.csv";
-
     private static final String AUDIT_2_NODE = "audit2";
     private static final String AUDIT_2_ANSWER = "audit222.csv";
-
     private static final String AUDIT_3_NODE = "audit3";
     private static final String AUDIT_3_ANSWER = "audit333.csv";
-
     private static final String ORX_2_NAMESPACE_PREFIX = "orx2";
     private static final String ORX_2_NAMESPACE_URI = "http://openrosa.org/xforms";
+
+    private Path formInstanceXmlFileName;
 
     @Before
     public void setUp() {
         try {
-            FORM_INSTANCE_XML_FILE_NAME = Files.createTempFile("instance.xml", null);
-            SECONDARY_INSTANCE_XML = r("secondary-instance.xml");
-            SECONDARY_INSTANCE_LARGE_XML = Files.createTempFile("secondary-instance-large.xml", null);
+            formInstanceXmlFileName = Files.createTempFile("instance.xml", null);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -93,7 +84,7 @@ public class XFormParserTest {
 
     @After
     public void tearDown() throws Exception {
-        Files.deleteIfExists(FORM_INSTANCE_XML_FILE_NAME);
+        Files.deleteIfExists(formInstanceXmlFileName);
     }
 
     @Test
@@ -137,7 +128,7 @@ public class XFormParserTest {
     
     @Test
     public void parsesSecondaryInstanceForm() throws IOException, ParseException {
-        FormDef formDef = parse(SECONDARY_INSTANCE_XML);
+        FormDef formDef = parse(r("secondary-instance.xml"));
         assertEquals("Form with secondary instance", formDef.getTitle());
     }
 
@@ -283,10 +274,10 @@ public class XFormParserTest {
         // serialize the form instance
         XFormSerializingVisitor serializer = new XFormSerializingVisitor();
         ByteArrayPayload xml = (ByteArrayPayload) serializer.createSerializedPayload(formDef.getInstance());
-        copy(xml.getPayloadStream(), FORM_INSTANCE_XML_FILE_NAME, REPLACE_EXISTING);
+        copy(xml.getPayloadStream(), formInstanceXmlFileName, REPLACE_EXISTING);
 
         // restore (deserialize) the form instance
-        byte[] formInstanceBytes = readAllBytes(FORM_INSTANCE_XML_FILE_NAME);
+        byte[] formInstanceBytes = readAllBytes(formInstanceXmlFileName);
         FormInstance formInstance = XFormParser.restoreDataModel(formInstanceBytes, null);
 
         // Then
@@ -407,12 +398,12 @@ public class XFormParserTest {
         assertEquals(formDef.getTitle(), "group with nodeset attribute");
         assertEquals("Number of error messages", 0, formDef.getParseErrors().size());
 
-        final TreeReference expectedTreeReference = new TreeReference();
+        TreeReference expectedTreeReference = new TreeReference();
         expectedTreeReference.setRefLevel(-1); // absolute reference
         expectedTreeReference.add("data", -1); // the instance root
         expectedTreeReference.add("R1", -1); // the outer repeat
         expectedTreeReference.add("G2", -1); // the inner group
-        final IDataReference expectedXPathReference = new XPathReference(expectedTreeReference);
+        IDataReference expectedXPathReference = new XPathReference(expectedTreeReference);
 
         IFormElement groupElement = formDef.getChild(0).getChild(0);
 
@@ -430,7 +421,7 @@ public class XFormParserTest {
         assertEquals(formDef.getTitle(), "group with ref attribute");
         assertEquals("Number of error messages", 0, formDef.getParseErrors().size());
 
-        final TreeReference g2TreeRef = new TreeReference();
+        TreeReference g2TreeRef = new TreeReference();
         g2TreeRef.setRefLevel(-1); // absolute reference
         g2TreeRef.add("data", -1); // the instance root
         g2TreeRef.add("G1", -1); // the outer group
@@ -443,7 +434,7 @@ public class XFormParserTest {
         IFormElement g2Element = formDef.getChild(0).getChild(0);
         assertThat(g2Element.getBind(), is(g2AbsRef));
 
-        final TreeReference g3TreeRef = new TreeReference();
+        TreeReference g3TreeRef = new TreeReference();
         g3TreeRef.setRefLevel(-1); // absolute reference
         g3TreeRef.add("data", -1); // the instance root
         g3TreeRef.add("G1", -1); // the outer group
@@ -471,9 +462,9 @@ public class XFormParserTest {
             TreeElement e = parent.getChildAt(i);
             if (name.equals(e.getName())) {
                 return e;
-            } else if (e.getNumChildren() != 0) {
+            } else if (0 != e.getNumChildren()) {
                 TreeElement v = findDepthFirst(e, name);
-                if (v != null) {
+                if (null != v) {
                     return v;
                 }
             }
