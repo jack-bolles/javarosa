@@ -16,8 +16,6 @@
 
 package org.javarosa.xpath.parser.ast;
 
-import java.util.Vector;
-
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.expr.XPathFilterExpr;
 import org.javarosa.xpath.expr.XPathPathExpr;
@@ -26,13 +24,15 @@ import org.javarosa.xpath.parser.Parser;
 import org.javarosa.xpath.parser.Token;
 import org.javarosa.xpath.parser.XPathSyntaxException;
 
+import java.util.Vector;
+
 public class ASTNodeLocPath extends ASTNode {
     public Vector<ASTNode> clauses;
     public Vector<Integer> separators;
 
     public ASTNodeLocPath () {
-        clauses = new Vector<ASTNode>();
-        separators = new Vector<Integer>();
+        clauses = new Vector<>();
+        separators = new Vector<>();
     }
 
     public Vector<ASTNode> getChildren() {
@@ -44,7 +44,7 @@ public class ASTNodeLocPath extends ASTNode {
     }
 
     public XPathExpression build() throws XPathSyntaxException {
-        Vector<XPathStep> steps = new Vector<XPathStep>();
+        Vector<XPathStep> steps = new Vector<>();
         XPathExpression filtExpr = null;
         int offset = isAbsolute() ? 1 : 0;
         for (int i = 0; i < clauses.size() + offset; i++) {

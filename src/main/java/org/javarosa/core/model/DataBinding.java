@@ -16,11 +16,6 @@
 
 package org.javarosa.core.model;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import org.javarosa.core.model.condition.IConditionExpr;
 import org.javarosa.core.model.condition.Triggerable;
 import org.javarosa.core.model.instance.TreeElement;
@@ -30,6 +25,12 @@ import org.javarosa.core.util.externalizable.ExtWrapNullable;
 import org.javarosa.core.util.externalizable.ExtWrapTagged;
 import org.javarosa.core.util.externalizable.Externalizable;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A data binding is an object that represents how a
@@ -63,7 +64,7 @@ public class DataBinding implements Externalizable {
     private String preloadParams;
     public String constraintMessage;
 
-    private List<TreeElement> additionalAttrs = new ArrayList<TreeElement>(0);
+    private final List<TreeElement> additionalAttrs = new ArrayList<>(0);
 
     public DataBinding() {
         relevantAbsolute = true;
@@ -71,72 +72,42 @@ public class DataBinding implements Externalizable {
         readonlyAbsolute = false;
     }
 
-    /**
-     * @return The data reference
-     */
     public IDataReference getReference() {
         return ref;
     }
 
-    /**
-     * @param ref the reference to set
-     */
     public void setReference(IDataReference ref) {
         this.ref = ref;
     }
 
-    /**
-     * @return the id
-     */
     public String getId() {
         return id;
     }
 
-    /**
-     * @param id the id to set
-     */
     public void setId(String id) {
         this.id = id;
     }
 
-    /**
-     * @return the dataType
-     */
     public int getDataType() {
         return dataType;
     }
 
-    /**
-     * @param dataType the dataType to set
-     */
     public void setDataType(int dataType) {
         this.dataType = dataType;
     }
 
-    /**
-     * @return the preload
-     */
     public String getPreload() {
         return preload;
     }
 
-    /**
-     * @param preload the preload to set
-     */
     public void setPreload(String preload) {
         this.preload = preload;
     }
 
-    /**
-     * @return the preloadParams
-     */
     public String getPreloadParams() {
         return preloadParams;
     }
 
-    /**
-     * @param preloadParams the preloadParams to set
-     */
     public void setPreloadParams(String preloadParams) {
         this.preloadParams = preloadParams;
     }
@@ -149,9 +120,6 @@ public class DataBinding implements Externalizable {
         return additionalAttrs;
     }
 
-    /* (non-Javadoc)
-     * @see org.javarosa.core.services.storage.utilities.Externalizable#readExternal(java.io.DataInputStream)
-     */
     public void readExternal(DataInputStream in, PrototypeFactory pf) throws IOException, DeserializationException {
         setId((String) ExtUtil.read(in, new ExtWrapNullable(String.class), pf));
         setDataType(ExtUtil.readInt(in));
@@ -162,9 +130,6 @@ public class DataBinding implements Externalizable {
         //don't bother reading relevancy/required/readonly/constraint/calculate/additionalAttrs right now; they're only used during parse anyway
     }
 
-    /* (non-Javadoc)
-     * @see org.javarosa.core.services.storage.utilities.Externalizable#writeExternal(java.io.DataOutputStream)
-     */
     public void writeExternal(DataOutputStream out) throws IOException {
         ExtUtil.write(out, new ExtWrapNullable(getId()));
         ExtUtil.writeNumeric(out, getDataType());

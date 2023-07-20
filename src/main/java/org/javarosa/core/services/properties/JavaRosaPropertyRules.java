@@ -16,17 +16,18 @@
 
 package org.javarosa.core.services.properties;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Set;
-
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.locale.Localizer;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Set;
+
 /**
  * A set of rules governing the allowable properties for JavaRosa's
- * core funtionality.
+ * core functionality.
  *
  * @author ctsims
  *
@@ -51,19 +52,19 @@ public class JavaRosaPropertyRules implements IPropertyRules {
      * Creates the JavaRosa set of property rules
      */
     public JavaRosaPropertyRules() {
-        rules = new HashMap<String,ArrayList<String>>();
-        readOnlyProperties = new ArrayList<String>(2);
+        rules = new HashMap<>();
+        readOnlyProperties = new ArrayList<>(2);
 
         //DeviceID Property
-        rules.put(DEVICE_ID_PROPERTY, new ArrayList<String>(1));
-        ArrayList<String> logs = new ArrayList<String>(2);
+        rules.put(DEVICE_ID_PROPERTY, new ArrayList<>(1));
+        ArrayList<String> logs = new ArrayList<>(2);
         logs.add(LOGS_ENABLED_NO);
         logs.add(LOGS_ENABLED_YES);
         rules.put(LOGS_ENABLED, logs);
 
-        rules.put(CURRENT_LOCALE, new ArrayList<String>(1));
+        rules.put(CURRENT_LOCALE, new ArrayList<>(1));
 
-        rules.put(OPENROSA_API_LEVEL, new ArrayList<String>(1));
+        rules.put(OPENROSA_API_LEVEL, new ArrayList<>(1));
 
         readOnlyProperties.add(DEVICE_ID_PROPERTY);
         readOnlyProperties.add(OPENROSA_API_LEVEL);
@@ -77,10 +78,8 @@ public class JavaRosaPropertyRules implements IPropertyRules {
         if(CURRENT_LOCALE.equals(propertyName)) {
             Localizer l = Localization.getGlobalLocalizerAdvanced();
             String[] locales = l.getAvailableLocales();
-            ArrayList<String> v = new ArrayList<String>(locales.length);
-            for ( String locale : locales ) {
-               v.add(locale);
-            }
+            ArrayList<String> v = new ArrayList<>(locales.length);
+            Collections.addAll(v, locales);
             return v;
         }
       return rules.get(propertyName);
@@ -97,7 +96,7 @@ public class JavaRosaPropertyRules implements IPropertyRules {
         if(prop.size() != 0) {
             //Check whether this is a dynamic property
             if(prop.size() == 1 && checkPropertyAllowed(prop.get(0))) {
-                // If so, get its list of available values, and see whether the potentival value is acceptable.
+                // If so, get its list of available values, and see whether the potential value is acceptable.
                 return PropertyManager.__().getProperty(prop.get(0)).contains(potentialValue);
             }
             else {
@@ -113,8 +112,7 @@ public class JavaRosaPropertyRules implements IPropertyRules {
      */
     public ArrayList<String> allowableProperties() {
         Set<String> keys = rules.keySet();
-        ArrayList<String> propList = new ArrayList<String>(keys);
-      return propList;
+        return new ArrayList<>(keys);
     }
 
     /** (non-Javadoc)

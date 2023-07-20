@@ -16,16 +16,16 @@
 
 package org.javarosa.xpath.parser.ast;
 
-import java.util.Vector;
-
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.parser.XPathSyntaxException;
+
+import java.util.Vector;
 
 public class ASTNodePredicate extends ASTNode {
     public ASTNode expr;
 
     public Vector<ASTNode> getChildren () {
-        Vector<ASTNode> v = new Vector<ASTNode>();
+        Vector<ASTNode> v = new Vector<>();
         v.addElement(expr);
         return v;
     }

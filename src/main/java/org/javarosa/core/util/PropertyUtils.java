@@ -16,30 +16,9 @@
 
 package org.javarosa.core.util;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
-import org.javarosa.core.services.PropertyManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class PropertyUtils {
-    private static final Logger logger = LoggerFactory.getLogger(PropertyUtils.class);
-
-    //need 'addpropery' too.
-    public static String initializeProperty(String propName, String defaultValue) {
-        List<String> propVal = PropertyManager.__().getProperty(propName);
-        if (propVal == null || propVal.size() == 0) {
-            propVal = new ArrayList<String>(1);
-            propVal.add(defaultValue);
-            PropertyManager.__().setProperty(propName, propVal);
-            logger.info("No default value for [{}]; setting to [{}]", propName, defaultValue); // debug
-            return defaultValue;
-        }
-        return propVal.get(0);
-    }
-
 
     /**
      * Generate an RFC 4122 Version 4 UUID.

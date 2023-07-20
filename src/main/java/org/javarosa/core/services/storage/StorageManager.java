@@ -16,12 +16,12 @@
 
 package org.javarosa.core.services.storage;
 
-import static org.javarosa.core.services.ProgramFlow.die;
-
 import org.javarosa.core.services.storage.WrappingStorageUtility.SerializationWrapper;
 import org.javarosa.core.util.externalizable.Externalizable;
 
 import java.util.HashMap;
+
+import static org.javarosa.core.services.ProgramFlow.die;
 
 /**
  * Manages StorageProviders for JavaRosa, which maintain persistent
@@ -34,7 +34,7 @@ import java.util.HashMap;
  */
 public class StorageManager {
 
-    private static HashMap<String, IStorageUtility<? extends Externalizable>> storageRegistry = new HashMap<String, IStorageUtility<? extends Externalizable>>();
+    private static final HashMap<String, IStorageUtility<? extends Externalizable>> storageRegistry = new HashMap<>();
     private static IStorageFactory storageFactory;
 
     /**
@@ -63,9 +63,8 @@ public class StorageManager {
                 die("A Storage Factory had already been set when storage factory " +
                     fact.getClass().getName() + " attempted to become the only storage " +
                     "factory", new RuntimeException("Duplicate Storage Factory set"));
-            } else {
-                //Not an issue
             }
+
         }
     }
 

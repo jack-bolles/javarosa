@@ -16,15 +16,16 @@
 
 package org.javarosa.xpath.expr;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.condition.pivot.UnpivotableExpressionException;
 import org.javarosa.core.model.instance.DataInstance;
-import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 import org.javarosa.core.util.externalizable.Externalizable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class XPathExpression implements Externalizable, Serializable {
     private static final Logger logger = LoggerFactory.getLogger(XPathExpression.class);
@@ -37,7 +38,7 @@ public abstract class XPathExpression implements Externalizable, Serializable {
 
     public final List<Object> pivot(DataInstance model, EvaluationContext evalContext) throws UnpivotableExpressionException {
         try {
-         List<Object> pivots = new ArrayList<Object>();
+         List<Object> pivots = new ArrayList<>();
             this.pivot(model, evalContext, pivots, evalContext.getContextRef());
             return pivots;
         } catch(UnpivotableExpressionException uee) {
@@ -70,9 +71,6 @@ public abstract class XPathExpression implements Externalizable, Serializable {
 
     /*======= DEBUGGING ========*/
     // should not compile onto phone
-
-    /* print out formatted expression tree */
-
     int indent;
 
     private void printStr (String s) {
@@ -80,11 +78,6 @@ public abstract class XPathExpression implements Externalizable, Serializable {
         for (int i = 0; i < 2 * indent; i++)
             padding.append(" ");
         logger.info("{}{}", padding, s);
-    }
-
-    public void printParseTree () {
-        indent = -1;
-        print(this);
     }
 
     public void print (Object o) {
@@ -222,11 +215,9 @@ public abstract class XPathExpression implements Externalizable, Serializable {
             }
         } else if (o instanceof XPathStep) {
             XPathStep x = (XPathStep)o;
-            String axis = null;
-            String test = null;
 
-            axis = XPathStep.axisStr(x.axis);
-            test = x.testStr();
+            String axis = XPathStep.axisStr(x.axis);
+            String test = x.testStr();
 
             if (x.predicates.length == 0) {
                 printStr("step {axis:" + axis + " test:" + test + " predicates {none}}");

@@ -16,23 +16,23 @@
 
 package org.javarosa.xpath.parser.ast;
 
-import java.util.Enumeration;
-import java.util.Vector;
-
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.expr.XPathFilterExpr;
 import org.javarosa.xpath.parser.XPathSyntaxException;
+
+import java.util.Enumeration;
+import java.util.Vector;
 
 public class ASTNodeFilterExpr extends ASTNode {
     public ASTNodeAbstractExpr expr;
     public Vector<ASTNode> predicates;
 
     public ASTNodeFilterExpr () {
-        predicates = new Vector<ASTNode>();
+        predicates = new Vector<>();
     }
 
     public Vector<ASTNode> getChildren() {
-        Vector<ASTNode> v = new Vector<ASTNode>();
+        Vector<ASTNode> v = new Vector<>();
         v.addElement(expr);
         for (Enumeration<ASTNode> e = predicates.elements(); e.hasMoreElements(); )
             v.addElement(e.nextElement());

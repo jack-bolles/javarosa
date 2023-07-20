@@ -1,17 +1,16 @@
 package org.javarosa.core.model.instance;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.javarosa.core.model.IDataReference;
 import org.javarosa.core.services.storage.Persistable;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.ExtUtil;
 import org.javarosa.core.util.externalizable.ExtWrapNullable;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * A data instance represents a tree structure of abstract tree
@@ -20,11 +19,9 @@ import org.javarosa.core.util.externalizable.PrototypeFactory;
  * be read only.
  *
  * @author ctsims
- *
  */
 public abstract class DataInstance<T extends AbstractTreeElement<T>> implements Persistable {
-    /** The integer Id of the model */
-    private int recordid = -1;
+        private int recordid = -1;
 
     /**
      * A unique name for this instance. The value of the id attribute in the case of a secondary instance or the title
@@ -32,7 +29,6 @@ public abstract class DataInstance<T extends AbstractTreeElement<T>> implements 
      **/
     private String name;
 
-    /** The ID of the form that this is a model for */
     private int formId;
 
     private String instanceid;
@@ -40,7 +36,6 @@ public abstract class DataInstance<T extends AbstractTreeElement<T>> implements 
     public DataInstance() {
 
     }
-
 
     public DataInstance(String instanceid) {
         this.instanceid = instanceid;
@@ -60,17 +55,6 @@ public abstract class DataInstance<T extends AbstractTreeElement<T>> implements 
 
     protected void setInstanceId(String instanceid) {
         this.instanceid = instanceid;
-    }
-    /**
-     * Whether the structure of this instance is only available at runtime.
-     *
-     * @return true if the instance structure is available and runtime and can't
-     * be checked for consistency until the reference is made available. False
-     * otherwise.
-     *
-     */
-    public boolean isRuntimeEvaluated() {
-        return false;
     }
 
     public T resolveReference(TreeReference ref) {
@@ -107,50 +91,6 @@ public abstract class DataInstance<T extends AbstractTreeElement<T>> implements 
         }
 
         return (node == getBase() ? null : result); // never return a reference to '/'
-    }
-
-    public List<AbstractTreeElement<T>> explodeReference(TreeReference ref) {
-        if (!ref.isAbsolute())
-            return null;
-
-      List<AbstractTreeElement<T>> nodes = new ArrayList<AbstractTreeElement<T>>(ref.size());
-        AbstractTreeElement<T> cur = getBase();
-        for (int i = 0; i < ref.size(); i++) {
-            String name = ref.getName(i);
-            int mult = ref.getMultiplicity(i);
-
-            //If the next node down the line is an attribute
-            if(mult == TreeReference.INDEX_ATTRIBUTE) {
-                //This is not the attribute we're testing
-                if(cur != getBase()) {
-                    //Add the current node
-                    nodes.add(cur);
-                }
-                cur = cur.getAttribute(null, name);
-            }
-
-            //Otherwise, it's another child element
-            else {
-                if (mult == TreeReference.INDEX_UNBOUND) {
-                    if (cur.getChildMultiplicity(name) == 1) {
-                        mult = 0;
-                    } else {
-                        // reference is not unambiguous
-                        return null;
-                    }
-                }
-
-                if (cur != getBase()) {
-                    nodes.add(cur);
-                }
-
-                cur = cur.getChild(name, mult);
-                if (cur == null) {
-                    return null;
-                }
-            }
-        }
-        return nodes;
     }
 
     public T getTemplate(TreeReference ref) {
@@ -275,8 +215,7 @@ public abstract class DataInstance<T extends AbstractTreeElement<T>> implements 
         recordid = ExtUtil.readInt(in);
         formId = ExtUtil.readInt(in);
         name = (String) ExtUtil.read(in, new ExtWrapNullable(String.class), pf);
-        instanceid = (String) ExtUtil.nullIfEmpty(ExtUtil.readString(in));
-
+        instanceid = ExtUtil.nullIfEmpty(ExtUtil.readString(in));
     }
 
     public void writeExternal(DataOutputStream out) throws IOException {
@@ -286,7 +225,6 @@ public abstract class DataInstance<T extends AbstractTreeElement<T>> implements 
         ExtUtil.write(out, ExtUtil.emptyIfNull(instanceid));
     }
 
-
     public int getID() {
         return recordid;
     }
@@ -295,8 +233,5 @@ public abstract class DataInstance<T extends AbstractTreeElement<T>> implements 
         this.recordid = recordid;
     }
 
-
-
     public abstract void initialize(InstanceInitializationFactory initializer, String instanceId);
-
 }

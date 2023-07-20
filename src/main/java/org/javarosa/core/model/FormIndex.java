@@ -16,11 +16,10 @@
 
 package org.javarosa.core.model;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 import org.javarosa.core.model.instance.TreeReference;
+
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * {@code FormIndex} is an immutable index which is structured to provide quick access to a specific node in a
@@ -99,7 +98,7 @@ public class FormIndex implements Serializable {
     /**
      * The 0-based index of the group or question in its parent.
      */
-    private int localIndex;
+    private final int localIndex;
 
     /**
      * The 0-based index of the current instance of a repeated node.
@@ -116,7 +115,7 @@ public class FormIndex implements Serializable {
      * The XPath reference this index refers to. Warning: these are mutable and could conceivably get out of sync with
      * the index.
      */
-    private TreeReference reference;
+    private final TreeReference reference;
 
     /**
      * Returns an index before the start of the form
@@ -247,10 +246,6 @@ public class FormIndex implements Serializable {
      */
     public FormIndex getNextLevel() {
         return nextLevel;
-    }
-
-    public TreeReference getLocalReference() {
-        return reference;
     }
 
     /**
@@ -402,8 +397,7 @@ public class FormIndex implements Serializable {
      * @return Only the local component of this Form Index.
      */
     public FormIndex snip() {
-        FormIndex retval = new FormIndex(localIndex, instanceIndex,reference);
-        return retval;
+        return new FormIndex(localIndex, instanceIndex,reference);
     }
 
     /**
@@ -465,24 +459,6 @@ public class FormIndex implements Serializable {
 
     }
 
-    /**
-     * Trims any negative indices from the end of the passed in index.
-     *
-     * @param index
-     * @return
-     */
-    public static FormIndex trimNegativeIndices(FormIndex index) {
-        if(!index.isTerminal()) {
-            return new FormIndex(trimNegativeIndices(index.nextLevel),index);
-        } else {
-            if(index.getLocalIndex() < 0) {
-                return null;
-            } else {
-                return index;
-            }
-        }
-    }
-
     public static boolean isSubIndex(FormIndex parent, FormIndex child) {
         if(child.equals(parent)) {
             return true;
@@ -516,35 +492,8 @@ public class FormIndex implements Serializable {
             //the same root
             return false;
         }
-        else if(parent.getInstanceIndex() != -1 && (parent.getInstanceIndex() != child.getInstanceIndex())) {
-            return false;
-        }
+        else return parent.getInstanceIndex() == -1 || (parent.getInstanceIndex() == child.getInstanceIndex());
         //Barring all of these cases, it should be true.
-        return true;
-    }
-
-    public void assignRefs(FormDef f) {
-        FormIndex cur = this;
-
-      List<Integer> indexes = new ArrayList<Integer>();
-      List<Integer> multiplicities = new ArrayList<Integer>();
-      List<IFormElement> elements = new ArrayList<IFormElement>();
-        f.collapseIndex(this, indexes, multiplicities, elements);
-
-      List<Integer> curMults = new ArrayList<Integer>();
-      List<IFormElement> curElems = new ArrayList<IFormElement>();
-
-        int i = 0;
-        while (cur != null) {
-            curMults.add(multiplicities.get(i));
-            curElems.add(elements.get(i));
-
-            TreeReference ref = f.getChildInstanceRef(curElems, curMults);
-            cur.reference = ref;
-
-            cur = cur.getNextLevel();
-            i++;
-        }
     }
 
     /**

@@ -16,9 +16,9 @@
 
 package org.javarosa.xpath.parser;
 
-import java.util.Vector;
-
 import org.javarosa.xpath.expr.XPathQName;
+
+import java.util.Vector;
 
 public class Lexer {
 
@@ -28,7 +28,7 @@ public class Lexer {
     public static final int LEX_CONTEXT_OP = 2;
 
     public static Vector<Token> lex (String expr) throws XPathSyntaxException {
-        Vector<Token> tokens = new Vector<Token>();
+        Vector<Token> tokens = new Vector<>();
 
         int i = 0;
         int context = LEX_CONTEXT_VAL;
@@ -230,10 +230,10 @@ public class Lexer {
     }
 
     private static boolean isDigit (int c) {
-        return (c < 0 ? false : Character.isDigit((char)c));
+        return (c >= 0 && Character.isDigit((char) c));
     }
 
     private static boolean isAlpha (int c) {
-        return (c < 0 ? false : Character.isLowerCase((char)c) || Character.isUpperCase((char)c));
+        return (c >= 0 && (Character.isLowerCase((char) c) || Character.isUpperCase((char) c)));
     }
 }

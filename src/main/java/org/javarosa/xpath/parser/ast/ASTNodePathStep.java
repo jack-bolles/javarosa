@@ -16,13 +16,13 @@
 
 package org.javarosa.xpath.parser.ast;
 
-import java.util.Vector;
-
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.expr.XPathQName;
 import org.javarosa.xpath.expr.XPathStep;
 import org.javarosa.xpath.parser.Token;
 import org.javarosa.xpath.parser.XPathSyntaxException;
+
+import java.util.Vector;
 
 public class ASTNodePathStep extends ASTNode {
     public static final int AXIS_TYPE_ABBR = 1;
@@ -45,7 +45,7 @@ public class ASTNodePathStep extends ASTNode {
     public Vector<ASTNode> predicates;
 
     public ASTNodePathStep () {
-        predicates = new Vector<ASTNode>();
+        predicates = new Vector<>();
     }
 
     public Vector<ASTNode> getChildren() {
@@ -78,11 +78,22 @@ public class ASTNodePathStep extends ASTNode {
             else {
                 String funcName = nodeTestFunc.name.toString();
                 int type;
-                if      (funcName.equals("node"))                   type = XPathStep.TEST_TYPE_NODE;
-                else if (funcName.equals("text"))                   type = XPathStep.TEST_TYPE_TEXT;
-                else if (funcName.equals("comment"))                type = XPathStep.TEST_TYPE_COMMENT;
-                else if (funcName.equals("processing-instruction")) type = XPathStep.TEST_TYPE_PROCESSING_INSTRUCTION;
-                else throw new RuntimeException();
+                switch (funcName) {
+                    case "node":
+                        type = XPathStep.TEST_TYPE_NODE;
+                        break;
+                    case "text":
+                        type = XPathStep.TEST_TYPE_TEXT;
+                        break;
+                    case "comment":
+                        type = XPathStep.TEST_TYPE_COMMENT;
+                        break;
+                    case "processing-instruction":
+                        type = XPathStep.TEST_TYPE_PROCESSING_INSTRUCTION;
+                        break;
+                    default:
+                        throw new RuntimeException();
+                }
 
                 step = new XPathStep(axisVal, type);
                 if (nodeTestFunc.args.size() > 0) {
@@ -92,7 +103,7 @@ public class ASTNodePathStep extends ASTNode {
 
             XPathExpression[] preds = new XPathExpression[predicates.size()];
             for (int i = 0; i < preds.length; i++)
-                preds[i] = ((ASTNode)predicates.elementAt(i)).build();
+                preds[i] = predicates.elementAt(i).build();
             step.predicates = preds;
 
             return step;
@@ -102,19 +113,47 @@ public class ASTNodePathStep extends ASTNode {
     public static int validateAxisName (String axisName) {
         int axis = -1;
 
-        if      (axisName.equals("child"))              axis = XPathStep.AXIS_CHILD;
-        else if (axisName.equals("descendant"))         axis = XPathStep.AXIS_DESCENDANT;
-        else if (axisName.equals("parent"))             axis = XPathStep.AXIS_PARENT;
-        else if (axisName.equals("ancestor"))           axis = XPathStep.AXIS_ANCESTOR;
-        else if (axisName.equals("following-sibling"))  axis = XPathStep.AXIS_FOLLOWING_SIBLING;
-        else if (axisName.equals("preceding-sibling"))  axis = XPathStep.AXIS_PRECEDING_SIBLING;
-        else if (axisName.equals("following"))          axis = XPathStep.AXIS_FOLLOWING;
-        else if (axisName.equals("preceding"))          axis = XPathStep.AXIS_PRECEDING;
-        else if (axisName.equals("attribute"))          axis = XPathStep.AXIS_ATTRIBUTE;
-        else if (axisName.equals("namespace"))          axis = XPathStep.AXIS_NAMESPACE;
-        else if (axisName.equals("self"))               axis = XPathStep.AXIS_SELF;
-        else if (axisName.equals("descendant-or-self")) axis = XPathStep.AXIS_DESCENDANT_OR_SELF;
-        else if (axisName.equals("ancestor-or-self"))   axis = XPathStep.AXIS_ANCESTOR_OR_SELF;
+        switch (axisName) {
+            case "child":
+                axis = XPathStep.AXIS_CHILD;
+                break;
+            case "descendant":
+                axis = XPathStep.AXIS_DESCENDANT;
+                break;
+            case "parent":
+                axis = XPathStep.AXIS_PARENT;
+                break;
+            case "ancestor":
+                axis = XPathStep.AXIS_ANCESTOR;
+                break;
+            case "following-sibling":
+                axis = XPathStep.AXIS_FOLLOWING_SIBLING;
+                break;
+            case "preceding-sibling":
+                axis = XPathStep.AXIS_PRECEDING_SIBLING;
+                break;
+            case "following":
+                axis = XPathStep.AXIS_FOLLOWING;
+                break;
+            case "preceding":
+                axis = XPathStep.AXIS_PRECEDING;
+                break;
+            case "attribute":
+                axis = XPathStep.AXIS_ATTRIBUTE;
+                break;
+            case "namespace":
+                axis = XPathStep.AXIS_NAMESPACE;
+                break;
+            case "self":
+                axis = XPathStep.AXIS_SELF;
+                break;
+            case "descendant-or-self":
+                axis = XPathStep.AXIS_DESCENDANT_OR_SELF;
+                break;
+            case "ancestor-or-self":
+                axis = XPathStep.AXIS_ANCESTOR_OR_SELF;
+                break;
+        }
 
         return axis;
     }

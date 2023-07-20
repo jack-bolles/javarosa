@@ -14,9 +14,6 @@
  * the License.
  */
 
-/**
- *
- */
 package org.javarosa.core.util;
 
 import java.io.IOException;
@@ -41,7 +38,7 @@ import java.util.List;
 public class MultiInputStream extends InputStream {
 
     /** InputStream **/
-   List<InputStream> streams = new ArrayList<InputStream>(1);
+   List<InputStream> streams = new ArrayList<>(1);
 
     int currentStream = -1;
 
@@ -87,7 +84,7 @@ public class MultiInputStream extends InputStream {
         //an end of stream
         while(next == -1 && currentStream + 1 < streams.size()) {
             currentStream++;
-            cur = ((InputStream)streams.get(currentStream));
+            cur = streams.get(currentStream);
             next = cur.read();
         }
 

@@ -22,22 +22,15 @@ import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.ItemsetBinding;
 import org.javarosa.core.model.QuestionDef;
 import org.javarosa.core.model.SelectChoice;
-import org.javarosa.core.model.condition.Constraint;
 import org.javarosa.core.model.condition.EvaluationContext;
-import org.javarosa.core.model.condition.pivot.ConstraintHint;
-import org.javarosa.core.model.condition.pivot.UnpivotableExpressionException;
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.data.MultipleItemsData;
 import org.javarosa.core.model.data.SelectOneData;
 import org.javarosa.core.model.data.helper.Selection;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.instance.TreeReference;
-import org.javarosa.core.util.NoLocalizedTextException;
-import org.javarosa.core.util.UnregisteredLocaleException;
 import org.javarosa.formmanager.view.IQuestionWidget;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +42,6 @@ import java.util.List;
  * @author Yaw Anokwa
  */
 public class FormEntryPrompt extends FormEntryCaption {
-    private static final Logger logger = LoggerFactory.getLogger(FormEntryPrompt.class);
 
     TreeElement mTreeElement;
 
@@ -81,12 +73,6 @@ public class FormEntryPrompt extends FormEntryCaption {
         return mTreeElement.getDataType();
     }
 
-    // attributes available in the bind, instance and body
-    public String getPromptAttributes() {
-        // TODO: implement me.
-        return null;
-    }
-
     //note: code overlap with FormDef.copyItemsetAnswer
     @Nullable
     public IAnswerData getAnswerValue() {
@@ -101,7 +87,7 @@ public class FormEntryPrompt extends FormEntryCaption {
                     // The call to get a list of choices filters out answer options that don't exist anymore.
                     return mTreeElement.getValue();
                 } else {
-                    List<String> preselectedValues = new ArrayList<String>();
+                    List<String> preselectedValues = new ArrayList<>();
 
                     TreeReference destRef = itemset.getDestRef().contextualize(mTreeElement.getRef());
                     List<TreeReference> subNodes = form.getEvaluationContext().expandReference(destRef);
@@ -227,10 +213,6 @@ public class FormEntryPrompt extends FormEntryCaption {
         return mTreeElement.isRequired();
     }
 
-    public boolean isReadOnly() {
-        return !mTreeElement.isEnabled();
-    }
-
     public QuestionDef getQuestion() {
         return (QuestionDef)element;
     }
@@ -252,39 +234,6 @@ public class FormEntryPrompt extends FormEntryCaption {
             throw new IllegalStateException("Widget received event from foreign question");
         if (viewWidget != null)
             viewWidget.refreshWidget(changeFlags);
-    }
-
-       /**
-     * ONLY RELEVANT to Question elements!
-     * Will throw runTimeException if this is called for anything that isn't a Question.
-     * Returns null if no help text is available
-     * @return
-     */
-    public String getHelpText() {
-        if(!(element instanceof QuestionDef)){
-            throw new RuntimeException("Can't get HelpText for Elements that are not Questions!");
-        }
-
-        String textID = ((QuestionDef)element).getHelpTextID();
-        String helpText = ((QuestionDef)element).getHelpText();
-        String helpInnerText = ((QuestionDef)element).getHelpInnerText();
-
-        try{
-            if (textID != null) {
-                helpText=substituteStringArgs(localizer().getLocalizedText(textID));
-            } else {
-                helpText=substituteStringArgs(((QuestionDef)element).getHelpInnerText());
-            }
-        }catch(NoLocalizedTextException nlt){
-            //use fallback helptext
-        }catch(UnregisteredLocaleException ule){
-            logger.warn("No Locale set yet (while attempting to getHelpText())");
-        }catch(Exception e){
-            logger.error("FormEntryPrompt.getHelpText", e);
-        }
-
-        return helpText;
-
     }
 
     /**
@@ -354,18 +303,6 @@ public class FormEntryPrompt extends FormEntryCaption {
 
     public String getSpecialFormSelectChoiceText(SelectChoice sel,String form){
         return getSpecialFormSelectItemText(sel.selection(),form);
-    }
-
-    public void requestConstraintHint(ConstraintHint hint) throws UnpivotableExpressionException {
-        //NOTE: Technically there's some rep exposure, here. People could use this mechanism to expose the instance.
-        //We could hide it by dispatching hints through a final abstract class instead.
-        Constraint c =  mTreeElement.getConstraint();
-        if(c != null) {
-            hint.init(new EvaluationContext(form.getEvaluationContext(), mTreeElement.getRef()), c.constraint, this.form.getMainInstance());
-        } else {
-            //can't pivot what ain't there.
-            throw new UnpivotableExpressionException();
-        }
     }
 
 }

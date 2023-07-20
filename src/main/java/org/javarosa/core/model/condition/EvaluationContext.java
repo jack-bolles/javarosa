@@ -44,9 +44,9 @@ public class EvaluationContext {
      * Unambiguous anchor reference for relative paths
      */
     private TreeReference contextNode;
-    private HashMap<String, IFunctionHandler> functionHandlers;
+    private final HashMap<String, IFunctionHandler> functionHandlers;
     private IFallbackFunctionHandler fallbackFunctionHandler;
-    private HashMap<String, Object> variables;
+    private final HashMap<String, Object> variables;
 
     public boolean isConstraint; //true if we are evaluating a constraint
     public IAnswerData candidateValue; //if isConstraint, this is the value being validated
@@ -65,7 +65,6 @@ public class EvaluationContext {
     private int currentContextPosition = -1;
 
     private DataInstance instance;
-    private int[] predicateEvaluationProgress;
 
     private static final List<PredicateFilter> DEFAULT_PREDICATE_FILTER_CHAIN = singletonList(new XPathEvalPredicateFilter());
     private List<PredicateFilter> predicateFilterChain = DEFAULT_PREDICATE_FILTER_CHAIN;
@@ -123,15 +122,15 @@ public class EvaluationContext {
     }
 
     public EvaluationContext(DataInstance instance) {
-        this(instance, new HashMap<String, DataInstance>());
+        this(instance, new HashMap<>());
     }
 
     public EvaluationContext(DataInstance instance, HashMap<String, DataInstance> formInstances) {
         this.formInstances = formInstances;
         this.instance = instance;
         this.contextNode = TreeReference.rootRef();
-        functionHandlers = new HashMap<String, IFunctionHandler>();
-        variables = new HashMap<String, Object>();
+        functionHandlers = new HashMap<>();
+        variables = new HashMap<>();
     }
 
     public DataInstance getInstance(String id) {
@@ -277,12 +276,11 @@ public class EvaluationContext {
 
         // Copy predicates for batch fetch
         if (predicates != null) {
-            List<XPathExpression> predCopy = new ArrayList<XPathExpression>(predicates.size());
-            for (XPathExpression xpe : predicates) {
-                predCopy.add(xpe);
-            }
+            List<XPathExpression> predCopy = new ArrayList<>(predicates.size());
+            predCopy.addAll(predicates);
             predicates = predCopy;
         }
+
         //ETHERTON: Is this where we should test for predicates?
         final int mult = sourceRef.getMultiplicity(depth);
         final List<TreeReference> treeReferences = new ArrayList<>(1);
@@ -324,10 +322,6 @@ public class EvaluationContext {
             }
         }
 
-        if (predicates != null && predicateEvaluationProgress != null) {
-            predicateEvaluationProgress[1] += treeReferences.size();
-        }
-
         if (predicates != null) {
             TreeReference nodeSetRef = workingRef.clone();
             nodeSetRef.add(name, -1);
@@ -350,10 +344,6 @@ public class EvaluationContext {
 
                 treeReferences.clear();
                 treeReferences.addAll(passed);
-
-                if (predicateEvaluationProgress != null) {
-                    predicateEvaluationProgress[0]++;
-                }
             }
         }
 
@@ -379,9 +369,8 @@ public class EvaluationContext {
 
     @NotNull
     private List<TreeReference> filterWithPredicate(DataInstance sourceInstance, TreeReference treeReference, XPathExpression predicate, List<TreeReference> children, int i, List<PredicateFilter> filterChain) {
-        return filterChain.get(i).filter(sourceInstance, treeReference, predicate, children, this, () -> {
-            return filterWithPredicate(sourceInstance, treeReference, predicate, children, i + 1, filterChain);
-        });
+        return filterChain.get(i).filter(sourceInstance, treeReference, predicate, children, this, ()
+                -> filterWithPredicate(sourceInstance, treeReference, predicate, children, i + 1, filterChain));
     }
 
     public EvaluationContext rescope(TreeReference treeRef, int currentContextPosition) {
@@ -422,9 +411,4 @@ public class EvaluationContext {
         return currentContextPosition;
     }
 
-    public void setPredicateProcessSet(int[] loadingDetails) {
-        if (loadingDetails != null && loadingDetails.length == 2) {
-            predicateEvaluationProgress = loadingDetails;
-        }
-    }
 }

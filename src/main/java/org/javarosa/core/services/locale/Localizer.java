@@ -16,14 +16,6 @@
 
 package org.javarosa.core.services.locale;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.javarosa.core.util.NoLocalizedTextException;
 import org.javarosa.core.util.OrderedMap;
 import org.javarosa.core.util.StopWatch;
@@ -38,6 +30,13 @@ import org.javarosa.core.util.externalizable.Externalizable;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * The Localizer object maintains mappings for locale ID's and Object
@@ -56,7 +55,7 @@ public class Localizer implements Externalizable {
     private String currentLocale = null;
     private boolean fallbackDefaultLocale;
     private boolean fallbackDefaultForm;
-    private List<Localizable> observers = new ArrayList<>(0);
+    private final List<Localizable> observers = new ArrayList<>(0);
 
     /**
      * Default constructor. Disables all fallback modes.
@@ -130,7 +129,7 @@ public class Localizer implements Externalizable {
             return false;
         } else {
             locales.add(locale);
-            localeResources.put(locale, new ArrayList<LocaleDataSource>(1));
+            localeResources.put(locale, new ArrayList<>(1));
             return true;
         }
     }
@@ -261,9 +260,7 @@ public class Localizer implements Externalizable {
      *                    destination
      */
     private void loadTable(OrderedMap<String, String> destination, OrderedMap<String, String> source) {
-        for (Map.Entry<String, String> entry : source.entrySet()) {
-            destination.put(entry.getKey(), entry.getValue());
-        }
+        destination.putAll(source);
     }
 
     /* === MANAGING LOCALE DATA (TEXT MAPPINGS) === */
@@ -301,7 +298,7 @@ public class Localizer implements Externalizable {
      * Get the set of mappings for a locale.
      *
      * @param locale Locale
-     * @returns HashMap representing text mappings for this locale. Returns null if locale not defined or null.
+     * @return HashMap representing text mappings for this locale. Returns null if locale not defined or null.
      */
     public OrderedMap<String, String> getLocaleData(String locale) {
         final StopWatch codeTimer = StopWatch.start();
@@ -582,16 +579,6 @@ public class Localizer implements Externalizable {
         observers.remove(l);
     }
 
-    /**
-     * Unregister all ILocalizables.
-     */
-    public void unregisterAll() {
-        observers.clear();
-    }
-
-    /**
-     * Send a locale change update to all registered ILocalizables.
-     */
     private void alertLocalizables() {
         for (Localizable observer : observers) {
             observer.localeChanged(currentLocale, this);
@@ -599,10 +586,6 @@ public class Localizer implements Externalizable {
     }
 
     /* === Managing Arguments === */
-
-    private static String arg(String in) {
-        return "${" + in + "}";
-    }
 
     public static List<String> getArgs(String text) {
         final List<String> args = new ArrayList<>();
@@ -665,16 +648,6 @@ public class Localizer implements Externalizable {
         }
     }
 
-
-    public static String clearArguments(String text) {
-        List<String> v = getArgs(text);
-        String[] empty = new String[v.size()];
-        for (int i = 0; i < empty.length; ++i) {
-            empty[i] = "";
-        }
-        return processArguments(text, empty);
-    }
-
     private static int extractNextIndex(String text, String[] args) {
         int start = text.indexOf("${");
         int end = text.indexOf("}", start);
@@ -700,15 +673,10 @@ public class Localizer implements Externalizable {
 
         return new String[] {
                 text.substring(0, start) + value,
-                text.substring(end + 1, text.length())
+                text.substring(end + 1)
         };
     }
 
-    /* === (DE)SERIALIZATION === */
-
-    /**
-     * Reads the object from a stream.
-     */
     @Override public void readExternal(DataInputStream dis, PrototypeFactory pf) throws
             IOException, DeserializationException {
         fallbackDefaultLocale = ExtUtil.readBool(dis);
@@ -723,9 +691,6 @@ public class Localizer implements Externalizable {
         }
     }
 
-    /**
-     * Writes the object to a stream.
-     */
     @Override public void writeExternal(DataOutputStream dos) throws IOException {
         ExtUtil.writeBool(dos, fallbackDefaultLocale);
         ExtUtil.writeBool(dos, fallbackDefaultForm);

@@ -16,8 +16,6 @@
 
 package org.javarosa.xpath.parser.ast;
 
-import java.util.Vector;
-
 import org.javarosa.xpath.expr.XPathArithExpr;
 import org.javarosa.xpath.expr.XPathBinaryOpExpr;
 import org.javarosa.xpath.expr.XPathBoolExpr;
@@ -29,6 +27,8 @@ import org.javarosa.xpath.parser.Parser;
 import org.javarosa.xpath.parser.Token;
 import org.javarosa.xpath.parser.XPathSyntaxException;
 
+import java.util.Vector;
+
 public class ASTNodeBinaryOp extends ASTNode {
     public static final int ASSOC_LEFT = 1;
     public static final int ASSOC_RIGHT = 2;
@@ -38,8 +38,8 @@ public class ASTNodeBinaryOp extends ASTNode {
     public Vector<Integer> ops;
 
     public ASTNodeBinaryOp () {
-        exprs = new Vector<ASTNode>();
-        ops = new Vector<Integer>();
+        exprs = new Vector<>();
+        ops = new Vector<>();
     }
 
     public Vector<ASTNode> getChildren() {

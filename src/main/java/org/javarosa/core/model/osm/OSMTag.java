@@ -19,7 +19,7 @@ import java.util.List;
 public class OSMTag implements Externalizable {
     public String key;
     public String label;
-    public List<OSMTagItem> items = new ArrayList<OSMTagItem>();
+    public List<OSMTagItem> items = new ArrayList<>();
 
     public void readExternal(DataInputStream dis, PrototypeFactory pf) throws IOException, DeserializationException {
         key = ExtUtil.nullIfEmpty(ExtUtil.readString(dis));

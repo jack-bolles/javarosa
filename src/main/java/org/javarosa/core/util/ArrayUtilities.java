@@ -19,24 +19,7 @@ package org.javarosa.core.util;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author Clayton Sims
- *
- */
 public class ArrayUtilities {
-    public static boolean arraysEqual(Object[] array1, Object[] array2) {
-        if(array1.length != array2.length) {
-            return false;
-        }
-
-        for(int i = 0 ; i < array1.length ; ++i ) {
-            if(!array1[i].equals(array2[i])) {
-                return false;
-            }
-        }
-        return true;
-    }
 
     public static boolean arraysEqual(byte[] array1, byte[] array2) {
         if(array1.length != array2.length) {
@@ -52,25 +35,10 @@ public class ArrayUtilities {
     }
 
 
-    public static boolean arraysEqual(char[] array1, int a1start, char[] array2, int a2start) {
-        if(array1.length - a1start != array2.length - a2start) {
-            return false;
-        }
-
-        for(int i = 0 ; i < array1.length - a1start ; ++i ) {
-            if(array1[i + a1start] != array2[i + a2start]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-   public static <E> List<E> listCopy(List<E> a) {
+    public static <E> List<E> listCopy(List<E> a) {
       if(a == null ) { return null; }
-      List<E> b = new ArrayList<E>(a.size());
-      for(E e : a) {
-         b.add(e);
-      }
+      List<E> b = new ArrayList<>(a.size());
+       b.addAll(a);
       return b;
    }
 

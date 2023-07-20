@@ -49,11 +49,11 @@ public class FormInstance extends DataInstance<TreeElement> implements Persistab
     public String formVersion;
     public String uiVersion;
 
-    private HashMap<String, Object> namespaces = new HashMap<String, Object>();
+    private HashMap<String, Object> namespaces = new HashMap<>();
 
     /**
      * The root node of this instance. This is the "instance" node that contains the instance's document root.
-     * See https://getodk.github.io/xforms-spec/#instance.
+     * See <a href="https://getodk.github.io/xforms-spec/#instance">...</a>.
      **/
     private TreeElement root = new TreeElement();
 
@@ -150,15 +150,6 @@ public class FormInstance extends DataInstance<TreeElement> implements Persistab
 
     public Date getDateSaved() {
         return this.dateSaved;
-    }
-
-    public TreeReference addNode(TreeReference ambigRef) {
-        TreeReference ref = ambigRef.clone();
-        if (createNode(ref) != null) {
-            return ref;
-        } else {
-            return null;
-        }
     }
 
     public TreeReference addNode(TreeReference ambigRef, IAnswerData data, int dataType) {
@@ -300,7 +291,7 @@ public class FormInstance extends DataInstance<TreeElement> implements Persistab
         cloned.schema = this.schema;
         cloned.formVersion = this.formVersion;
         cloned.uiVersion = this.uiVersion;
-        cloned.namespaces = new HashMap<String, Object>();
+        cloned.namespaces = new HashMap<>();
     for (String key : namespaces.keySet()) {
             cloned.namespaces.put(key, this.namespaces.get(key));
         }
@@ -403,7 +394,7 @@ public class FormInstance extends DataInstance<TreeElement> implements Persistab
     }
 
     public HashMap<String,Object> getMetaData() {
-        HashMap<String,Object> data = new HashMap<String,Object>();
+        HashMap<String,Object> data = new HashMap<>();
         for(String key : getMetaDataFields()) {
             data.put(key, getMetaData(key));
         }

@@ -14,9 +14,6 @@
  * the License.
  */
 
-/**
- *
- */
 package org.javarosa.core.services.locale;
 
 import org.javarosa.core.util.OrderedMap;
@@ -36,14 +33,10 @@ import java.io.IOException;
  *
  */
 public class TableLocaleSource implements LocaleDataSource {
-    private OrderedMap<String, String> localeData; /*{ String -> String } */
+    private OrderedMap<String, String> localeData;
 
     public TableLocaleSource() {
-        localeData = new OrderedMap<String, String>();
-    }
-
-    public TableLocaleSource(OrderedMap<String, String> localeData) {
-        this.localeData = localeData;
+        localeData = new OrderedMap<>();
     }
 
 
@@ -76,7 +69,7 @@ public class TableLocaleSource implements LocaleDataSource {
      * @throws UnregisteredLocaleException If locale is not defined.
      */
     public boolean hasMapping (String textID) {
-        return (textID == null ? false : localeData.get(textID) != null);
+        return (textID != null && localeData.get(textID) != null);
     }
 
 
