@@ -78,6 +78,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -195,10 +196,6 @@ public class XFormParser implements IXFormParserFunctions {
         return answerResolver;
     }
 
-    public static void setAnswerResolver(IAnswerResolver answerResolver) {
-        XFormParser.answerResolver = answerResolver;
-    }
-
     static {
         try {
             staticInit();
@@ -216,102 +213,36 @@ public class XFormParser implements IXFormParserFunctions {
 
     private static void initProcessingRules() {
         groupLevelHandlers = new HashMap<String, IElementHandler>() {{
-            put("input", new IElementHandler() {
-                @Override
-                public void handle(XFormParser p, Element e, Object parent) throws ParseException {
-                    // Attributes that are passed through to additionalAttributes but shouldn't lead to warnings.
-                    // These are consistently used by clients but are expected in additionalAttributes for historical
-                    // reasons.
-                    List<String> passedThroughInputAtts = unmodifiableList(asList("rows", "query"));
-                    p.parseControl((IFormElement) parent, e, CONTROL_INPUT, passedThroughInputAtts, passedThroughInputAtts);
-                }
+            put("input", (p, e, parent) -> {
+                // Attributes that are passed through to additionalAttributes but shouldn't lead to warnings.
+                // These are consistently used by clients but are expected in additionalAttributes for historical
+                // reasons.
+                List<String> passedThroughInputAtts = unmodifiableList(asList("rows", "query"));
+                p.parseControl((IFormElement) parent, e, CONTROL_INPUT, passedThroughInputAtts, passedThroughInputAtts);
             });
-            put("range", new IElementHandler() {
-                @Override
-                public void handle(XFormParser p, Element e, Object parent) throws ParseException {
-                    p.parseControl((IFormElement) parent, e, CONTROL_RANGE,
-                        asList("start", "end", "step") // Prevent warning about unexpected attributes
-                    );
-                }
-            });
-            put("secret", new IElementHandler() {
-                @Override
-                public void handle(XFormParser p, Element e, Object parent) throws ParseException {
-                    p.parseControl((IFormElement) parent, e, CONTROL_SECRET);
-                }
-            });
-            put(SELECT, new IElementHandler() {
-                @Override
-                public void handle(XFormParser p, Element e, Object parent) throws ParseException {
-                    p.parseControl((IFormElement) parent, e, CONTROL_SELECT_MULTI);
-                }
-            });
-            put(RANK, new IElementHandler() {
-                @Override
-                public void handle(XFormParser p, Element e, Object parent) throws ParseException {
-                    p.parseControl((IFormElement) parent, e, CONTROL_RANK);
-                }
-            });
-            put(SELECTONE, new IElementHandler() {
-                @Override
-                public void handle(XFormParser p, Element e, Object parent) throws ParseException {
-                    p.parseControl((IFormElement) parent, e, CONTROL_SELECT_ONE);
-                }
-            });
-            put("group", new IElementHandler() {
-                @Override
-                public void handle(XFormParser p, Element e, Object parent) throws ParseException {
-                    p.parseGroup((IFormElement) parent, e, CONTAINER_GROUP);
-                }
-            });
-            put("repeat", new IElementHandler() {
-                @Override
-                public void handle(XFormParser p, Element e, Object parent) throws ParseException {
-                    p.parseGroup((IFormElement) parent, e, CONTAINER_REPEAT);
-                }
-            });
-            put("trigger", new IElementHandler() {
-                @Override
-                public void handle(XFormParser p, Element e, Object parent) throws ParseException {
-                    p.parseControl((IFormElement) parent, e, CONTROL_TRIGGER);
-                }
-            }); //multi-purpose now; need to dig deeper
-            put(XFTAG_UPLOAD, new IElementHandler() {
-                @Override
-                public void handle(XFormParser p, Element e, Object parent) throws ParseException {
-                    p.parseUpload((IFormElement) parent, e, CONTROL_UPLOAD);
-                }
-            });
-            put(LABEL_ELEMENT, new IElementHandler() {
-                @Override
-                public void handle(XFormParser p, Element e, Object parent) throws ParseException {
-                    if (parent instanceof GroupDef) {
-                        p.parseGroupLabel((GroupDef) parent, e);
-                    } else
-                        throw new ParseException("parent of element is not a group", e);
-                }
+            put("range", (p, e, parent) -> p.parseControl((IFormElement) parent, e, CONTROL_RANGE,
+                asList("start", "end", "step") // Prevent warning about unexpected attributes
+            ));
+            put("secret", (p, e, parent) -> p.parseControl((IFormElement) parent, e, CONTROL_SECRET));
+            put(SELECT, (p, e, parent) -> p.parseControl((IFormElement) parent, e, CONTROL_SELECT_MULTI));
+            put(RANK, (p, e, parent) -> p.parseControl((IFormElement) parent, e, CONTROL_RANK));
+            put(SELECTONE, (p, e, parent) -> p.parseControl((IFormElement) parent, e, CONTROL_SELECT_ONE));
+            put("group", (p, e, parent) -> p.parseGroup((IFormElement) parent, e, CONTAINER_GROUP));
+            put("repeat", (p, e, parent) -> p.parseGroup((IFormElement) parent, e, CONTAINER_REPEAT));
+            put("trigger", (p, e, parent) -> p.parseControl((IFormElement) parent, e, CONTROL_TRIGGER)); //multi-purpose now; need to dig deeper
+            put(XFTAG_UPLOAD, (p, e, parent) -> p.parseUpload((IFormElement) parent, e, CONTROL_UPLOAD));
+            put(LABEL_ELEMENT, (p, e, parent) -> {
+                if (parent instanceof GroupDef) {
+                    p.parseGroupLabel((GroupDef) parent, e);
+                } else
+                    throw new ParseException("parent of element is not a group", e);
             });
         }};
 
         topLevelHandlers = new HashMap<String, IElementHandler>() {{
-            put("model", new IElementHandler() {
-                @Override
-                public void handle(XFormParser p, Element e, Object parent) throws ParseException {
-                    p.parseModel(e);
-                }
-            });
-            put("title", new IElementHandler() {
-                @Override
-                public void handle(XFormParser p, Element e, Object parent) {
-                    p.parseTitle(e);
-                }
-            });
-            put("meta", new IElementHandler() {
-                @Override
-                public void handle(XFormParser p, Element e, Object parent) {
-                    p.parseMeta(e);
-                }
-            });
+            put("model", (p, e, parent) -> p.parseModel(e));
+            put("title", (p, e, parent) -> p.parseTitle(e));
+            put("meta", (p, e, parent) -> p.parseMeta(e));
         }};
         topLevelHandlers.putAll(groupLevelHandlers);
 
@@ -1151,7 +1082,7 @@ public class XFormParser implements IXFormParserFunctions {
             } else if (isItem && "item".equals(childName)) {
                 parseItem(question, child);
             } else if (isItem && "itemset".equals(childName)) {
-                parseItemset(question, child, parent);
+                parseItemset(question, child);
             } else if (actionHandlers.containsKey(childName)) {
                 actionHandlers.get(childName).handle(this, child, question);
             }
@@ -1190,7 +1121,7 @@ public class XFormParser implements IXFormParserFunctions {
             if (ref.startsWith(ITEXT_OPEN) && ref.endsWith(ITEXT_CLOSE)) {
                 String textRef = ref.substring(ITEXT_OPEN.length(), ref.lastIndexOf(ITEXT_CLOSE));
 
-                verifyTextMappings(textRef, "Question <label>", true);
+                verifyTextMappings(textRef, "Question <label>");
                 q.setTextID(textRef);
             } else {
                 throw new RuntimeException("malformed ref [" + ref + "] for <label>");
@@ -1220,7 +1151,7 @@ public class XFormParser implements IXFormParserFunctions {
             if (ref.startsWith(ITEXT_OPEN) && ref.endsWith(ITEXT_CLOSE)) {
                 String textRef = ref.substring(ITEXT_OPEN.length(), ref.lastIndexOf(ITEXT_CLOSE));
 
-                verifyTextMappings(textRef, "Group <label>", true);
+                verifyTextMappings(textRef, "Group <label>");
                 g.setTextID(textRef);
             } else {
                 throw new RuntimeException("malformed ref [" + ref + "] for <label>");
@@ -1339,7 +1270,7 @@ public class XFormParser implements IXFormParserFunctions {
             if (ref.startsWith(ITEXT_OPEN) && ref.endsWith(ITEXT_CLOSE)) {
                 String textRef = ref.substring(ITEXT_OPEN.length(), ref.lastIndexOf(ITEXT_CLOSE));
 
-                verifyTextMappings(textRef, "<hint>", true);
+                verifyTextMappings(textRef, "<hint>");
                 q.setHelpTextID(textRef);
             } else {
                 throw new RuntimeException("malformed ref [" + ref + "] for <hint>");
@@ -1386,7 +1317,7 @@ public class XFormParser implements IXFormParserFunctions {
                     if (ref.startsWith(ITEXT_OPEN) && ref.endsWith(ITEXT_CLOSE)) {
                         textRef = ref.substring(ITEXT_OPEN.length(), ref.lastIndexOf(ITEXT_CLOSE));
 
-                        verifyTextMappings(textRef, "Item <label>", true);
+                        verifyTextMappings(textRef, "Item <label>");
                     } else {
                         throw new ParseException("malformed ref [" + ref + "] for <item>", child);
                     }
@@ -1410,7 +1341,7 @@ public class XFormParser implements IXFormParserFunctions {
                     for (int k = 0; k < value.length(); k++) {
                         char c = value.charAt(k);
 
-                        if (" \n\t\f\r\'\"`".indexOf(c) >= 0) {
+                        if (" \n\t\f\r'\"`".indexOf(c) >= 0) {
                             boolean isMultipleItems = q.getControlType() == CONTROL_SELECT_MULTI || q.getControlType() == CONTROL_RANK;
                             String questionType = !isMultipleItems ? SELECTONE :
                                 (q.getControlType() == CONTROL_SELECT_MULTI ? SELECT : RANK);
@@ -1443,7 +1374,7 @@ public class XFormParser implements IXFormParserFunctions {
         }
     }
 
-    private void parseItemset(QuestionDef q, Element e, IFormElement qparent) throws ParseException {
+    private void parseItemset(QuestionDef q, Element e) throws ParseException {
         ItemsetBinding itemset = new ItemsetBinding();
 
         ////////////////USED FOR PARSER WARNING OUTPUT ONLY
@@ -1881,12 +1812,12 @@ public class XFormParser implements IXFormParserFunctions {
         return localizer.hasMapping(locale == null ? localizer.getDefaultLocale() : locale, textID);
     }
 
-    private void verifyTextMappings(String textID, String type, boolean allowSubforms) throws ParseException {
+    private void verifyTextMappings(String textID, String type) throws ParseException {
         String[] locales = localizer.getAvailableLocales();
 
         for (String locale : locales) {
             //Test whether there is a default translation, or whether there is any special form available.
-            if (!(hasITextMapping(textID, locale) || (allowSubforms && hasSpecialFormMapping(textID, locale)))) {
+            if (!(hasITextMapping(textID, locale) || (hasSpecialFormMapping(textID, locale)))) {
                 if (locale.equals(localizer.getDefaultLocale())) {
                     throw new ParseException(type + " '" + textID +
                         "': text is not localizable for default locale [" + localizer.getDefaultLocale() + "]!");
@@ -1915,7 +1846,7 @@ public class XFormParser implements IXFormParserFunctions {
         for (String key : localizer.getLocaleData(locale).keySet()) {
             if (key.startsWith(textID + ";")) {
                 //A key is found, pull it out, add it to the list of guesses, and return positive
-                String textForm = key.substring(key.indexOf(";") + 1, key.length());
+                String textForm = key.substring(key.indexOf(";") + 1);
                 //Kind of a long story how we can end up getting here. It involves the default locale loading values
                 //for the other locale, but isn't super good.
                 //TODO: Clean up being able to get here
@@ -2209,10 +2140,6 @@ public class XFormParser implements IXFormParserFunctions {
         }
     }
 
-    private void checkDependencyCycles() {
-        _f.reportDependencyCycles();
-    }
-
     private void loadXmlInstance(FormDef f, Reader xmlReader) throws IOException, ParseException {
         loadXmlInstance(f, getXMLDocument(xmlReader));
     }
@@ -2264,11 +2191,7 @@ public class XFormParser implements IXFormParserFunctions {
     public static void registerActionHandler(String name, final IElementHandler specificHandler) {
         actionHandlers.put(
             name,
-            new IElementHandler() {
-                public void handle(XFormParser p, Element e, Object parent) throws ParseException {
-                    p.parseAction(e, parent, specificHandler);
-                }
-            }
+                (p, e, parent) -> p.parseAction(e, parent, specificHandler)
         );
     }
 
@@ -2311,10 +2234,7 @@ public class XFormParser implements IXFormParserFunctions {
     }
 
     public static FormInstance restoreDataModel(InputStream input, Class restorableType) throws IOException, ParseException {
-        Document doc = getXMLDocument(new InputStreamReader(input, "UTF-8"));
-        if (doc == null) {
-            throw new RuntimeException("syntax error in XML instance; could not parse");
-        }
+        Document doc = getXMLDocument(new InputStreamReader(input, StandardCharsets.UTF_8));
         return restoreDataModel(doc, restorableType);
     }
 

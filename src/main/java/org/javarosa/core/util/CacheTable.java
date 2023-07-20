@@ -34,63 +34,61 @@ public class CacheTable<K> {
 
     private static final Vector<WeakReference<CacheTable<?>>> caches = new Vector<>(1);
 
-    private static final Thread cleaner = new Thread(new Runnable() {
-        public void run() {
-            Vector<Integer> toRemove = new Vector<>();
-            while(true) {
-                try {
-                    toRemove.removeAllElements();
-                    for (int i = 0; i < caches.size(); ++i) {
-                        CacheTable<?> cache = caches.elementAt(i).get();
-                        if (cache == null) {
-                            toRemove.addElement(DataUtil.integer(i));
-                        } else {
-                            Hashtable<Integer, WeakReference<Object>> table = cache.currentTable;
-                            for (Enumeration<Integer> en = table.keys(); en.hasMoreElements();) {
-                                Integer key = en.nextElement();
-
-                                synchronized(cache) {
-                                    //See whether or not the cached reference has been cleared by the GC
-                                    if (table.get(key).get() == null) {
-                                            //If so, remove the entry, it's no longer useful.
-                                            table.remove(key);
-                                    }
-                                }
-                            }
+    private static final Thread cleaner = new Thread(() -> {
+        Vector<Integer> toRemove = new Vector<>();
+        while(true) {
+            try {
+                toRemove.removeAllElements();
+                for (int i = 0; i < caches.size(); ++i) {
+                    CacheTable<?> cache = caches.elementAt(i).get();
+                    if (cache == null) {
+                        toRemove.addElement(DataUtil.integer(i));
+                    } else {
+                        Hashtable<Integer, WeakReference<Object>> table = cache.currentTable;
+                        for (Enumeration<Integer> en = table.keys(); en.hasMoreElements();) {
+                            Integer key = en.nextElement();
 
                             synchronized(cache) {
-                                //See if our current size is 25% the size of the largest size we've been
-                                //and compact (clone to a new table) if so, since the table maintains the
-                                //largest size it has ever been.
-                                //TODO: 50 is a super arbitrary upper bound
-                                if(cache.totalAdditions > 50 && cache.totalAdditions - cache.currentTable.size() > (cache.currentTable.size() >> 2) ) {
-                                    Hashtable<Integer,WeakReference<Object>> newTable = new Hashtable<>(cache.currentTable.size());
-                                    for (Enumeration<Integer> en = table.keys(); en.hasMoreElements();) {
-                                        Integer key = en.nextElement();
-                                        newTable.put(key, cache.currentTable.get(key));
-                                    }
-                                    cache.currentTable = newTable;
-                                    cache.totalAdditions = cache.currentTable.size();
+                                //See whether or not the cached reference has been cleared by the GC
+                                if (table.get(key).get() == null) {
+                                        //If so, remove the entry, it's no longer useful.
+                                        table.remove(key);
                                 }
                             }
-
                         }
+
+                        synchronized(cache) {
+                            //See if our current size is 25% the size of the largest size we've been
+                            //and compact (clone to a new table) if so, since the table maintains the
+                            //largest size it has ever been.
+                            //TODO: 50 is a super arbitrary upper bound
+                            if(cache.totalAdditions > 50 && cache.totalAdditions - cache.currentTable.size() > (cache.currentTable.size() >> 2) ) {
+                                Hashtable<Integer,WeakReference<Object>> newTable = new Hashtable<>(cache.currentTable.size());
+                                for (Enumeration<Integer> en = table.keys(); en.hasMoreElements();) {
+                                    Integer key = en.nextElement();
+                                    newTable.put(key, cache.currentTable.get(key));
+                                }
+                                cache.currentTable = newTable;
+                                cache.totalAdditions = cache.currentTable.size();
+                            }
+                        }
+
                     }
-                    for (int id = toRemove.size() - 1; id >= 0; --id) {
-                        caches.removeElementAt(toRemove.elementAt(id));
-                    }
-                    try {
-                        Thread.sleep(3000);
-                    } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        logger.error("Error", e);
-                    }
-                } catch (Exception e) {
+                }
+                for (int id = toRemove.size() - 1; id >= 0; --id) {
+                    caches.removeElementAt(toRemove.elementAt(id));
+                }
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
                     logger.error("Error", e);
                 }
+            } catch (Exception e) {
+                logger.error("Error", e);
             }
-
         }
+
     });
 
     private static void registerCache(CacheTable<?> table) {
@@ -118,9 +116,8 @@ public class CacheTable<K> {
             }
             if(k.equals(nk)) {
                 return nk;
-            } else {
-                //Collision. We should deal with this better for interning (and not manually caching) tables.
-            }
+            }  //else -> Collision. We should deal with this better for interning (and not manually caching) tables.
+
             return k;
         }
     }
