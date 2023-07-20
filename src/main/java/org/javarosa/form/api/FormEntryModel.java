@@ -27,12 +27,19 @@ import org.javarosa.core.model.instance.InvalidReferenceException;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.util.Extras;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import static org.javarosa.core.model.instance.TreeReference.INDEX_REPEAT_JUNCTURE;
+import static org.javarosa.form.api.FormEntryController.EVENT_BEGINNING_OF_FORM;
+import static org.javarosa.form.api.FormEntryController.EVENT_END_OF_FORM;
+import static org.javarosa.form.api.FormEntryController.EVENT_GROUP;
+import static org.javarosa.form.api.FormEntryController.EVENT_PROMPT_NEW_REPEAT;
+import static org.javarosa.form.api.FormEntryController.EVENT_QUESTION;
+import static org.javarosa.form.api.FormEntryController.EVENT_REPEAT;
+import static org.javarosa.form.api.FormEntryController.EVENT_REPEAT_JUNCTURE;
 
 /**
  * The data model used during form entry. Represents the current state of the
@@ -40,8 +47,6 @@ import java.util.Locale;
  * controller.
  */
 public class FormEntryModel {
-    private static final Logger logger = LoggerFactory.getLogger(FormEntryModel.class);
-
     private final FormDef form;
     private FormIndex currentFormIndex;
 
@@ -67,7 +72,6 @@ public class FormEntryModel {
 
     private final Extras<Object> extras = new Extras<>();
 
-
     public FormEntryModel(FormDef form) {
         this(form, REPEAT_STRUCTURE_LINEAR);
     }
@@ -83,18 +87,18 @@ public class FormEntryModel {
      */
     public FormEntryModel(FormDef form, int repeatStructure) {
         this.form = form;
-        if (repeatStructure != REPEAT_STRUCTURE_LINEAR && repeatStructure != REPEAT_STRUCTURE_NON_LINEAR) {
+        if (REPEAT_STRUCTURE_LINEAR != repeatStructure && REPEAT_STRUCTURE_NON_LINEAR != repeatStructure) {
             throw new IllegalArgumentException(repeatStructure + ": does not correspond to a valid repeat structure");
         }
         //We need to see if there are any guessed repeat counts in the form, which prevents
         //us from being able to use the new repeat style
         //Unfortunately this is probably (A) slow and (B) might overflow the stack. It's not the only
         //recursive walk of the form, though, so (B) isn't really relevant
-        if (repeatStructure == REPEAT_STRUCTURE_NON_LINEAR && containsRepeatGuesses(form)) {
+        if (REPEAT_STRUCTURE_NON_LINEAR == repeatStructure && containsRepeatGuesses(form)) {
             repeatStructure = REPEAT_STRUCTURE_LINEAR;
         }
         this.repeatStructure = repeatStructure;
-        this.currentFormIndex = FormIndex.createBeginningOfFormIndex();
+        currentFormIndex = FormIndex.createBeginningOfFormIndex();
     }
 
     /**
@@ -104,32 +108,27 @@ public class FormEntryModel {
      */
     public int getEvent(FormIndex index) {
         if (index.isBeginningOfFormIndex()) {
-            return FormEntryController.EVENT_BEGINNING_OF_FORM;
+            return EVENT_BEGINNING_OF_FORM;
         } else if (index.isEndOfFormIndex()) {
-            return FormEntryController.EVENT_END_OF_FORM;
+            return EVENT_END_OF_FORM;
         }
 
-        // This came from chatterbox, and is unclear how correct it is,
-        // commented out for now.
-        // DELETEME: If things work fine
-        // List defs = form.explodeIndex(index);
-        // IFormElement last = (defs.size() == 0 ? null : (IFormElement)
-        // defs.lastElement());
         IFormElement element = form.getChild(index);
         if (element instanceof GroupDef) {
             if (((GroupDef) element).getRepeat()) {
-                if (repeatStructure != REPEAT_STRUCTURE_NON_LINEAR && form.getMainInstance().resolveReference(form.getChildInstanceRef(index)) == null) {
-                    return FormEntryController.EVENT_PROMPT_NEW_REPEAT;
-                } else if (repeatStructure == REPEAT_STRUCTURE_NON_LINEAR && index.getElementMultiplicity() == TreeReference.INDEX_REPEAT_JUNCTURE) {
-                    return FormEntryController.EVENT_REPEAT_JUNCTURE;
+                if (REPEAT_STRUCTURE_NON_LINEAR != repeatStructure
+                        && null == form.getMainInstance().resolveReference(form.getChildInstanceRef(index))) {
+                    return EVENT_PROMPT_NEW_REPEAT;
+                } else if (REPEAT_STRUCTURE_NON_LINEAR == repeatStructure && INDEX_REPEAT_JUNCTURE == index.getElementMultiplicity()) {
+                    return EVENT_REPEAT_JUNCTURE;
                 } else {
-                    return FormEntryController.EVENT_REPEAT;
+                    return EVENT_REPEAT;
                 }
             } else {
-                return FormEntryController.EVENT_GROUP;
+                return EVENT_GROUP;
             }
         } else {
-            return FormEntryController.EVENT_QUESTION;
+            return EVENT_QUESTION;
         }
     }
 
@@ -208,75 +207,20 @@ public class FormEntryModel {
     }
 
 
-    /**
-     * @return an array of Strings of the current langauges. Null if there are
-     * none.
-     */
-    public String[] getLanguages() {
-        if (form.getLocalizer() != null) {
-            return form.getLocalizer().getAvailableLocales();
-        }
-        return null;
-    }
-
-
-    /**
-     * Not yet implemented
-     * <p>
-     * Should get the number of completed questions to this point.
-     */
-    public int getCompletedRelevantQuestionCount() {
-        // TODO: Implement me.
-        return 0;
-    }
-
-
-    /**
-     * Not yet implemented
-     * <p>
-     * Should get the total possible questions given the current path through the form.
-     */
-    public int getTotalRelevantQuestionCount() {
-        // TODO: Implement me.
-        return 0;
-    }
-
-    /**
-     * @return total number of questions in the form, regardless of relevancy
-     */
-    public int getNumQuestions() {
-        return form.getDeepChildCount();
-    }
-
-
-    /**
-     * @return Returns the current FormIndex referenced by the FormEntryModel.
-     */
     public FormIndex getFormIndex() {
         return currentFormIndex;
     }
 
-
     protected void setLanguage(String language) {
-        if (form.getLocalizer() != null) {
+        if (null != form.getLocalizer()) {
             form.getLocalizer().setLocale(language);
         }
     }
 
-
-    /**
-     * @return Returns the currently selected language.
-     */
     public String getLanguage() {
         return form.getLocalizer().getLocale();
     }
 
-
-    /**
-     * Set the FormIndex for the current question.
-     *
-     * @param index
-     */
     public void setQuestionIndex(FormIndex index) {
         if (!currentFormIndex.equals(index)) {
             // See if a hint exists that says we should have a model for this
@@ -286,10 +230,6 @@ public class FormEntryModel {
         }
     }
 
-
-    /**
-     * @return
-     */
     public FormDef getForm() {
         return form;
     }
@@ -305,18 +245,18 @@ public class FormEntryModel {
     public FormEntryCaption[] getCaptionHierarchy(FormIndex index) {
         List<FormEntryCaption> captions = new ArrayList<>();
         FormIndex remaining = index;
-        while (remaining != null) {
+        while (null != remaining) {
             remaining = remaining.getNextLevel();
             FormIndex localIndex = index.diff(remaining);
             IFormElement element = form.getChild(localIndex);
-            if (element != null) {
+            if (null != element) {
                 FormEntryCaption caption = null;
                 if (element instanceof GroupDef)
                     caption = new FormEntryCaption(getForm(), localIndex);
                 else if (element instanceof QuestionDef)
                     caption = new FormEntryPrompt(getForm(), localIndex);
 
-                if (caption != null) {
+                if (null != caption) {
                     captions.add(caption);
                 }
             }
@@ -324,7 +264,6 @@ public class FormEntryModel {
         FormEntryCaption[] captionArray = new FormEntryCaption[captions.size()];
         return captions.toArray(captionArray);
     }
-
 
     /**
      * Returns a hierarchical list of FormEntryCaption objects for the current
@@ -337,17 +276,13 @@ public class FormEntryModel {
     }
 
 
-    /**
-     * @param index
-     * @return true if the element at the specified index is read only
-     */
     public boolean isIndexReadonly(FormIndex index) {
         if (index.isBeginningOfFormIndex() || index.isEndOfFormIndex())
             return true;
 
         TreeReference ref = form.getChildInstanceRef(index);
-        boolean isAskNewRepeat = (getEvent(index) == FormEntryController.EVENT_PROMPT_NEW_REPEAT ||
-            getEvent(index) == FormEntryController.EVENT_REPEAT_JUNCTURE);
+        boolean isAskNewRepeat = (EVENT_PROMPT_NEW_REPEAT == getEvent(index) ||
+                EVENT_REPEAT_JUNCTURE == getEvent(index));
 
         if (isAskNewRepeat) {
             return false;
@@ -356,15 +291,6 @@ public class FormEntryModel {
             return !node.isEnabled();
         }
     }
-
-
-    /**
-     * @return true if the element at the current index is read only
-     */
-    public boolean isIndexReadonly() {
-        return isIndexReadonly(currentFormIndex);
-    }
-
 
     /**
      * Determine if the current FormIndex is relevant. Only relevant indexes
@@ -375,8 +301,8 @@ public class FormEntryModel {
      */
     public boolean isIndexRelevant(FormIndex index) {
         TreeReference ref = form.getChildInstanceRef(index);
-        boolean isAskNewRepeat = (getEvent(index) == FormEntryController.EVENT_PROMPT_NEW_REPEAT);
-        boolean isRepeatJuncture = (getEvent(index) == FormEntryController.EVENT_REPEAT_JUNCTURE);
+        boolean isAskNewRepeat = (EVENT_PROMPT_NEW_REPEAT == getEvent(index));
+        boolean isRepeatJuncture = (EVENT_REPEAT_JUNCTURE == getEvent(index));
 
         if (isAskNewRepeat) {
             if (!form.canCreateRepeat(ref, index)) {
@@ -390,7 +316,7 @@ public class FormEntryModel {
             return form.isRepeatRelevant(ref);
         } else {
             TreeElement node = form.getMainInstance().resolveReference(ref);
-            return node != null && node.isRelevant();
+            return null != node && node.isRelevant();
         }
     }
 
@@ -427,22 +353,20 @@ public class FormEntryModel {
             IFormElement e = getForm().getChild(index);
             if (e instanceof GroupDef) {
                 GroupDef g = (GroupDef) e;
-                if (g.getRepeat() && g.getCountReference() != null) {
+                if (g.getRepeat() && null != g.getCountReference()) {
                     // Lu Gram: repeat count XPath needs to be contextualized for nested repeat groups
                     TreeReference countRef = FormInstance.unpackReference(g.getCountReference());
                     TreeReference contextualized = countRef.contextualize(index.getReference());
                     IAnswerData count = getForm().getMainInstance().resolveReference(contextualized).getValue();
-                    if (count != null) {
+                    if (null != count) {
                         long fullcount = (Integer) count.getValue();
                         TreeReference ref = getForm().getChildInstanceRef(index);
                         TreeElement element = getForm().getMainInstance().resolveReference(ref);
-                        if (element == null) {
+                        if (null == element) {
                             if (index.getTerminal().getInstanceIndex() < fullcount) {
-
                                 try {
                                     getForm().createNewRepeat(index);
                                 } catch (InvalidReferenceException ire) {
-                                    logger.error("Error", ire);
                                     throw new RuntimeException("Invalid Reference while creating new repeat!" + ire.getMessage());
                                 }
                             }
@@ -460,9 +384,9 @@ public class FormEntryModel {
 
     public boolean isIndexCompoundContainer(FormIndex index) {
         FormEntryCaption caption = getCaptionPrompt(index);
-        return getEvent(index) == FormEntryController.EVENT_GROUP &&
-            caption.getAppearanceHint() != null &&
-            caption.getAppearanceHint().toLowerCase(Locale.ENGLISH).equals("full");
+        return EVENT_GROUP == getEvent(index) &&
+                null != caption.getAppearanceHint() &&
+            "full".equals(caption.getAppearanceHint().toLowerCase(Locale.ENGLISH));
     }
 
     public boolean isIndexCompoundElement() {
@@ -471,7 +395,7 @@ public class FormEntryModel {
 
     public boolean isIndexCompoundElement(FormIndex index) {
         //Can't be a subquestion if it's not even a question!
-        if (getEvent(index) != FormEntryController.EVENT_QUESTION) {
+        if (EVENT_QUESTION != getEvent(index)) {
             return false;
         }
 
@@ -509,13 +433,6 @@ public class FormEntryModel {
     }
 
 
-    /**
-     * @return The Current Repeat style which should be used.
-     */
-    public int getRepeatStructure() {
-        return this.repeatStructure;
-    }
-
     public FormIndex incrementIndex(FormIndex index) {
         return incrementIndex(index, true);
     }
@@ -528,7 +445,7 @@ public class FormEntryModel {
         if (index.isEndOfFormIndex()) {
             return index;
         } else if (index.isBeginningOfFormIndex()) {
-            if (form.getChildren() == null || form.getChildren().size() == 0) {
+            if (null == form.getChildren() || form.getChildren().isEmpty()) {
                 return FormIndex.createEndOfFormIndex();
             }
         } else {
@@ -537,7 +454,7 @@ public class FormEntryModel {
 
         incrementHelper(indexes, multiplicities, elements, descend);
 
-        if (indexes.size() == 0) {
+        if (indexes.isEmpty()) {
             return FormIndex.createEndOfFormIndex();
         } else {
             return form.buildIndex(indexes, multiplicities, elements);
@@ -556,39 +473,35 @@ public class FormEntryModel {
                 // specified instance actually exists
                 GroupDef group = (GroupDef) elements.get(i);
                 if (group.getRepeat()) {
-                    if (repeatStructure == REPEAT_STRUCTURE_NON_LINEAR) {
-
-                        if (multiplicities.get(multiplicities.size() - 1) == TreeReference.INDEX_REPEAT_JUNCTURE) {
-
+                    if (REPEAT_STRUCTURE_NON_LINEAR == repeatStructure) {
+                        if (INDEX_REPEAT_JUNCTURE == multiplicities.get(multiplicities.size() - 1)) {
                             descend = false;
                             exitRepeat = true;
-
                         }
-
                     } else {
-
-                        if (form.getMainInstance().resolveReference(form.getChildInstanceRef(elements, multiplicities)) == null) {
+                        if (null == form.getMainInstance().resolveReference(form.getChildInstanceRef(elements, multiplicities))) {
                             descend = false; // repeat instance does not exist; do not descend into it
                             exitRepeat = true;
                         }
-
                     }
                 }
             }
 
             if (descend) {
                 IFormElement ife = (i == -1) ? null : elements.get(i);
-                if ((i == -1) || (ife != null && ife.getChildren() != null && ife.getChildren().size() > 0)) {
+                if ((-1 == i)
+                        || ((null != ife)
+                        && null != ife.getChildren()
+                        && !ife.getChildren().isEmpty())) {
                     indexes.add(0);
                     multiplicities.add(0);
                     elements.add((i == -1 ? form : elements.get(i)).getChild(0));
 
-                    if (repeatStructure == REPEAT_STRUCTURE_NON_LINEAR) {
+                    if (REPEAT_STRUCTURE_NON_LINEAR == repeatStructure) {
                         if (elements.get(elements.size() - 1) instanceof GroupDef && ((GroupDef) elements.get(elements.size() - 1)).getRepeat()) {
-                            multiplicities.set(multiplicities.size() - 1, TreeReference.INDEX_REPEAT_JUNCTURE);
+                            multiplicities.set(multiplicities.size() - 1, INDEX_REPEAT_JUNCTURE);
                         }
                     }
-
                     return;
                 }
             }
@@ -600,14 +513,10 @@ public class FormEntryModel {
             // (repeat-not-existing can only happen at lowest level; exitRepeat
             // will be true)
             if (!exitRepeat && elements.get(i) instanceof GroupDef && ((GroupDef) elements.get(i)).getRepeat()) {
-                if (repeatStructure == REPEAT_STRUCTURE_NON_LINEAR) {
-
-                    multiplicities.set(i, TreeReference.INDEX_REPEAT_JUNCTURE);
-
+                if (REPEAT_STRUCTURE_NON_LINEAR == repeatStructure) {
+                    multiplicities.set(i, INDEX_REPEAT_JUNCTURE);
                 } else {
-
                     multiplicities.set(i, multiplicities.get(i) + 1);
-
                 }
                 return;
             }
@@ -629,12 +538,11 @@ public class FormEntryModel {
                 multiplicities.set(i, 0);
                 elements.set(i, parent.getChild(curIndex + 1));
 
-                if (repeatStructure == REPEAT_STRUCTURE_NON_LINEAR) {
+                if (REPEAT_STRUCTURE_NON_LINEAR == repeatStructure) {
                     if (elements.get(elements.size() - 1) instanceof GroupDef && ((GroupDef) elements.get(elements.size() - 1)).getRepeat()) {
-                        multiplicities.set(multiplicities.size() - 1, TreeReference.INDEX_REPEAT_JUNCTURE);
+                        multiplicities.set(multiplicities.size() - 1, INDEX_REPEAT_JUNCTURE);
                     }
                 }
-
                 return;
             }
         }
@@ -648,7 +556,7 @@ public class FormEntryModel {
         if (index.isBeginningOfFormIndex()) {
             return index;
         } else if (index.isEndOfFormIndex()) {
-            if (form.getChildren() == null || form.getChildren().size() == 0) {
+            if (null == form.getChildren() || form.getChildren().isEmpty()) {
                 return FormIndex.createBeginningOfFormIndex();
             }
         } else {
@@ -657,7 +565,7 @@ public class FormEntryModel {
 
         decrementHelper(indexes, multiplicities, elements);
 
-        if (indexes.size() == 0) {
+        if (indexes.isEmpty()) {
             return FormIndex.createBeginningOfFormIndex();
         } else {
             return form.buildIndex(indexes, multiplicities, elements);
@@ -675,18 +583,18 @@ public class FormEntryModel {
             int curIndex = indexes.get(i);
             int curMult = multiplicities.get(i);
 
-            if (repeatStructure == REPEAT_STRUCTURE_NON_LINEAR &&
-                elements.get(elements.size() - 1) instanceof GroupDef && ((GroupDef) elements.get(elements.size() - 1)).getRepeat() &&
-                multiplicities.get(multiplicities.size() - 1) != TreeReference.INDEX_REPEAT_JUNCTURE) {
-                multiplicities.set(i, TreeReference.INDEX_REPEAT_JUNCTURE);
+            if (REPEAT_STRUCTURE_NON_LINEAR == repeatStructure
+                    && elements.get(elements.size() - 1) instanceof GroupDef && ((GroupDef) elements.get(elements.size() - 1)).getRepeat()
+                    && INDEX_REPEAT_JUNCTURE != multiplicities.get(multiplicities.size() - 1)) {
+                multiplicities.set(i, INDEX_REPEAT_JUNCTURE);
                 return;
-            } else if (repeatStructure != REPEAT_STRUCTURE_NON_LINEAR && curMult > 0) {
+            } else if (REPEAT_STRUCTURE_NON_LINEAR != repeatStructure && curMult > 0) {
                 multiplicities.set(i, curMult - 1);
             } else if (curIndex > 0) {
                 // set node to previous element
                 indexes.set(i, curIndex - 1);
                 multiplicities.set(i, 0);
-                elements.set(i, (i == 0 ? form : elements.get(i - 1)).getChild(curIndex - 1));
+                elements.set(i, (0 == i ? form : elements.get(i - 1)).getChild(curIndex - 1));
 
                 if (setRepeatNextMultiplicity(elements, multiplicities))
                     return;
@@ -701,7 +609,7 @@ public class FormEntryModel {
 
         IFormElement element = (i < 0 ? form : elements.get(i));
         while (!(element instanceof QuestionDef)) {
-            if (element.getChildren() == null || element.getChildren().size() == 0) {
+            if (null == element.getChildren() || element.getChildren().isEmpty()) {
                 //if there are no children we just return the current index (the group itself)
                 return;
             }
@@ -721,24 +629,24 @@ public class FormEntryModel {
         // find out if node is repeatable
         TreeReference nodeRef = form.getChildInstanceRef(elements, multiplicities);
         TreeElement node = form.getMainInstance().resolveReference(nodeRef);
-        if (node == null || node.isRepeatable()) { // node == null if there are no instances of the repeat
-            IFormElement lastElement = elements.get(elements.size() - 1);
-            if (lastElement instanceof GroupDef && !((GroupDef) lastElement).getRepeat()) {
-                return false; // It's a regular group inside a repeatable group. This case takes place when the nested group doesn't have the ref attribute.
-            }
-            int mult;
-            if (node == null) {
-                mult = 0; // no repeats; next is 0
-            } else {
-                String name = node.getName();
-                TreeElement parentNode = form.getMainInstance().resolveReference(nodeRef.getParentRef());
-                mult = parentNode.getChildMultiplicity(name);
-            }
-            multiplicities.set(multiplicities.size() - 1, repeatStructure == REPEAT_STRUCTURE_NON_LINEAR ? TreeReference.INDEX_REPEAT_JUNCTURE : mult);
-            return true;
-        } else {
+        if (null != node && !node.isRepeatable()) {
             return false;
         }
+        // node == null if there are no instances of the repeat
+        IFormElement lastElement = elements.get(elements.size() - 1);
+        if (lastElement instanceof GroupDef
+                && !((GroupDef) lastElement).getRepeat() ) {
+            return false; // It's a regular group inside a repeatable group. This case takes place when the nested group doesn't have the ref attribute.
+        }
+
+        int mult = 0; // no repeats; next is 0
+        if (null != node) {
+            String name = node.getName();
+            TreeElement parentNode = form.getMainInstance().resolveReference(nodeRef.getParentRef());
+            mult = parentNode.getChildMultiplicity(name);
+        }
+        multiplicities.set(multiplicities.size() - 1, REPEAT_STRUCTURE_NON_LINEAR == repeatStructure ? INDEX_REPEAT_JUNCTURE : mult);
+        return true;
     }
 
     /**
@@ -753,13 +661,14 @@ public class FormEntryModel {
     private boolean containsRepeatGuesses(IFormElement parent) {
         if (parent instanceof GroupDef) {
             GroupDef g = (GroupDef) parent;
-            if (g.getRepeat() && g.getCountReference() != null) {
+            if (g.getRepeat()
+                    && null != g.getCountReference()) {
                 return true;
             }
         }
 
         List<IFormElement> children = parent.getChildren();
-        if (children == null) {
+        if (null == children) {
             return false;
         }
         for (IFormElement child : children) {
