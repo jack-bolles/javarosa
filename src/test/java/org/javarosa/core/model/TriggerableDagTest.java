@@ -1,10 +1,35 @@
 package org.javarosa.core.model;
 
+import org.hamcrest.CoreMatchers;
+import org.javarosa.core.test.Scenario;
+import org.javarosa.core.util.BindBuilderXFormsElement;
+import org.javarosa.core.util.XFormsElement;
+import org.javarosa.debug.Event;
+import org.javarosa.form.api.FormEntryController;
+import org.javarosa.xform.parse.ParseException;
+import org.javarosa.xpath.expr.XPathPathExpr;
+import org.javarosa.xpath.expr.XPathPathExprEval;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Stream;
+
 import static java.lang.String.join;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.javarosa.core.test.AnswerDataMatchers.booleanAnswer;
@@ -32,30 +57,6 @@ import static org.javarosa.core.util.XFormsElement.t;
 import static org.javarosa.core.util.XFormsElement.title;
 import static org.javarosa.form.api.FormEntryController.ANSWER_CONSTRAINT_VIOLATED;
 import static org.javarosa.form.api.FormEntryController.ANSWER_REQUIRED_BUT_EMPTY;
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.Stream;
-import org.hamcrest.CoreMatchers;
-import org.javarosa.core.test.Scenario;
-import org.javarosa.core.util.BindBuilderXFormsElement;
-import org.javarosa.core.util.XFormsElement;
-import org.javarosa.debug.Event;
-import org.javarosa.form.api.FormEntryController;
-import org.javarosa.xform.parse.ParseException;
-import org.javarosa.xpath.expr.XPathPathExpr;
-import org.javarosa.xpath.expr.XPathPathExprEval;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TriggerableDagTest {
     private static Logger logger = LoggerFactory.getLogger(TriggerableDagTest.class);
@@ -1942,7 +1943,7 @@ public class TriggerableDagTest {
         // Map each bind's nodeset to body fields (inputs)
         List<XFormsElement> inputs = Stream.of(binds)
             .map(BindBuilderXFormsElement::getNodeset)
-            .map(name -> input(name))
+            .map(XFormsElement::input)
             .collect(toList());
 
         // Return the complete form including model fields, binds, and body inputs

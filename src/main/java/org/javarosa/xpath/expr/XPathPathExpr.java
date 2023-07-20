@@ -151,7 +151,7 @@ public class XPathPathExpr extends XPathExpression {
                 } else {
                     //We only support expression root contexts for instance refs, everything else is an illegal filter
                     // We can end up here for a variety of reasons including missing a boolean operator.
-                    throw new XPathUnsupportedException("filter expression: " + this.toString());
+                    throw new XPathUnsupportedException("filter expression: " + this);
                 }
 
                 break;
@@ -222,7 +222,7 @@ public class XPathPathExpr extends XPathExpression {
         AbstractTreeElement node = model.resolveReference(ref);
         if (node == null) {
             //shouldn't happen -- only existent nodes should be in nodeset
-            throw new XPathTypeMismatchException("Node " + ref.toString() + " does not exist!");
+            throw new XPathTypeMismatchException("Node " + ref + " does not exist!");
         }
 
         IAnswerData maybeNodeValue = node.isRelevant() ? node.getValue() : null;
@@ -345,19 +345,15 @@ public class XPathPathExpr extends XPathExpression {
                 return false;
             }
 
-            if (steps.length != x.steps.length) {
-                return false;
-            } else {
-                for (int i = 0; i < steps.length; i++) {
-                    if (!steps[i].matches(x.steps[i])) {
-                        return false;
-                    }
+            for (int i = 0; i < steps.length; i++) {
+                if (!steps[i].matches(x.steps[i])) {
+                    return false;
                 }
             }
 
             // If all steps match, we still need to make sure we're in the same "context" if this
             // is a normal expression.
-            return (init_context == INIT_CONTEXT_EXPR ? filtExpr.equals(x.filtExpr) : true);
+            return (init_context != INIT_CONTEXT_EXPR || filtExpr.equals(x.filtExpr));
         } else {
             return false;
         }
@@ -419,8 +415,7 @@ public class XPathPathExpr extends XPathExpression {
 
     @Override
     public boolean isIdempotent() {
-        return (filtExpr == null || filtExpr.isIdempotent()) && Arrays.stream(steps).allMatch((step) -> {
-            return Arrays.stream(step.predicates).allMatch(XPathExpression::isIdempotent);
-        });
+        return (filtExpr == null || filtExpr.isIdempotent()) && Arrays.stream(steps).allMatch((step)
+                -> Arrays.stream(step.predicates).allMatch(XPathExpression::isIdempotent));
     }
 }

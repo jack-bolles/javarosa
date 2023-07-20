@@ -116,7 +116,7 @@ class StandardBindAttributesProcessor {
         binding.setPreload(element.getAttributeValue(NAMESPACE_JAVAROSA, "preload"));
         binding.setPreloadParams(element.getAttributeValue(NAMESPACE_JAVAROSA, "preloadParams"));
 
-        bindAttributeProcessors.stream().forEach(bindAttributeProcessor -> {
+        bindAttributeProcessors.forEach(bindAttributeProcessor -> {
             for (int i = 0; i < element.getAttributeCount(); i++) {
                 String namespace = element.getAttributeNamespace(i);
                 String name = element.getAttributeName(i);
@@ -128,9 +128,8 @@ class StandardBindAttributesProcessor {
         });
 
         List<Pair<String, String>> processorAttributes = bindAttributeProcessors.stream()
-            .flatMap((Function<XFormParser.BindAttributeProcessor, Stream<Pair<String, String>>>) bindAttributeProcessor -> {
-                return bindAttributeProcessor.getBindAttributes().stream();
-            })
+            .flatMap((Function<XFormParser.BindAttributeProcessor, Stream<Pair<String, String>>>) bindAttributeProcessor
+                    -> bindAttributeProcessor.getBindAttributes().stream())
             .collect(Collectors.toList());
 
         for (int i = 0; i < element.getAttributeCount(); i++) {

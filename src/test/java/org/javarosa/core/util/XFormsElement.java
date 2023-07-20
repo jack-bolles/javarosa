@@ -111,9 +111,8 @@ public interface XFormsElement {
 
     static XFormsElement model(List<Pair<String, String>> attributes, XFormsElement... children) {
         StringBuilder stringBuilder = new StringBuilder();
-        attributes.stream().forEach(attribute -> {
-            stringBuilder.append(" " + attribute.getFirst() + "=\"" + attribute.getSecond() + "\"");
-        });
+        attributes.forEach(attribute
+                -> stringBuilder.append(" ").append(attribute.getFirst()).append("=\"").append(attribute.getSecond()).append("\""));
 
         return t("model" + stringBuilder, children);
     }
