@@ -754,9 +754,7 @@ public class XFormParser implements IXFormParserFunctions {
 
     @NotNull
     private Action getAction(Element e, String valueExpression) throws ParseException {
-        IDataReference dataRef = dataReferenceFor(e);
-
-        TreeReference treeref = FormInstance.unpackReference(dataRef);
+        TreeReference treeref = FormInstance.unpackReference(dataReferenceFor(e));
         registerActionTarget(treeref);
 
         if (valueExpression == null) {
@@ -771,7 +769,6 @@ public class XFormParser implements IXFormParserFunctions {
                         : XPathParseTool.parseXPath(valueExpression);
                 return new SetValueAction(treeref, value);
             } catch (XPathSyntaxException e1) {
-                logger.error("Error", e1);
                 throw new ParseException("Invalid XPath in value set action declaration: '" + valueExpression + "'", e);
             }
         }
@@ -1015,10 +1012,10 @@ public class XFormParser implements IXFormParserFunctions {
      */
     private QuestionDef parseControl(IFormElement parent, Element e, int controlType, List<String> additionalUsedAtts,
                                      List<String> passedThroughAtts) throws ParseException {
-        final QuestionDef question = questionForControlType(controlType);
+        QuestionDef question = questionForControlType(controlType);
         question.setID(serialQuestionID++); //until we come up with a better scheme
 
-        final List<String> usedAtts = new ArrayList<>(asList(REF_ATTR, BIND_ATTR, APPEARANCE_ATTR));
+        List<String> usedAtts = new ArrayList<>(asList(REF_ATTR, BIND_ATTR, APPEARANCE_ATTR));
         if (additionalUsedAtts != null) {
             usedAtts.addAll(additionalUsedAtts);
         }
@@ -1037,12 +1034,7 @@ public class XFormParser implements IXFormParserFunctions {
             dataRef = binding.getReference();
             refFromBind = true;
         } else if (ref != null) {
-            try {
-                dataRef = new XPathReference(ref);
-            } catch (RuntimeException el) {
-                logger.info(XFormParser.getVagueLocation(e));
-                throw el;
-            }
+            dataRef = new XPathReference(ref);
         } else {
             //noinspection StatementWithEmptyBody
             if (controlType == CONTROL_TRIGGER) {
