@@ -575,7 +575,6 @@ public class XFormParser implements IXFormParserFunctions {
             _f.setName(title);
         }
 
-
         if (XFormUtils.showUnusedAttributeWarning(e, usedAtts)) {
             triggerWarning(XFormUtils.unusedAttWarning(e, usedAtts), getVagueLocation(e));
         }
@@ -591,7 +590,6 @@ public class XFormParser implements IXFormParserFunctions {
                 _f.setName(value);
             }
         }
-
 
         usedAtts.add("name");
         if (XFormUtils.showUnusedAttributeWarning(e, usedAtts)) {
@@ -617,8 +615,7 @@ public class XFormParser implements IXFormParserFunctions {
         List<Element> delayedParseElements = new ArrayList<>();
 
         if (modelFound) {
-            triggerWarning(
-                "Multiple models not supported. Ignoring subsequent models.", getVagueLocation(e));
+            triggerWarning("Multiple models not supported. Ignoring subsequent models.", getVagueLocation(e));
             return;
         }
         modelFound = true;
@@ -1891,9 +1888,7 @@ public class XFormParser implements IXFormParserFunctions {
         }
     }
 
-    //TOD0 - return new
-    static HashMap<String, String> loadNamespaces(Element e, FormInstance tree) {
-        HashMap<String, String> prefixes = new HashMap<>();
+    static void loadNamespaces(Element e, FormInstance tree) {
         for (int i = 0; i < e.getNamespaceCount(); ++i) {
             String uri = e.getNamespaceUri(i);
             String prefix = e.getNamespacePrefix(i);
@@ -1901,7 +1896,6 @@ public class XFormParser implements IXFormParserFunctions {
                 tree.addNamespace(prefix, uri);
             }
         }
-        return prefixes;
     }
 
     static TreeElement buildInstanceStructure(Element node, TreeElement parent, Map<String,
@@ -2205,13 +2199,12 @@ public class XFormParser implements IXFormParserFunctions {
         return dm;
     }
 
-    //TODO - hides ParserException
-    public static FormInstance restoreDataModel(byte[] data, Class restorableType)  {
+    public static FormInstance restoreDataModel(byte[] data, Class restorableType) throws ParseException {
         try {
             return restoreDataModel(new ByteArrayInputStream(data), restorableType);
-        } catch (IOException | ParseException e) {
+        } catch (IOException e) {
             logger.error("Error", e);
-            throw new RuntimeException("Bad parsing from byte array " + e.getMessage());
+            throw new ParseException("Bad parsing from byte array " + e.getMessage());
         }
     }
 

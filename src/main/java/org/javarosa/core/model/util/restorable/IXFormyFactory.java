@@ -21,8 +21,6 @@ import org.javarosa.core.model.condition.IConditionExpr;
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.model.instance.TreeReference;
-import org.javarosa.core.services.transport.payload.IDataPayload;
-import org.javarosa.model.xform.XFormSerializingVisitor;
 import org.javarosa.model.xform.XPathReference;
 import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xform.util.XFormAnswerDataParser;
@@ -30,24 +28,10 @@ import org.javarosa.xform.util.XFormAnswerDataSerializer;
 import org.javarosa.xpath.XPathConditional;
 import org.javarosa.xpath.expr.XPathPathExpr;
 
-import java.io.IOException;
-
 public class IXFormyFactory {
 
     public TreeReference ref(String refStr) {
         return FormInstance.unpackReference(new XPathReference(refStr));
-    }
-
-    public IDataPayload serializeInstance(FormInstance dm) {
-        try {
-            return (new XFormSerializingVisitor()).createSerializedPayload(dm);
-        } catch (IOException e) {
-            return null;
-        }
-    }
-
-    public FormInstance parseRestore(byte[] data, Class restorableType) {
-        return XFormParser.restoreDataModel(data, restorableType);
     }
 
     public IAnswerData parseData(String textVal, int dataType, TreeReference ref, FormDef f) {

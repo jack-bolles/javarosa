@@ -28,7 +28,7 @@ import org.javarosa.core.services.storage.Persistable;
 import java.util.Date;
 
 public class RestoreUtils {
-    public static final String RECORD_ID_TAG = "rec-id";
+    private static final String RECORD_ID_TAG = "rec-id";
 
     public static IXFormyFactory xfFact = new IXFormyFactory();
 
@@ -36,11 +36,11 @@ public class RestoreUtils {
         return xfFact.ref(refStr);
     }
 
-    public static TreeReference topRef(FormInstance dm) {
+    private static TreeReference topRef(FormInstance dm) {
         return ref("/" + dm.getRoot().getName());
     }
 
-    public static TreeReference childRef(String childPath, TreeReference parentRef) {
+    private static TreeReference childRef(String childPath, TreeReference parentRef) {
         return ref(childPath).parent(parentRef);
     }
 
@@ -105,11 +105,11 @@ public class RestoreUtils {
         }
     }
 
-    public static void applyDataType(FormInstance dm, String path, TreeReference parent, Class type) {
+    private static void applyDataType(FormInstance dm, String path, TreeReference parent, Class type) {
         applyDataType(dm, path, parent, getDataType(type));
     }
 
-    public static void applyDataType(FormInstance dm, String path, TreeReference parent, int dataType) {
+    private static void applyDataType(FormInstance dm, String path, TreeReference parent, int dataType) {
         TreeReference ref = childRef(path, parent);
         new EvaluationContext(dm)
                 .expandReference(ref)
@@ -129,9 +129,5 @@ public class RestoreUtils {
         }
 
         r.templateData(dm, parent);
-    }
-
-    public static FormInstance receive(byte[] payload, Class restorableType) {
-        return xfFact.parseRestore(payload, restorableType);
     }
 }
