@@ -151,10 +151,10 @@ public class XFormParser implements IXFormParserFunctions {
     private static HashMap<String, IElementHandler> topLevelHandlers;
     private static HashMap<String, IElementHandler> groupLevelHandlers;
     private static final Map<String, Integer> typeMappings = TypeMappings.getMap();
-    private static List<SubmissionParser> submissionParsers = new ArrayList<>(1);
+    private static final List<SubmissionParser> submissionParsers = new ArrayList<>(1);
     /** The string IDs of all instances that are referenced in a instance() function call in the primary instance **/
-    private static Set<String> referencedInstanceIds = new HashSet<>();
-    private static HashMap<String, IElementHandler>  actionHandlers = new HashMap<>();
+    private static final Set<String> referencedInstanceIds = new HashSet<>();
+    private static final HashMap<String, IElementHandler>  actionHandlers = new HashMap<>();
 
     private Reader _reader;
     private Document _xmldoc;
@@ -187,8 +187,6 @@ public class XFormParser implements IXFormParserFunctions {
     static {
         try {
             initProcessingRules();
-            submissionParsers = new ArrayList<>(1);
-            referencedInstanceIds = new HashSet<>();
         } catch (Exception e) {
             die("xfparser-static-init", e);
         }
@@ -291,7 +289,7 @@ public class XFormParser implements IXFormParserFunctions {
 
             if (_xmldoc == null) {
                 try {
-                    final StopWatch ctParse = StopWatch.start();
+                    StopWatch ctParse = StopWatch.start();
                     Document doc = new Document();
 
                     try {
@@ -379,7 +377,7 @@ public class XFormParser implements IXFormParserFunctions {
      * Extracts the namespaces from the given element and creates a map of URI to prefix
      */
     private static Map<String, String> buildNamespacesMap(Element el) {
-        final Map<String, String> namespacePrefixesByURI = new HashMap<>();
+        Map<String, String> namespacePrefixesByURI = new HashMap<>();
 
         for (int i = 0; i < el.getNamespaceCount(); i++) {
             namespacePrefixesByURI.put(el.getNamespaceUri(i), el.getNamespacePrefix(i));
@@ -389,7 +387,7 @@ public class XFormParser implements IXFormParserFunctions {
     }
 
     public static Document getXMLDocument(Reader reader) throws IOException, ParseException {
-        final StopWatch ctParse = StopWatch.start();
+        StopWatch ctParse = StopWatch.start();
         Document doc = new Document();
 
         try {
@@ -650,7 +648,7 @@ public class XFormParser implements IXFormParserFunctions {
             } else { //invalid model content
                 if (type == Node.ELEMENT) {
                     throw new ParseException("Unrecognized top-level tag [" + childName + "] found within <model>", child);
-                } else if (type == Node.TEXT && getXMLText(e, i, true).length() != 0) {
+                } else if (type == Node.TEXT && !getXMLText(e, i, true).isEmpty()) {
                     throw new ParseException("Unrecognized text content found within <model>: \"" + getXMLText(e, i, true) + "\"", child == null ? e : child);
                 }
             }
