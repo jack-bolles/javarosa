@@ -1,19 +1,18 @@
 package org.javarosa.core.model.instance;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.List;
-
 import org.javarosa.core.util.ArrayUtilities;
-import org.javarosa.core.util.CacheTable;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.ExtUtil;
 import org.javarosa.core.util.externalizable.ExtWrapListPoly;
 import org.javarosa.core.util.externalizable.Externalizable;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.xpath.expr.XPathExpression;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author ctsims
@@ -24,13 +23,6 @@ public class TreeReferenceLevel implements Externalizable, Serializable {
     private String name;
     private int multiplicity = MULT_UNINIT;
     private List<XPathExpression> predicates;
-
-    /** A cache for reference levels, to avoid keeping a bunch of the same levels floating around at run-time. */
-    private static CacheTable<TreeReferenceLevel> refs;
-
-    public static void attachCacheTable(CacheTable<TreeReferenceLevel> refs) {
-        TreeReferenceLevel.refs = refs;
-    }
 
     public TreeReferenceLevel() {
         // for externalization
@@ -56,11 +48,11 @@ public class TreeReferenceLevel implements Externalizable, Serializable {
     }
 
     public TreeReferenceLevel setMultiplicity(int mult) {
-        return new TreeReferenceLevel(name, mult, predicates).intern();
+        return new TreeReferenceLevel(name, mult, predicates);
     }
 
     public TreeReferenceLevel setPredicates(List<XPathExpression> xpe) {
-        return new TreeReferenceLevel(name, multiplicity, xpe).intern();
+        return new TreeReferenceLevel(name, multiplicity, xpe);
     }
 
     public List<XPathExpression> getPredicates() {
@@ -68,11 +60,11 @@ public class TreeReferenceLevel implements Externalizable, Serializable {
     }
 
     public TreeReferenceLevel shallowCopy() {
-        return new TreeReferenceLevel(name, multiplicity, ArrayUtilities.listCopy(predicates)).intern();
+        return new TreeReferenceLevel(name, multiplicity, ArrayUtilities.listCopy(predicates));
     }
 
     public TreeReferenceLevel setName(String name) {
-        return new TreeReferenceLevel(name, multiplicity, predicates).intern();
+        return new TreeReferenceLevel(name, multiplicity, predicates);
     }
 
     public void readExternal(DataInputStream in, PrototypeFactory pf) throws IOException, DeserializationException {
@@ -121,15 +113,5 @@ public class TreeReferenceLevel implements Externalizable, Serializable {
             if(!predicates.get(i).equals(l.predicates.get(i))) { return false; }
         }
         return true;
-    }
-
-    public static boolean treeRefLevelInterningEnabled = true;
-
-    public TreeReferenceLevel intern() {
-        if(!treeRefLevelInterningEnabled || refs == null) {
-            return this;
-        } else{
-            return refs.intern(this);
-        }
     }
 }

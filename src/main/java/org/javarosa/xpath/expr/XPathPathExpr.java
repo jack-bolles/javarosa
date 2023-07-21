@@ -369,7 +369,7 @@ public class XPathPathExpr extends XPathExpression {
         List<Object> v = (List<Object>) ExtUtil.read(in, new ExtWrapList(XPathStep.class), pf);
         steps = new XPathStep[v.size()];
         for (int i = 0; i < steps.length; i++)
-            steps[i] = ((XPathStep) v.get(i)).intern();
+            steps[i] = (XPathStep) v.get(i);
     }
 
     @Override
@@ -389,9 +389,9 @@ public class XPathPathExpr extends XPathExpression {
         path.steps = new XPathStep[ref.size()];
         for (int i = 0; i < path.steps.length; i++) {
             if (ref.getName(i).equals(TreeReference.NAME_WILDCARD)) {
-                path.steps[i] = new XPathStep(XPathStep.AXIS_CHILD, XPathStep.TEST_NAME_WILDCARD).intern();
+                path.steps[i] = new XPathStep(XPathStep.AXIS_CHILD, XPathStep.TEST_NAME_WILDCARD);
             } else {
-                path.steps[i] = new XPathStep(XPathStep.AXIS_CHILD, new XPathQName(ref.getName(i))).intern();
+                path.steps[i] = new XPathStep(XPathStep.AXIS_CHILD, new XPathQName(ref.getName(i)));
             }
         }
         return path;

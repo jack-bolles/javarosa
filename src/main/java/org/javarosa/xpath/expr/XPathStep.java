@@ -16,7 +16,6 @@
 
 package org.javarosa.xpath.expr;
 
-import org.javarosa.core.util.CacheTable;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.ExtUtil;
 import org.javarosa.core.util.externalizable.ExtWrapListPoly;
@@ -52,12 +51,6 @@ public class XPathStep implements Externalizable {
     public static final int TEST_TYPE_TEXT = 4;
     public static final int TEST_TYPE_COMMENT = 5;
     public static final int TEST_TYPE_PROCESSING_INSTRUCTION = 6;
-
-    private static CacheTable<XPathStep> refs;
-
-    public static void attachCacheTable(CacheTable<XPathStep> refs) {
-        XPathStep.refs = refs;
-    }
 
     public static XPathStep ABBR_SELF () {
         return new XPathStep(AXIS_SELF, TEST_TYPE_NODE);
@@ -287,14 +280,5 @@ public class XPathStep implements Externalizable {
       List<XPathExpression> v = Arrays.asList(predicates);
       
         ExtUtil.write(out, new ExtWrapListPoly(v));
-    }
-
-    public static boolean XPathStepInterningEnabled = true;
-    public XPathStep intern() {
-        if(!XPathStepInterningEnabled || refs == null) {
-            return this;
-        } else{
-            return refs.intern(this);
-        }
     }
 }

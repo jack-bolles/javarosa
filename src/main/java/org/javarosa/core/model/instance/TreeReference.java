@@ -148,7 +148,7 @@ public class TreeReference implements Externalizable, Serializable {
     }
 
     public void add(String name, int mult) {
-        add(new TreeReferenceLevel(name, mult).intern());
+        add(new TreeReferenceLevel(name, mult));
     }
 
     public void addPredicate(int key, List<XPathExpression> xpe) {
@@ -575,8 +575,7 @@ public class TreeReference implements Externalizable, Serializable {
         contextType = ExtUtil.readInt(in);
         int size = ExtUtil.readInt(in);
         for (int i = 0; i < size; ++i) {
-            TreeReferenceLevel level = (TreeReferenceLevel) ExtUtil.read(in, TreeReferenceLevel.class);
-            this.add(level.intern());
+            add((TreeReferenceLevel) ExtUtil.read(in, TreeReferenceLevel.class));
         }
     }
 

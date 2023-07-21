@@ -336,7 +336,7 @@ public class XFormParser implements IXFormParserFunctions {
                     logger.info(ctParse.logLine("Reading XML and parsing with kXML2"));
 
                     StopWatch ctConsolidate = StopWatch.start();
-                    XmlTextConsolidator.consolidateText(null, doc.getRootElement());
+                    XmlTextConsolidator.consolidateText(doc.getRootElement());
                     logger.info(ctConsolidate.logLine("Consolidating text"));
 
                     _xmldoc = doc;
@@ -434,7 +434,7 @@ public class XFormParser implements IXFormParserFunctions {
         logger.info(ctParse.logLine("Reading XML and parsing with kXML2"));
 
         StopWatch ctConsolidate = StopWatch.start();
-        XmlTextConsolidator.consolidateText(null, doc.getRootElement());
+        XmlTextConsolidator.consolidateText(doc.getRootElement());
         logger.info(ctConsolidate.logLine("Consolidating text"));
 
         return doc;

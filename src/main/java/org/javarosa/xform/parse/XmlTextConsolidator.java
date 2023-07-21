@@ -1,6 +1,5 @@
 package org.javarosa.xform.parse;
 
-import org.javarosa.core.util.CacheTable;
 import org.kxml2.kdom.Element;
 
 import java.util.HashSet;
@@ -18,15 +17,15 @@ class XmlTextConsolidator {
      * want to go through and convert the kxml parsed text (which have lots of
      * characters each as their own string) into one single string
      */
-    static void consolidateText(CacheTable<String> stringCache, Element rootElement) {
+    static void consolidateText(Element rootElement) {
         Stack<Element> q = new Stack<>();
         q.push(rootElement);
         while (!q.isEmpty()) {
-            final Element e = q.pop();
-            final Set<Integer> removeIndexes = new HashSet<>();
+            Element e = q.pop();
+            Set<Integer> removeIndexes = new HashSet<>();
             String accumulator = "";
             for (int i = 0; i < e.getChildCount(); ++i) {
-                final int type = e.getType(i);
+                int type = e.getType(i);
                 if (type == TEXT) {
                     accumulator += e.getText(i);
                     removeIndexes.add(i);
@@ -35,13 +34,13 @@ class XmlTextConsolidator {
                         q.add(e.getElement(i));
                     }
                     if (nonBlank(accumulator)) {
-                        e.addChild(i++, TEXT, maybeInternedString(stringCache, accumulator));
+                        e.addChild(i++, TEXT, accumulator);
                     }
                     accumulator = "";
                 }
             }
             if (nonBlank(accumulator)) {
-                e.addChild(TEXT, maybeInternedString(stringCache, accumulator));
+                e.addChild(TEXT, accumulator);
             }
             ElementChildDeleter.delete(e, removeIndexes);
         }
@@ -49,10 +48,6 @@ class XmlTextConsolidator {
 
     private static boolean nonBlank(String s) {
         return !s.trim().isEmpty();
-    }
-
-    private static String maybeInternedString(CacheTable<String> stringCache, String accumulate) {
-        return stringCache == null ? accumulate : stringCache.intern(accumulate);
     }
 
 }

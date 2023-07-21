@@ -3,9 +3,6 @@
  */
 package org.javarosa.core.util;
 
-import org.javarosa.core.model.instance.TreeReferenceLevel;
-import org.javarosa.core.util.externalizable.ExtUtil;
-import org.javarosa.xpath.expr.XPathStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,26 +26,8 @@ public class MemoryUtils {
     private static byte[][] memoryHolders;
     static int currentCount = 0;
 
-    //Variables to keep track of the state of some of the internal
-    //interning options
-    //TODO: I think we can get rid of this, depending on fragmentation analysis
-    static boolean oldterning;
     static boolean otrt;
     static boolean oldxpath;
-    public static void stopTerning() {
-        oldterning = ExtUtil.interning;
-        otrt = TreeReferenceLevel.treeRefLevelInterningEnabled;
-        oldxpath = XPathStep.XPathStepInterningEnabled;
-        ExtUtil.interning = false;
-        TreeReferenceLevel.treeRefLevelInterningEnabled = false;
-        XPathStep.XPathStepInterningEnabled = false;
-    }
-
-    public static void revertTerning() {
-        ExtUtil.interning = oldterning;
-        TreeReferenceLevel.treeRefLevelInterningEnabled = otrt;
-        XPathStep.XPathStepInterningEnabled = oldxpath;
-    }
 
 
     //Used once at the beginning of an execution to enable memory profiling for

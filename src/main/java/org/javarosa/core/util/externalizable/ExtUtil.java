@@ -19,7 +19,6 @@ package org.javarosa.core.util.externalizable;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.services.PrototypeManager;
-import org.javarosa.core.util.CacheTable;
 import org.javarosa.core.util.OrderedMap;
 
 import java.io.ByteArrayInputStream;
@@ -41,8 +40,6 @@ import static org.javarosa.core.model.utils.DateFormat.ISO8601;
 import static org.javarosa.core.model.utils.DateUtils.timeAndOffset;
 
 public class ExtUtil {
-    public static boolean interning = true;
-    public static CacheTable<String> stringCache;
 
     public static byte[] serialize(Object o) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -146,19 +143,18 @@ public class ExtUtil {
         writeString(out, ISO8601.formatLocalTime(val));
     }
 
-
     public static void writeBytes(DataOutputStream out, byte[] bytes) throws IOException {
-        ExtUtil.writeNumeric(out, bytes.length);
+        writeNumeric(out, bytes.length);
         if (bytes.length > 0) //i think writing zero-length array might close the stream
             out.write(bytes);
     }
 
     public static void writeAttributes(DataOutputStream out, List<TreeElement> attributes) throws IOException {
-        ExtUtil.writeNumeric(out, attributes.size());
+        writeNumeric(out, attributes.size());
         for (TreeElement e : attributes) {
-            ExtUtil.write(out, e.getNamespace());
-            ExtUtil.write(out, e.getName());
-            ExtUtil.write(out, e.getAttributeValue());
+            write(out, e.getNamespace());
+            write(out, e.getName());
+            write(out, e.getAttributeValue());
         }
     }
 
@@ -246,8 +242,7 @@ public class ExtUtil {
     }
 
     public static String readString(DataInputStream in) throws IOException {
-        String s = in.readUTF();
-        return (interning && stringCache != null) ? stringCache.intern(s) : s;
+        return in.readUTF();
     }
 
     public static Date readDate(DataInputStream in) throws IOException {
@@ -265,7 +260,7 @@ public class ExtUtil {
     }
 
     public static byte[] readBytes(DataInputStream in) throws IOException {
-        int size = (int) ExtUtil.readNumeric(in);
+        int size = (int) readNumeric(in);
         byte[] bytes = new byte[size];
         int read = 0;
         int toread = size;
@@ -277,12 +272,12 @@ public class ExtUtil {
     }
 
     public static List<TreeElement> readAttributes(DataInputStream in, TreeElement parent) throws IOException {
-        int size = (int) ExtUtil.readNumeric(in);
+        int size = (int) readNumeric(in);
         List<TreeElement> attributes = new ArrayList<>(size);
         for (int i = 0; i < size; ++i) {
-            String namespace = ExtUtil.readString(in);
-            String name = ExtUtil.readString(in);
-            String value = ExtUtil.readString(in);
+            String namespace = readString(in);
+            String name = readString(in);
+            String value = readString(in);
 
             TreeElement attr = TreeElement.constructAttributeElement(namespace, name, value);
             attr.setParent(parent);
@@ -330,15 +325,15 @@ public class ExtUtil {
     }
 
     public static String nullIfEmpty(String s) {
-        return (s == null ? null : (s.length() == 0 ? null : s));
+        return (s == null ? null : (s.isEmpty() ? null : s));
     }
 
     public static List nullIfEmpty(List v) {
-        return (v == null ? null : (v.size() == 0 ? null : v));
+        return (v == null ? null : (v.isEmpty() ? null : v));
     }
 
     public static HashMap nullIfEmpty(HashMap h) {
-        return (h == null ? null : (h.size() == 0 ? null : h));
+        return (h == null ? null : (h.isEmpty() ? null : h));
     }
 
     public static byte[] emptyIfNull(byte[] ba) {
