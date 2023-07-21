@@ -5,6 +5,9 @@ import org.javarosa.core.model.DataBinding;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.entities.UnrecognizedEntityVersionException;
 import org.javarosa.model.xform.XPathReference;
+import org.javarosa.xform.parse.BindAttributeProcessor;
+import org.javarosa.xform.parse.FormDefProcessor;
+import org.javarosa.xform.parse.ModelAttributeProcessor;
 import org.javarosa.xform.parse.ParseException;
 import org.javarosa.xform.parse.XFormParser;
 
@@ -13,7 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class EntityFormParseProcessor implements XFormParser.BindAttributeProcessor, XFormParser.FormDefProcessor, XFormParser.ModelAttributeProcessor {
+public class EntityFormParseProcessor implements BindAttributeProcessor, FormDefProcessor, ModelAttributeProcessor {
 
     private static final String ENTITIES_NAMESPACE = "http://www.opendatakit.org/xforms/entities";
     public static final String SUPPORTED_VERSION = "2022.1";

@@ -37,7 +37,7 @@ class StandardBindAttributesProcessor {
 
     DataBinding createBinding(IXFormParserFunctions parserFunctions, FormDef formDef,
                               Collection<String> usedAttributes, Collection<String> passedThroughAttributes,
-                              Element element, List<XFormParser.BindAttributeProcessor> bindAttributeProcessors) throws ParseException {
+                              Element element, List<BindAttributeProcessor> bindAttributeProcessors) throws ParseException {
         final DataBinding binding = new DataBinding();
 
         binding.setId(element.getAttributeValue("", ID_ATTR));
@@ -128,7 +128,7 @@ class StandardBindAttributesProcessor {
         });
 
         List<Pair<String, String>> processorAttributes = bindAttributeProcessors.stream()
-            .flatMap((Function<XFormParser.BindAttributeProcessor, Stream<Pair<String, String>>>) bindAttributeProcessor
+            .flatMap((Function<BindAttributeProcessor, Stream<Pair<String, String>>>) bindAttributeProcessor
                     -> bindAttributeProcessor.getBindAttributes().stream())
             .collect(Collectors.toList());
 

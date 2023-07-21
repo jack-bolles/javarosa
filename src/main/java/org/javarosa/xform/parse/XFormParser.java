@@ -185,9 +185,6 @@ public class XFormParser implements IXFormParserFunctions {
      **/
     private static Set<String> referencedInstanceIds;
 
-    private final List<WarningCallback> warningCallbacks = new ArrayList<>();
-    private final List<ErrorCallback> errorCallbacks = new ArrayList<>();
-
     //incremented to provide unique question ID for each question
     private int serialQuestionID = 1;
 
@@ -2308,58 +2305,16 @@ public class XFormParser implements IXFormParserFunctions {
         this.stringCache = stringCache;
     }
 
-    public void onWarning(WarningCallback callback) {
-        warningCallbacks.add(callback);
-    }
-
-    public void onError(ErrorCallback callback) {
-        errorCallbacks.add(callback);
-    }
-
     private void triggerWarning(String message, String xmlLocation) {
         String warning = "XForm Parse Warning: " + message + (xmlLocation == null ? "" : xmlLocation);
         logger.warn(warning);
         _f.addParseWarning(warning);
-        for (WarningCallback callback : warningCallbacks)
-            callback.accept(warning);
     }
 
     private void triggerError(String message) {
         String error = "XForm Parse Error: " + message;
         logger.error(error);
         _f.addParseError(error);
-        for (ErrorCallback callback : errorCallbacks)
-            callback.accept(error);
-    }
-
-    public interface WarningCallback {
-        void accept(String message);
-    }
-
-    public interface ErrorCallback {
-        void accept(String message);
-    }
-
-    public interface Processor {
-
-    }
-
-    public interface FormDefProcessor extends Processor {
-        void processFormDef(FormDef formDef) throws ParseException;
-    }
-
-    public interface BindAttributeProcessor extends Processor {
-
-        Set<Pair<String, String>> getBindAttributes();
-
-        void processBindAttribute(String name, String value, DataBinding binding);
-    }
-
-    public interface ModelAttributeProcessor extends Processor {
-
-        Set<Pair<String, String>> getModelAttributes();
-
-        void processModelAttribute(String name, String value) throws ParseException;
     }
 
     public static class MissingModelAttributeException extends ParseException {

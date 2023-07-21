@@ -95,7 +95,7 @@ public class BindAttributeProcessorTest {
         assertThat(questionElement.getBindAttributes().size(), equalTo(1));
     }
 
-    private static class RecordingBindAttributeProcessor implements XFormParser.BindAttributeProcessor {
+    private static class RecordingBindAttributeProcessor implements BindAttributeProcessor {
 
         private final Set<Pair<String, String>> attributes;
         boolean processCalled;
