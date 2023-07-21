@@ -59,11 +59,14 @@ import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.javarosa.xpath.XPathConditional;
 import org.javarosa.xpath.XPathParseTool;
+import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.javarosa.xpath.expr.XPathNumericLiteral;
 import org.javarosa.xpath.expr.XPathPathExpr;
 import org.javarosa.xpath.expr.XPathStringLiteral;
 import org.javarosa.xpath.parser.XPathSyntaxException;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.kxml2.io.KXmlParser;
 import org.kxml2.kdom.Document;
 import org.kxml2.kdom.Element;
@@ -741,55 +744,58 @@ public class XFormParser implements IXFormParserFunctions {
     }
 
     public void parseSetValueAction(ActionController source, Element e) throws ParseException {
-        String ref = e.getAttributeValue(null, REF_ATTR);
-        String bind = e.getAttributeValue(null, BIND_ATTR);
+        IDataReference datdaRef = dataReferenceFor(e);
 
+        String valueExpression = e.getAttributeValue(null, "value");
+        Action action = getAction(e, valueExpression);
+
+        source.registerEventListener(getValidEventNames(e.getAttributeValue(null, EVENT_ATTR)), action);
+    }
+
+    @NotNull
+    private Action getAction(Element e, String valueExpression) throws ParseException {
+        IDataReference dataRef = dataReferenceFor(e);
+
+        TreeReference treeref = FormInstance.unpackReference(dataRef);
+        registerActionTarget(treeref);
+
+        if (valueExpression == null) {
+            String value = e.getChildCount() > 0 && e.isText(0)
+                    ? e.getText(0)
+                    : "";
+            return new SetValueAction(treeref, value);
+        } else {
+            try {
+                XPathExpression value = valueExpression.equals("")
+                        ? new XPathStringLiteral("")
+                        : XPathParseTool.parseXPath(valueExpression);
+                return new SetValueAction(treeref, value);
+            } catch (XPathSyntaxException e1) {
+                logger.error("Error", e1);
+                throw new ParseException("Invalid XPath in value set action declaration: '" + valueExpression + "'", e);
+            }
+        }
+    }
+
+    @Nullable
+    private IDataReference dataReferenceFor(Element e) throws ParseException {
         IDataReference dataRef;
-        boolean refFromBind = false;
+        String bind = e.getAttributeValue(null, BIND_ATTR);
+        String ref = e.getAttributeValue(null, REF_ATTR);
 
-        //TODO: There is a _lot_ of duplication of this code, fix that!
         if (bind != null) {
             DataBinding binding = bindingsByID.get(bind);
             if (binding == null) {
                 throw new ParseException("XForm Parse: invalid binding ID in submit'" + bind + "'", e);
             }
             dataRef = binding.getReference();
-            refFromBind = true;
         } else if (ref != null) {
-            dataRef = new XPathReference(ref);
+            dataRef = FormDef.getAbsRef(new XPathReference(ref), TreeReference.rootRef());
         } else {
             throw new ParseException("setvalue action with no target!", e);
         }
 
-        if (dataRef != null) {
-            if (!refFromBind) {
-                dataRef = FormDef.getAbsRef(dataRef, TreeReference.rootRef());
-            }
-        }
-
-        String valueExpression = e.getAttributeValue(null, "value");
-        Action action;
-        TreeReference treeref = FormInstance.unpackReference(dataRef);
-
-        registerActionTarget(treeref);
-        if (valueExpression == null) {
-            String value = "";
-            if (e.getChildCount() > 0 && e.isText(0)) {
-                value = e.getText(0);
-            }
-
-            action = new SetValueAction(treeref, value);
-        } else {
-            try {
-                action = new SetValueAction(treeref, valueExpression.equals("") ? new XPathStringLiteral("")
-                    : XPathParseTool.parseXPath(valueExpression));
-            } catch (XPathSyntaxException e1) {
-                logger.error("Error", e1);
-                throw new ParseException("Invalid XPath in value set action declaration: '" + valueExpression + "'", e);
-            }
-        }
-
-        source.registerEventListener(getValidEventNames(e.getAttributeValue(null, EVENT_ATTR)), action);
+        return dataRef;
     }
 
     private void parseSubmission(Element submission) throws ParseException {
