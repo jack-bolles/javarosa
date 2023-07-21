@@ -9,30 +9,24 @@ import java.io.Reader;
 
 public class EntityXFormParserFactory implements IXFormParserFactory {
 
-    private final IXFormParserFactory wrapped;
-
-    public EntityXFormParserFactory(IXFormParserFactory wrapped) {
-        this.wrapped = wrapped;
-    }
-
     @Override
     public XFormParser getXFormParser(Reader reader) {
-        return configureEntityParsing(wrapped.getXFormParser(reader));
+        return configureEntityParsing(new XFormParser(reader));
     }
 
     @Override
     public XFormParser getXFormParser(Document doc) {
-        return configureEntityParsing(wrapped.getXFormParser(doc));
+        return configureEntityParsing(new XFormParser(doc));
     }
 
     @Override
     public XFormParser getXFormParser(Reader form, Reader instance) {
-        return configureEntityParsing(wrapped.getXFormParser(form, instance));
+        return configureEntityParsing(new XFormParser(form, instance));
     }
 
     @Override
     public XFormParser getXFormParser(Document form, Document instance) {
-        return configureEntityParsing(wrapped.getXFormParser(form, instance));
+        return configureEntityParsing(new XFormParser(form, instance));
     }
 
     private XFormParser configureEntityParsing(XFormParser xFormParser) {

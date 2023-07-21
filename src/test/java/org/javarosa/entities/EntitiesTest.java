@@ -34,7 +34,7 @@ import static org.javarosa.core.util.XFormsElement.title;
 
 public class EntitiesTest {
 
-    private final EntityXFormParserFactory entityXFormParserFactory = new EntityXFormParserFactory(new XFormParserFactory());
+    private final EntityXFormParserFactory entityXFormParserFactory = new EntityXFormParserFactory();
 
     @Before
     public void setup() {

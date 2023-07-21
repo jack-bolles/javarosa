@@ -47,11 +47,9 @@ import org.javarosa.core.model.util.restorable.Restorable;
 import org.javarosa.core.model.util.restorable.RestoreUtils;
 import org.javarosa.core.services.locale.Localizer;
 import org.javarosa.core.services.locale.TableLocaleSource;
-import org.javarosa.core.util.CacheTable;
 import org.javarosa.core.util.StopWatch;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.model.xform.XPathReference;
-import org.javarosa.xform.util.InterningKXmlParser;
 import org.javarosa.xform.util.XFormAnswerDataParser;
 import org.javarosa.xform.util.XFormSerializer;
 import org.javarosa.xform.util.XFormUtils;
@@ -281,8 +279,6 @@ public class XFormParser implements IXFormParserFunctions {
         itextKnownForms.add("audio");
     }
 
-    CacheTable<String> stringCache;
-
     public XFormParser(Reader reader) {
         _reader = reader;
     }
@@ -316,14 +312,7 @@ public class XFormParser implements IXFormParserFunctions {
                     Document doc = new Document();
 
                     try {
-                        KXmlParser parser;
-
-                        if (stringCache != null) {
-                            parser = new InterningKXmlParser(stringCache);
-                        } else {
-                            parser = new KXmlParser();
-                        }
-
+                        KXmlParser parser = new KXmlParser();
                         parser.setInput(_reader);
                         parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
                         doc.parse(parser);
@@ -347,7 +336,7 @@ public class XFormParser implements IXFormParserFunctions {
                     logger.info(ctParse.logLine("Reading XML and parsing with kXML2"));
 
                     StopWatch ctConsolidate = StopWatch.start();
-                    XmlTextConsolidator.consolidateText(stringCache, doc.getRootElement());
+                    XmlTextConsolidator.consolidateText(null, doc.getRootElement());
                     logger.info(ctConsolidate.logLine("Consolidating text"));
 
                     _xmldoc = doc;
@@ -421,14 +410,7 @@ public class XFormParser implements IXFormParserFunctions {
         Document doc = new Document();
 
         try {
-            KXmlParser parser;
-
-            if (null != null) {
-                parser = new InterningKXmlParser(null);
-            } else {
-                parser = new KXmlParser();
-            }
-
+            KXmlParser parser = new KXmlParser();
             parser.setInput(reader);
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
             doc.parse(parser);
@@ -2302,10 +2284,6 @@ public class XFormParser implements IXFormParserFunctions {
             elementString += "/>";
         }
         return elementString;
-    }
-
-    void setStringCache(CacheTable<String> stringCache) {
-        this.stringCache = stringCache;
     }
 
     private void triggerWarning(String message, String xmlLocation) {
