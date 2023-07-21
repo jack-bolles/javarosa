@@ -130,6 +130,7 @@ public class XFormParser implements IXFormParserFunctions {
 
     public static final String NAMESPACE_JAVAROSA = "http://openrosa.org/javarosa";
     public static final String NAMESPACE_ODK = "http://www.opendatakit.org/xforms";
+    private static final String NAMESPACE_HTML = "http://www.w3.org/1999/xhtml";
 
     //Constants to clean up code and prevent user error
     private static final String FORM_ATTR = "form";
@@ -144,15 +145,16 @@ public class XFormParser implements IXFormParserFunctions {
     private static final String REF_ATTR = "ref";
     public static final String EVENT_ATTR = "event";
 
-    private static final String NAMESPACE_HTML = "http://www.w3.org/1999/xhtml";
-
     private static final int CONTAINER_GROUP = 1;
     private static final int CONTAINER_REPEAT = 2;
 
     private static HashMap<String, IElementHandler> topLevelHandlers;
     private static HashMap<String, IElementHandler> groupLevelHandlers;
     private static final Map<String, Integer> typeMappings = TypeMappings.getMap();
-    private static List<SubmissionParser> submissionParsers;
+    private static List<SubmissionParser> submissionParsers = new ArrayList<>(1);
+    /** The string IDs of all instances that are referenced in a instance() function call in the primary instance **/
+    private static Set<String> referencedInstanceIds = new HashSet<>();
+    private static HashMap<String, IElementHandler>  actionHandlers = new HashMap<>();
 
     private Reader _reader;
     private Document _xmldoc;
@@ -174,40 +176,29 @@ public class XFormParser implements IXFormParserFunctions {
     private List<Element> instanceNodes;
     private List<String> instanceNodeIdStrs;
     private List<String> itextKnownForms;
-    private static HashMap<String, IElementHandler> actionHandlers;
 
     private final List<BindAttributeProcessor> bindAttributeProcessors = new ArrayList<>();
     private final List<FormDefProcessor> formDefProcessors = new ArrayList<>();
     private final List<ModelAttributeProcessor> modelAttributeProcessors = new ArrayList<>();
-
-    /**
-     * The string IDs of all instances that are referenced in a instance() function call in the primary instance
-     **/
-    private static Set<String> referencedInstanceIds;
 
     //incremented to provide unique question ID for each question
     private int serialQuestionID = 1;
 
     static {
         try {
-            staticInit();
+            initProcessingRules();
+            submissionParsers = new ArrayList<>(1);
+            referencedInstanceIds = new HashSet<>();
         } catch (Exception e) {
             die("xfparser-static-init", e);
         }
-    }
-
-    private static void staticInit() {
-        initProcessingRules();
-        submissionParsers = new ArrayList<>(1);
-        referencedInstanceIds = new HashSet<>();
     }
 
     private static void initProcessingRules() {
         groupLevelHandlers = new HashMap<String, IElementHandler>() {{
             put("input", (p, e, parent) -> {
                 // Attributes that are passed through to additionalAttributes but shouldn't lead to warnings.
-                // These are consistently used by clients but are expected in additionalAttributes for historical
-                // reasons.
+                // These are consistently used by clients but are expected in additionalAttributes for historical reasons.
                 List<String> passedThroughInputAtts = unmodifiableList(asList("rows", "query"));
                 p.parseControl((IFormElement) parent, e, CONTROL_INPUT, passedThroughInputAtts, passedThroughInputAtts);
             });
@@ -241,7 +232,6 @@ public class XFormParser implements IXFormParserFunctions {
     }
 
     private static void setUpActionHandlers() {
-        actionHandlers = new HashMap<>();
         registerActionHandler(SetValueAction.ELEMENT_NAME, SetValueAction.getHandler());
 
         // Register a stub odk:setgeopoint action handler. Clients that want to actually collect location need to
