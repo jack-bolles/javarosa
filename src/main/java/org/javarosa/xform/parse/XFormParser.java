@@ -331,7 +331,7 @@ public class XFormParser implements IXFormParserFunctions {
             //load in a custom xml instance, if applicable
             if (_instReader != null) {
                 try {
-                    loadXmlInstance(_f, _instReader);
+                    loadXmlInstance(_f, getXMLDocument(_instReader));
                 } catch (IOException e) {
                     throw new ParseException("IO Exception during parse! " + e.getMessage());
                 }
@@ -365,11 +365,11 @@ public class XFormParser implements IXFormParserFunctions {
         bindAttributeProcessors.add(bindAttributeProcessor);
     }
 
-    public void addFormDefProcessor(FormDefProcessor formDefProcessor) {
+    private void addFormDefProcessor(FormDefProcessor formDefProcessor) {
         formDefProcessors.add(formDefProcessor);
     }
 
-    public void addModelAttributeProcessor(ModelAttributeProcessor modelAttributeProcessor) {
+    private void addModelAttributeProcessor(ModelAttributeProcessor modelAttributeProcessor) {
         modelAttributeProcessors.add(modelAttributeProcessor);
     }
 
@@ -564,7 +564,7 @@ public class XFormParser implements IXFormParserFunctions {
 
     private void parseTitle(Element e) {
         List<String> usedAtts = new ArrayList<>(); //no attributes parsed in title.
-        String title = getXMLText(e, true);
+        String title = getXMLText(e);
         logger.info("Title: \"" + title + "\"");
         _f.setTitle(title);
         if (_f.getName() == null) {
@@ -648,8 +648,8 @@ public class XFormParser implements IXFormParserFunctions {
             } else { //invalid model content
                 if (type == Node.ELEMENT) {
                     throw new ParseException("Unrecognized top-level tag [" + childName + "] found within <model>", child);
-                } else if (type == Node.TEXT && !getXMLText(e, i, true).isEmpty()) {
-                    throw new ParseException("Unrecognized text content found within <model>: \"" + getXMLText(e, i, true) + "\"", child == null ? e : child);
+                } else if (type == Node.TEXT && !getXMLText(e, i).isEmpty()) {
+                    throw new ParseException("Unrecognized text content found within <model>: \"" + getXMLText(e, i) + "\"", child == null ? e : child);
                 }
             }
 
@@ -666,7 +666,7 @@ public class XFormParser implements IXFormParserFunctions {
         //Now parse out the submission/action blocks (we needed the binds to all be set before we could)
         for (Element child : delayedParseElements) {
             String name = child.getName();
-            if (name.equals("submission")) {
+            if ("submission".equals(name)) {
                 parseSubmission(child);
             } else {
                 // For now, anything that isn't a submission is an action
@@ -720,8 +720,6 @@ public class XFormParser implements IXFormParserFunctions {
     }
 
     public void parseSetValueAction(ActionController source, Element e) throws ParseException {
-        IDataReference datdaRef = dataReferenceFor(e);
-
         String valueExpression = e.getAttributeValue(null, "value");
         Action action = getAction(e, valueExpression);
 
@@ -909,14 +907,14 @@ public class XFormParser implements IXFormParserFunctions {
                 String name = childEl.getName();
 
                 // the child elements we are interested in are tags
-                if (name.equals("tag")) {
+                if ("tag".equals(name)) {
                     OSMTag tag = new OSMTag();
                     tags.add(tag);
                     // parse tag key
                     int attrCount = childEl.getAttributeCount();
                     for (int j = 0; j < attrCount; ++j) {
                         String attrName = childEl.getAttributeName(j);
-                        if (attrName.equals("key")) {
+                        if ("key".equals(attrName)) {
                             tag.key = childEl.getAttributeValue(j);
 
                             // parse tag children
@@ -928,12 +926,12 @@ public class XFormParser implements IXFormParserFunctions {
                                     String tagChildName = tagChildEl.getName();
 
                                     // a tag child might be a label
-                                    if (tagChildName.equals("label")) {
+                                    if ("label".equals(tagChildName)) {
                                         tag.label = tagChildEl.getText(0);
                                     }
 
                                     // a tag child might be an item
-                                    else if (tagChildName.equals("item")) {
+                                    else if ("item".equals(tagChildName)) {
                                         OSMTagItem item = new OSMTagItem();
                                         tag.items.add(item);
 
@@ -946,12 +944,12 @@ public class XFormParser implements IXFormParserFunctions {
                                                 String itemChildName = itemChildEl.getName();
 
                                                 // an item child might be a label
-                                                if (itemChildName.equals("label")) {
+                                                if ("label".equals(itemChildName)) {
                                                     item.label = itemChildEl.getText(0);
                                                 }
 
                                                 // an item child might be a value
-                                                else if (itemChildName.equals("value")) {
+                                                else if ("value".equals(itemChildName)) {
                                                     item.value = itemChildEl.getText(0);
                                                 }
                                             }
@@ -967,8 +965,8 @@ public class XFormParser implements IXFormParserFunctions {
         return tags;
     }
 
-    private QuestionDef parseControl(IFormElement parent, Element e, int controlType) throws ParseException {
-        return parseControl(parent, e, controlType, null, null);
+    private void parseControl(IFormElement parent, Element e, int controlType) throws ParseException {
+        parseControl(parent, e, controlType, null, null);
     }
 
     private QuestionDef parseControl(IFormElement parent, Element e, int controlType, List<String> additionalUsedAtts) throws ParseException {
@@ -1229,7 +1227,7 @@ public class XFormParser implements IXFormParserFunctions {
     private void parseHint(QuestionDef q, Element e) throws ParseException {
         List<String> usedAtts = new ArrayList<>();
         usedAtts.add(REF_ATTR);
-        String hint = getXMLText(e, true);
+        String hint = getXMLText(e);
         String hintInnerText = getLabel(e);
         String ref = e.getAttributeValue("", REF_ATTR);
 
@@ -1290,7 +1288,7 @@ public class XFormParser implements IXFormParserFunctions {
                     }
                 }
             } else if (VALUE.equals(childName)) {
-                value = getXMLText(child, true);
+                value = getXMLText(child);
 
                 //print attribute warning for child element
                 if (XFormUtils.showUnusedAttributeWarning(child, valueUA)) {
@@ -1651,7 +1649,7 @@ public class XFormParser implements IXFormParserFunctions {
 
         for (int i = 0; i < itext.getChildCount(); i++) {
             Element trans = itext.getElement(i);
-            if (trans == null || !trans.getName().equals("translation"))
+            if (trans == null || !"translation".equals(trans.getName()))
                 continue;
 
             parseTranslation(l, trans);
@@ -1679,7 +1677,7 @@ public class XFormParser implements IXFormParserFunctions {
         /////////////////////////
 
         String lang = trans.getAttributeValue("", "lang");
-        if (lang == null || lang.length() == 0) {
+        if (lang == null || lang.isEmpty()) {
             throw new ParseException("no language specified for <translation>", trans);
         }
         String isDefault = trans.getAttributeValue("", "default");
@@ -1699,7 +1697,7 @@ public class XFormParser implements IXFormParserFunctions {
 
         for (int j = 0; j < trans.getChildCount(); j++) {
             Element text = trans.getElement(j);
-            if (text == null || !text.getName().equals("text")) {
+            if (text == null || !"text".equals(text.getName())) {
                 continue;
             }
 
@@ -1732,7 +1730,7 @@ public class XFormParser implements IXFormParserFunctions {
         childUsedAtts.add(ID_ATTR);
         //////////
 
-        if (id == null || id.length() == 0) {
+        if (id == null || id.isEmpty()) {
             throw new ParseException("no id defined for <text>", text);
         }
 
@@ -1744,8 +1742,8 @@ public class XFormParser implements IXFormParserFunctions {
                 throw new ParseException("Unrecognized element [" + value.getName() + "] in Itext->translation->text");
             }
 
-            String form = value.getAttributeValue("", FORM_ATTR);
-            if (form != null && form.length() == 0) {
+            @Nullable String form = value.getAttributeValue("", FORM_ATTR);
+            if (form != null && form.isEmpty()) {
                 form = null;
             }
             String data = getLabel(value);
@@ -1856,7 +1854,7 @@ public class XFormParser implements IXFormParserFunctions {
     ));
 
     private void parseBind(Element element) throws ParseException {
-        final DataBinding binding = processStandardBindAttributes(usedAtts, passedThroughAtts, element, bindAttributeProcessors);
+        DataBinding binding = processStandardBindAttributes(usedAtts, passedThroughAtts, element, bindAttributeProcessors);
 
         // Warn of unused attributes of parent element
         if (XFormUtils.showUnusedAttributeWarning(element, usedAtts)) {
@@ -1893,6 +1891,7 @@ public class XFormParser implements IXFormParserFunctions {
         }
     }
 
+    //TOD0 - return new
     static HashMap<String, String> loadNamespaces(Element e, FormInstance tree) {
         HashMap<String, String> prefixes = new HashMap<>();
         for (int i = 0; i < e.getNamespaceCount(); ++i) {
@@ -1905,8 +1904,8 @@ public class XFormParser implements IXFormParserFunctions {
         return prefixes;
     }
 
-    public static TreeElement buildInstanceStructure(Element node, TreeElement parent, Map<String,
-        String> namespacePrefixesByUri, Integer multiplicityFromGroup) throws ParseException {
+    static TreeElement buildInstanceStructure(Element node, TreeElement parent, Map<String,
+            String> namespacePrefixesByUri, Integer multiplicityFromGroup) throws ParseException {
         return buildInstanceStructure(node, parent, null, node.getNamespace(), namespacePrefixesByUri, multiplicityFromGroup);
     }
 
@@ -1923,9 +1922,9 @@ public class XFormParser implements IXFormParserFunctions {
      *                               expensive search can be avoided.
      * @return a new TreeElement
      */
-    public static TreeElement buildInstanceStructure(Element node, TreeElement parent,
-                                                     String instanceName, String docnamespace, Map<String, String> namespacePrefixesByUri,
-                                                     Integer multiplicityFromGroup) throws ParseException {
+    static TreeElement buildInstanceStructure(Element node, TreeElement parent,
+                                              String instanceName, String docnamespace, Map<String, String> namespacePrefixesByUri,
+                                              Integer multiplicityFromGroup) throws ParseException {
         TreeElement element;
 
         //catch when text content is mixed with children
@@ -1938,7 +1937,7 @@ public class XFormParser implements IXFormParserFunctions {
                     hasElements = true;
                     break;
                 case Node.TEXT:
-                    if (node.getText(i).trim().length() > 0)
+                    if (!node.getText(i).trim().isEmpty())
                         hasText = true;
                     break;
             }
@@ -1948,8 +1947,8 @@ public class XFormParser implements IXFormParserFunctions {
         }
 
         //check for repeat templating
-        final String name = node.getName();
-        final int multiplicity;
+        String name = node.getName();
+        int multiplicity;
         if (isTemplate(node)) {
             multiplicity = TreeReference.INDEX_TEMPLATE;
             if (parent != null && parent.getChild(name, TreeReference.INDEX_TEMPLATE) != null) {
@@ -2002,10 +2001,10 @@ public class XFormParser implements IXFormParserFunctions {
             for (int i = 0; i < node.getAttributeCount(); i++) {
                 String attrNamespace = node.getAttributeNamespace(i);
                 String attrName = node.getAttributeName(i);
-                if (attrNamespace.equals(NAMESPACE_JAVAROSA) && attrName.equals("template")) {
+                if (attrNamespace.equals(NAMESPACE_JAVAROSA) && "template".equals(attrName)) {
                     continue;
                 }
-                if (attrNamespace.equals(NAMESPACE_JAVAROSA) && attrName.equals("recordset")) {
+                if (attrNamespace.equals(NAMESPACE_JAVAROSA) && "recordset".equals(attrName)) {
                     continue;
                 }
 
@@ -2033,11 +2032,11 @@ public class XFormParser implements IXFormParserFunctions {
         if (parent.getChildCount() == 0) {
             return false;
         }
-        final Element firstChild = parent.getElement(0);
+        Element firstChild = parent.getElement(0);
         if (firstChild == null || isTemplate(firstChild)) {
             return false;
         }
-        final String firstName = firstChild.getName();
+        String firstName = firstChild.getName();
         for (int i = 1; i < parent.getChildCount(); i++) {
             Element child = parent.getElement(i);
             if (child == null || isTemplate(child) || !child.getName().equals(firstName)) {
@@ -2084,8 +2083,8 @@ public class XFormParser implements IXFormParserFunctions {
                 }
             }
         } else {
-            String text = getXMLText(node, true);
-            if (text != null && text.trim().length() > 0) { //ignore text that is only whitespace
+            String text = getXMLText(node);
+            if (text != null && !text.trim().isEmpty()) { //ignore text that is only whitespace
                 //TODO: custom data types? modelPrototypes?
                 cur.setValue(XFormAnswerDataParser.getAnswerData(text, cur.getDataType(), ghettoGetQuestionDef(cur.getDataType(), f, cur.getRef())));
             }
@@ -2103,17 +2102,13 @@ public class XFormParser implements IXFormParserFunctions {
         }
     }
 
-    private void loadXmlInstance(FormDef f, Reader xmlReader) throws IOException, ParseException {
-        loadXmlInstance(f, getXMLDocument(xmlReader));
-    }
-
     /**
      * Loads a compatible xml instance into FormDef f
      * <p>
      * call before f.initialize()!
      */
     private static void loadXmlInstance(FormDef f, Document xmlInst) throws ParseException {
-        TreeElement savedRoot = XFormParser.restoreDataModel(xmlInst, null).getRoot();
+        TreeElement savedRoot = restoreDataModel(xmlInst, null).getRoot();
         TreeElement templateRoot = f.getMainInstance().getRoot().deepCopy(true);
 
         // weak check for matching forms
@@ -2144,7 +2139,7 @@ public class XFormParser implements IXFormParserFunctions {
      * @param specificHandler the handler for the specific action indicated by name, which
      *                        is passed to and invoked by the generic parseAction() handler
      */
-    public static void registerActionHandler(String name, final IElementHandler specificHandler) {
+    private static void registerActionHandler(String name, IElementHandler specificHandler) {
         actionHandlers.put(
             name,
                 (p, e, parent) -> p.parseAction(e, parent, specificHandler)
@@ -2158,8 +2153,8 @@ public class XFormParser implements IXFormParserFunctions {
         actionTargets.add(target);
     }
 
-    public static String getXMLText(Node n, boolean trim) {
-        return (n.getChildCount() == 0 ? null : getXMLText(n, 0, trim));
+    private static String getXMLText(Node n) {
+        return (n.getChildCount() == 0 ? null : getXMLText(n, 0));
     }
 
     /**
@@ -2167,7 +2162,7 @@ public class XFormParser implements IXFormParserFunctions {
      * needed because escape sequences are parsed into consecutive text nodes
      * e.g. "abc&amp;123" --> (abc)(&)(123)
      **/
-    public static String getXMLText(Node node, int i, boolean trim) {
+    private static String getXMLText(Node node, int i) {
         StringBuilder strBuff = null;
 
         String text = node.getText(i);
@@ -2183,18 +2178,18 @@ public class XFormParser implements IXFormParserFunctions {
         if (strBuff != null)
             text = strBuff.toString();
 
-        if (trim)
+        if (true)
             text = text.trim();
 
         return text;
     }
 
-    public static FormInstance restoreDataModel(InputStream input, Class restorableType) throws IOException, ParseException {
+    private static FormInstance restoreDataModel(InputStream input, Class restorableType) throws IOException, ParseException {
         Document doc = getXMLDocument(new InputStreamReader(input, StandardCharsets.UTF_8));
         return restoreDataModel(doc, restorableType);
     }
 
-    public static FormInstance restoreDataModel(Document doc, Class restorableType) throws ParseException {
+    private static FormInstance restoreDataModel(Document doc, Class restorableType) throws ParseException {
         Restorable r = (restorableType != null ? (Restorable) PrototypeFactory.getInstance(restorableType) : null);
 
         Element e = doc.getRootElement();
@@ -2220,7 +2215,7 @@ public class XFormParser implements IXFormParserFunctions {
         }
     }
 
-    public static String getVagueLocation(Element e) {
+    static String getVagueLocation(Element e) {
         String path = e.getName();
         Element walker = e;
         while (walker != null) {
