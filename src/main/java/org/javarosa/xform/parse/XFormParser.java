@@ -301,15 +301,6 @@ public class XFormParser implements IXFormParserFunctions {
         _instDoc = instance;
     }
 
-    public FormDef parse(String lastSavedSrc) throws ParseException {
-        return parse(null, lastSavedSrc);
-    }
-
-
-    public FormDef parse() throws ParseException {
-        return parse(null, null);
-    }
-
     /**
      * @param formXmlSrc   The path of the form definition.
      * @param lastSavedSrc The src of the last-saved instance of this form (for auto-filling). If null,
@@ -321,7 +312,45 @@ public class XFormParser implements IXFormParserFunctions {
 
             if (_xmldoc == null) {
                 try {
-                    _xmldoc = getXMLDocument(_reader, stringCache);
+                    final StopWatch ctParse = StopWatch.start();
+                    Document doc = new Document();
+
+                    try {
+                        KXmlParser parser;
+
+                        if (stringCache != null) {
+                            parser = new InterningKXmlParser(stringCache);
+                        } else {
+                            parser = new KXmlParser();
+                        }
+
+                        parser.setInput(_reader);
+                        parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
+                        doc.parse(parser);
+                    } catch (XmlPullParserException e) {
+                        String errorMsg = "XML Syntax Error at Line: " + e.getLineNumber() + ", Column: " + e.getColumnNumber() + "!";
+                        logger.error(errorMsg, e);
+                        throw new ParseException(errorMsg);
+                    } catch (IOException e) {
+                        //CTS - 12/09/2012 - Stop swallowing IO Exceptions
+                        throw e;
+                    } catch (Exception e) {
+                        logger.error("Unhandled Exception while Parsing XForm", e);
+                        throw new ParseException("Unhandled Exception while Parsing XForm");
+                    }
+
+                    try {
+                        _reader.close();
+                    } catch (IOException e) {
+                        logger.error("Error closing reader", e);
+                    }
+                    logger.info(ctParse.logLine("Reading XML and parsing with kXML2"));
+
+                    StopWatch ctConsolidate = StopWatch.start();
+                    XmlTextConsolidator.consolidateText(stringCache, doc.getRootElement());
+                    logger.info(ctConsolidate.logLine("Consolidating text"));
+
+                    _xmldoc = doc;
                 } catch (IOException e) {
                     throw new ParseException("IO Exception during parse! " + e.getMessage());
                 }
@@ -388,30 +417,14 @@ public class XFormParser implements IXFormParserFunctions {
     }
 
     public static Document getXMLDocument(Reader reader) throws IOException, ParseException {
-        return getXMLDocument(reader, null);
-    }
-
-    /**
-     * Uses xkml to parse the provided XML content, and then consolidates text elements.
-     *
-     * @param reader      the XML content provider
-     * @param stringCache an optional string cache, whose presence will cause the use of
-     *                    {@link InterningKXmlParser} rather than {@link KXmlParser}.
-     * @return the parsed document
-     * @throws IOException, ParseException
-     * @deprecated The InterningKXmlParser is not used.
-     */
-    @Deprecated
-    public static Document getXMLDocument(Reader reader, CacheTable<String> stringCache)
-            throws IOException, ParseException {
         final StopWatch ctParse = StopWatch.start();
         Document doc = new Document();
 
         try {
             KXmlParser parser;
 
-            if (stringCache != null) {
-                parser = new InterningKXmlParser(stringCache);
+            if (null != null) {
+                parser = new InterningKXmlParser(null);
             } else {
                 parser = new KXmlParser();
             }
@@ -439,26 +452,26 @@ public class XFormParser implements IXFormParserFunctions {
         logger.info(ctParse.logLine("Reading XML and parsing with kXML2"));
 
         StopWatch ctConsolidate = StopWatch.start();
-        XmlTextConsolidator.consolidateText(stringCache, doc.getRootElement());
+        XmlTextConsolidator.consolidateText(null, doc.getRootElement());
         logger.info(ctConsolidate.logLine("Consolidating text"));
 
         return doc;
     }
 
     private void parseDoc(String formXmlSrc, Map<String, String> namespacePrefixesByUri, String lastSavedSrc) throws ParseException {
-        final StopWatch codeTimer = StopWatch.start();
+        StopWatch codeTimer = StopWatch.start();
         _f = new FormDef();
         _f.setFormXmlPath(formXmlSrc);
 
         initState();
-        final String defaultNamespace = _xmldoc.getRootElement().getNamespaceUri(null);
+        String defaultNamespace = _xmldoc.getRootElement().getNamespaceUri(null);
 
         referencedInstanceIds.clear();
         parseElement(_xmldoc.getRootElement(), _f, topLevelHandlers);
 
         collapseRepeatGroups(_f);
 
-        final FormInstanceParser instanceParser = new FormInstanceParser(_f, defaultNamespace,
+        FormInstanceParser instanceParser = new FormInstanceParser(_f, defaultNamespace,
             bindings, repeats, itemsets, selectOnes, multipleItems, actionTargets);
 
         //parse the non-main instance nodes first
@@ -467,9 +480,9 @@ public class XFormParser implements IXFormParserFunctions {
         //if this assumption is wrong, well, then we're screwed.
         if (instanceNodes.size() > 1) {
             for (int instanceIndex = 1; instanceIndex < instanceNodes.size(); instanceIndex++) {
-                final Element instance = instanceNodes.get(instanceIndex);
-                final String instanceId = instanceNodeIdStrs.get(instanceIndex);
-                final String instanceSrc = parseInstanceSrc(instance, lastSavedSrc);
+                Element instance = instanceNodes.get(instanceIndex);
+                String instanceId = instanceNodeIdStrs.get(instanceIndex);
+                String instanceSrc = parseInstanceSrc(instance, lastSavedSrc);
 
                 // Only read in an secondary instance if its ID is used in the primary instance as an argument to an
                 // instance() call
@@ -514,7 +527,7 @@ public class XFormParser implements IXFormParserFunctions {
         Enumeration<DataInstance> e = _f.getNonMainInstances();
         while (e.hasMoreElements()) {
             DataInstance instance = e.nextElement();
-            final AbstractTreeElement treeElement = instance.getRoot();
+            AbstractTreeElement treeElement = instance.getRoot();
             if (treeElement instanceof TreeElement) {
                 ((TreeElement) treeElement).clearChildrenCaches();
             }

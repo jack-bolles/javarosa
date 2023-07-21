@@ -57,7 +57,7 @@ public class BindAttributeProcessorTest {
         RecordingBindAttributeProcessor processor = new RecordingBindAttributeProcessor(new HashSet<>(asList(new Pair<>("blah", "name"))));
         parser.addBindAttributeProcessor(processor);
 
-        parser.parse();
+        parser.parse(null, null);
         assertThat(processor.processCalled, equalTo(false));
     }
     @Test
@@ -88,7 +88,7 @@ public class BindAttributeProcessorTest {
         RecordingBindAttributeProcessor processor = new RecordingBindAttributeProcessor(new HashSet<>(asList(new Pair<>("blah", "name"))));
         parser.addBindAttributeProcessor(processor);
 
-        FormDef formDef = parser.parse();
+        FormDef formDef = parser.parse(null, null);
 
         TreeReference questionRef = XPathReference.getPathExpr("/data/name").getReference();
         TreeElement questionElement = formDef.getMainInstance().resolveReference(questionRef);

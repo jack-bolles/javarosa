@@ -65,7 +65,7 @@ public class XFormUtils {
 
 
     public static FormDef getFormRaw(InputStreamReader isr) throws ParseException {
-        return _factory.getXFormParser(isr).parse();
+        return _factory.getXFormParser(isr).parse(null, null);
     }
 
     /**
@@ -91,7 +91,7 @@ public class XFormUtils {
             isr = new InputStreamReader(is, StandardCharsets.UTF_8);
 
             XFormParser xFormParser = _factory.getXFormParser(isr);
-            return xFormParser.parse(lastSavedSrc);
+            return xFormParser.parse(null, lastSavedSrc);
         } finally {
             try {
                 if (isr != null) {

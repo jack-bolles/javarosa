@@ -291,7 +291,7 @@ public class Scenario {
         InputStreamReader formReader = new InputStreamReader(new ByteArrayInputStream(form.asXml().getBytes()));
 
         XFormParser parser = new XFormParser(formReader, instanceReader);
-        FormDef restoredFormDef = parser.parse();
+        FormDef restoredFormDef = parser.parse(null, null);
 
         return Scenario.from(restoredFormDef);
     }

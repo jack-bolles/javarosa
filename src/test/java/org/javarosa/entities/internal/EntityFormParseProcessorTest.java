@@ -54,7 +54,7 @@ public class EntityFormParseProcessorTest {
         EntityFormParseProcessor processor = new EntityFormParseProcessor();
         XFormParser parser = new XFormParser(new InputStreamReader(new ByteArrayInputStream(form.asXml().getBytes())));
         parser.addProcessor(processor);
-        parser.parse(null);
+        parser.parse(null, null);
     }
 
     @Test
@@ -87,7 +87,7 @@ public class EntityFormParseProcessorTest {
         parser.addProcessor(processor);
 
         try {
-            parser.parse(null);
+            parser.parse(null, null);
             fail("Expected exception!");
         } catch (Exception e) {
             assertThat(e, instanceOf(MissingModelAttributeException.class));
@@ -126,7 +126,7 @@ public class EntityFormParseProcessorTest {
         EntityFormParseProcessor processor = new EntityFormParseProcessor();
         XFormParser parser = new XFormParser(new InputStreamReader(new ByteArrayInputStream(form.asXml().getBytes())));
         parser.addProcessor(processor);
-        parser.parse(null);
+        parser.parse(null, null);
     }
 
     @Test
@@ -160,7 +160,7 @@ public class EntityFormParseProcessorTest {
         XFormParser parser = new XFormParser(new InputStreamReader(new ByteArrayInputStream(form.asXml().getBytes())));
         parser.addProcessor(processor);
 
-        FormDef formDef = parser.parse(null);
+        FormDef formDef = parser.parse(null, null);
         assertThat(formDef.getExtras().get(EntityFormExtra.class), notNullValue());
     }
 
@@ -194,7 +194,7 @@ public class EntityFormParseProcessorTest {
         XFormParser parser = new XFormParser(new InputStreamReader(new ByteArrayInputStream(form.asXml().getBytes())));
         parser.addProcessor(processor);
 
-        FormDef formDef = parser.parse(null);
+        FormDef formDef = parser.parse(null, null);
         assertThat(formDef.getExtras().get(EntityFormExtra.class).getSaveTos(), is(empty()));
     }
 }
