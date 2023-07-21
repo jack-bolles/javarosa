@@ -777,15 +777,11 @@ public class XFormParser implements IXFormParserFunctions {
     @Nullable
     private IDataReference dataReferenceFor(Element e) throws ParseException {
         IDataReference dataRef;
-        String bind = e.getAttributeValue(null, BIND_ATTR);
         String ref = e.getAttributeValue(null, REF_ATTR);
 
+        String bind = e.getAttributeValue(null, BIND_ATTR);
         if (bind != null) {
-            DataBinding binding = bindingsByID.get(bind);
-            if (binding == null) {
-                throw new ParseException("XForm Parse: invalid binding ID in submit'" + bind + "'", e);
-            }
-            dataRef = binding.getReference();
+            dataRef = dataReferenceFromBinding(bind, e);
         } else if (ref != null) {
             dataRef = FormDef.getAbsRef(new XPathReference(ref), TreeReference.rootRef());
         } else {
@@ -793,6 +789,14 @@ public class XFormParser implements IXFormParserFunctions {
         }
 
         return dataRef;
+    }
+
+    private IDataReference dataReferenceFromBinding(String bind, Element e) throws ParseException {
+        DataBinding binding = bindingsByID.get(bind);
+        if (binding == null) {
+            throw new ParseException("XForm Parse: invalid binding ID [" + bind + "]", e);
+        }
+        return binding.getReference();
     }
 
     private void parseSubmission(Element submission) throws ParseException {
@@ -810,18 +814,14 @@ public class XFormParser implements IXFormParserFunctions {
         }
 
         //These two might exist, but if neither do, we just assume you want the entire instance.
+        IDataReference dataRef;
         String ref = submission.getAttributeValue(null, REF_ATTR);
         String bind = submission.getAttributeValue(null, BIND_ATTR);
 
-        IDataReference dataRef;
         boolean refFromBind = false;
 
         if (bind != null) {
-            DataBinding binding = bindingsByID.get(bind);
-            if (binding == null) {
-                throw new ParseException("XForm Parse: invalid binding ID in submit'" + bind + "'", submission);
-            }
-            dataRef = binding.getReference();
+            dataRef = dataReferenceFromBinding(bind, submission);
             refFromBind = true;
         } else if (ref != null) {
             dataRef = new XPathReference(ref);
@@ -1027,11 +1027,7 @@ public class XFormParser implements IXFormParserFunctions {
         String bind = e.getAttributeValue(null, BIND_ATTR);
 
         if (bind != null) {
-            DataBinding binding = bindingsByID.get(bind);
-            if (binding == null) {
-                throw new ParseException("XForm Parse: invalid binding ID '" + bind + "'", e);
-            }
-            dataRef = binding.getReference();
+            dataRef = dataReferenceFromBinding(bind, e);
             refFromBind = true;
         } else if (ref != null) {
             dataRef = new XPathReference(ref);
@@ -1525,11 +1521,7 @@ public class XFormParser implements IXFormParserFunctions {
         group.setAppearanceAttr(e.getAttributeValue(null, APPEARANCE_ATTR));
 
         if (bind != null) {
-            DataBinding binding = bindingsByID.get(bind);
-            if (binding == null) {
-                throw new ParseException("XForm Parse: invalid binding ID [" + bind + "]", e);
-            }
-            dataRef = binding.getReference();
+            dataRef = dataReferenceFromBinding(bind, e);
             refFromBind = true;
         } else {
             if (group.getRepeat()) {
