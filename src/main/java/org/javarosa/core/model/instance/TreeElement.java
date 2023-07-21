@@ -25,11 +25,8 @@ import org.javarosa.core.model.data.MultipleItemsData;
 import org.javarosa.core.model.data.SelectOneData;
 import org.javarosa.core.model.data.UncastData;
 import org.javarosa.core.model.instance.utils.CompactInstanceWrapper;
-import org.javarosa.core.model.instance.utils.DefaultAnswerResolver;
-import org.javarosa.core.model.instance.utils.IAnswerResolver;
 import org.javarosa.core.model.instance.utils.ITreeVisitor;
 import org.javarosa.core.model.instance.utils.TreeElementChildrenList;
-import org.javarosa.core.model.util.restorable.RestoreUtils;
 import org.javarosa.core.util.DataUtil;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.ExtUtil;
@@ -38,7 +35,6 @@ import org.javarosa.core.util.externalizable.ExtWrapTagged;
 import org.javarosa.core.util.externalizable.Externalizable;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.model.xform.XPathReference;
-import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xpath.expr.XPathEqExpr;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.expr.XPathPathExpr;
@@ -51,6 +47,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import static org.javarosa.core.model.util.restorable.RestoreUtils.xfFact;
 
 /**
  * <p>An element of a FormInstance.</p>
@@ -727,39 +725,33 @@ import java.util.List;
     //  there's a lot of error checking we could do on the received instance, but it's
     //  easier to just ignore the parts that are incorrect
     public void populate(TreeElement incoming, FormDef f) {
-        if (this.isLeaf()) {
+        if (isLeaf()) {
             // check that incoming doesn't have children?
 
             IAnswerData value = incoming.getValue();
             if (value == null) {
-                this.setValue(null);
-            } else if (this.dataType == Constants.DATATYPE_TEXT
-                    || this.dataType == Constants.DATATYPE_NULL) {
-                this.setValue(value); // value is a StringData
+                setValue(null);
+            } else if (Constants.DATATYPE_TEXT == dataType
+                    || Constants.DATATYPE_NULL == dataType) {
+                setValue(value); // value is a StringData
             } else {
                 String textVal = (String) value.getValue();
-
-                // if there is no other IAnswerResolver, use the default one.
-                IAnswerResolver answerResolver = XFormParser.getAnswerResolver();
-                if (answerResolver == null) {
-                    answerResolver = new DefaultAnswerResolver();
-                }
-                this.setValue(answerResolver.resolveAnswer(textVal, this, f));
+                setValue(xfFact.parseData(textVal, getDataType(), getRef(), f));
             }
         } else {
-            List<String> names = new ArrayList<>(this.getNumChildren());
-            for (int i = 0; i < this.getNumChildren(); i++) {
-                TreeElement child = this.getChildAt(i);
+            List<String> names = new ArrayList<>(getNumChildren());
+            for (int i = 0; i < getNumChildren(); i++) {
+                TreeElement child = getChildAt(i);
                 if (!names.contains(child.getName())) {
                     names.add(child.getName());
                 }
             }
 
             // remove all default repetitions from skeleton data model (_preserving_ templates, though)
-            for (int i = 0; i < this.getNumChildren(); i++) {
+            for (int i = 0; i < getNumChildren(); i++) {
                 TreeElement child = this.getChildAt(i);
                 if (child.getMaskVar(MASK_REPEATABLE) && child.getMult() != TreeReference.INDEX_TEMPLATE) {
-                    this.removeChildAt(i);
+                    removeChildAt(i);
                     i--;
                 }
             }
@@ -842,8 +834,8 @@ import java.util.List;
                             !(value instanceof SelectOneData || value instanceof MultipleItemsData)) {
                     this.setValue(value);
                 } else {
-                    String textVal = RestoreUtils.xfFact.serializeData(value);
-                    IAnswerData typedVal = RestoreUtils.xfFact.parseData(textVal, this.dataType, this.getRef(), f);
+                    String textVal = xfFact.serializeData(value);
+                    IAnswerData typedVal = xfFact.parseData(textVal, this.dataType, this.getRef(), f);
                     this.setValue(typedVal);
                 }
             }

@@ -40,7 +40,6 @@ import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.instance.TreeReference;
-import org.javarosa.core.model.instance.utils.IAnswerResolver;
 import org.javarosa.core.model.osm.OSMTag;
 import org.javarosa.core.model.osm.OSMTagItem;
 import org.javarosa.core.model.util.restorable.Restorable;
@@ -189,11 +188,6 @@ public class XFormParser implements IXFormParserFunctions {
     //incremented to provide unique question ID for each question
     private int serialQuestionID = 1;
 
-    private static IAnswerResolver answerResolver;
-    public static IAnswerResolver getAnswerResolver() {
-        return answerResolver;
-    }
-
     static {
         try {
             staticInit();
@@ -205,7 +199,6 @@ public class XFormParser implements IXFormParserFunctions {
     private static void staticInit() {
         initProcessingRules();
         submissionParsers = new ArrayList<>(1);
-
         referencedInstanceIds = new HashSet<>();
     }
 
