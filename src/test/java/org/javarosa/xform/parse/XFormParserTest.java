@@ -21,7 +21,6 @@ import org.javarosa.core.test.Scenario;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.model.xform.XFormSerializingVisitor;
 import org.javarosa.model.xform.XPathReference;
-import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -413,7 +412,7 @@ public class XFormParserTest {
     }
 
     @Test
-    public void parseGroupWithRefAttrForm() throws IOException, XPathSyntaxException, ParseException {
+    public void parseGroupWithRefAttrForm() throws IOException, ParseException {
         // Given & When
         FormDef formDef = parse(r("group-with-ref-attr.xml"));
 
@@ -449,7 +448,7 @@ public class XFormParserTest {
     }
 
     @Test
-    public void testSetValueWithStrings() throws IOException, ParseException {
+    public void testSetValueWithStrings() throws ParseException {
         
         Scenario scenario = Scenario.init("default_test.xml");
         assertEquals("string-value", scenario.getAnswerNode("/data/string_val").getValue().getValue().toString());
