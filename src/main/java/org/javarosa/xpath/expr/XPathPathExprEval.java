@@ -47,15 +47,15 @@ public class XPathPathExprEval {
     }
 
     private DataInstance getDataInstance(EvaluationContext ec, TreeReference ref) {
-        final DataInstance dataInstance;
+        DataInstance dataInstance;
 
         if (refersToNonMainInstance(ref)) {
-            final DataInstance nonMainInstance = ec.getInstance(ref.getInstanceName());
+            DataInstance nonMainInstance = ec.getInstance(ref.getInstanceName());
             if (nonMainInstance != null) {
                 dataInstance = nonMainInstance;
             } else {
-                throw new XPathMissingInstanceException(ref.getInstanceName(),
-                    "Instance referenced by " + ref.toString(true) + " does not exist");
+                throw new XPathMissingInstanceException(
+                        "Instance referenced by " + ref.toString(true) + " does not exist");
             }
         } else {
             //TODO: We should really stop passing 'dataInstance' around and start just getting the right instance from ec at a more central level
@@ -69,8 +69,8 @@ public class XPathPathExprEval {
         // Regardless of the above, we want to ensure there is a definition
         if (dataInstance.getRoot() == null) {
             //This instance is _declared_, but doesn't actually have any data in it.
-            throw new XPathMissingInstanceException(ref.getInstanceName(),
-                "Instance referenced by " + ref.toString(true) + " has not been loaded");
+            throw new XPathMissingInstanceException(
+                    "Instance referenced by " + ref.toString(true) + " has not been loaded");
         }
 
         return dataInstance;

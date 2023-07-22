@@ -31,22 +31,22 @@ import java.util.List;
 
 public class XPathStep implements Externalizable {
     public static final int AXIS_CHILD = 0;
-    public static final int AXIS_DESCENDANT = 1;
-    public static final int AXIS_PARENT = 2;
-    public static final int AXIS_ANCESTOR = 3;
-    public static final int AXIS_FOLLOWING_SIBLING = 4;
-    public static final int AXIS_PRECEDING_SIBLING = 5;
-    public static final int AXIS_FOLLOWING = 6;
-    public static final int AXIS_PRECEDING = 7;
+    private static final int AXIS_DESCENDANT = 1;
+    static final int AXIS_PARENT = 2;
+    private static final int AXIS_ANCESTOR = 3;
+    private static final int AXIS_FOLLOWING_SIBLING = 4;
+    private static final int AXIS_PRECEDING_SIBLING = 5;
+    private static final int AXIS_FOLLOWING = 6;
+    private static final int AXIS_PRECEDING = 7;
     public static final int AXIS_ATTRIBUTE = 8;
-    public static final int AXIS_NAMESPACE = 9;
-    public static final int AXIS_SELF = 10;
-    public static final int AXIS_DESCENDANT_OR_SELF = 11;
-    public static final int AXIS_ANCESTOR_OR_SELF = 12;
+    private static final int AXIS_NAMESPACE = 9;
+    static final int AXIS_SELF = 10;
+    private static final int AXIS_DESCENDANT_OR_SELF = 11;
+    private static final int AXIS_ANCESTOR_OR_SELF = 12;
 
-    public static final int TEST_NAME = 0;
+    static final int TEST_NAME = 0;
     public static final int TEST_NAME_WILDCARD = 1;
-    public static final int TEST_NAMESPACE_WILDCARD = 2;
+    private static final int TEST_NAMESPACE_WILDCARD = 2;
     public static final int TEST_TYPE_NODE = 3;
     public static final int TEST_TYPE_TEXT = 4;
     public static final int TEST_TYPE_COMMENT = 5;
@@ -78,7 +78,7 @@ public class XPathStep implements Externalizable {
     public XPathStep (int axis, int test) {
         this.axis = axis;
         this.test = test;
-        this.predicates = new XPathExpression[0];
+        predicates = new XPathExpression[0];
     }
 
     public XPathStep (int axis, XPathQName name) {
@@ -149,7 +149,7 @@ public class XPathStep implements Externalizable {
         return sb.toString();
     }
 
-    public static String axisStr (int axis) {
+    static String axisStr(int axis) {
         switch (axis) {
         case AXIS_CHILD: return "child";
         case AXIS_DESCENDANT: return "descendant";
@@ -168,7 +168,7 @@ public class XPathStep implements Externalizable {
         }
     }
 
-    public String testStr () {
+    String testStr() {
         switch(test) {
         case TEST_NAME: return name.toString();
         case TEST_NAME_WILDCARD: return "*";
@@ -226,15 +226,18 @@ public class XPathStep implements Externalizable {
             XPathStep x = (XPathStep)o;
 
             //shortcuts for faster evaluation
-            if(axis != x.axis || (test != x.test && !((x.test == TEST_NAME && this.test == TEST_NAME_WILDCARD)||(this.test==TEST_NAME && x.test == TEST_NAME_WILDCARD))) || predicates.length != x.predicates.length) {
+            if(axis != x.axis
+                    || (test != x.test && !((x.test == TEST_NAME && test == TEST_NAME_WILDCARD)
+                    ||(test==TEST_NAME && x.test == TEST_NAME_WILDCARD)))
+                    || predicates.length != x.predicates.length) {
                 return false;
             }
 
             switch (test) {
-            case TEST_NAME: if(x.test != TEST_NAME_WILDCARD && !name.equals(x.name)) {return false;} break;
-            case TEST_NAMESPACE_WILDCARD: if(!namespace.equals(x.namespace)) {return false;} break;
-            case TEST_TYPE_PROCESSING_INSTRUCTION: if(!ExtUtil.equals(literal, x.literal)) {return false;} break;
-            default: break;
+                case TEST_NAME: if(x.test != TEST_NAME_WILDCARD && !name.equals(x.name)) {return false;} break;
+                case TEST_NAMESPACE_WILDCARD: if(!namespace.equals(x.namespace)) {return false;} break;
+                case TEST_TYPE_PROCESSING_INSTRUCTION: if(!ExtUtil.equals(literal, x.literal)) {return false;} break;
+                default: break;
             }
 
             return ExtUtil.arrayEquals(predicates, x.predicates);
@@ -244,7 +247,7 @@ public class XPathStep implements Externalizable {
     }
 
     public int hashCode() {
-        int code = this.axis ^ this.test ^ (this.name == null ? 0 : this.name.hashCode()) ^ (this.literal == null ? 0 : this.literal.hashCode()) ^ (this.namespace == null ? 0 : this.namespace.hashCode());
+        int code = axis ^ test ^ (name == null ? 0 : name.hashCode()) ^ (literal == null ? 0 : literal.hashCode()) ^ (namespace == null ? 0 : namespace.hashCode());
         for(XPathExpression xpe : predicates) {
             code ^= xpe.hashCode();
         }
@@ -278,7 +281,7 @@ public class XPathStep implements Externalizable {
         }
 
       List<XPathExpression> v = Arrays.asList(predicates);
-      
+
         ExtUtil.write(out, new ExtWrapListPoly(v));
     }
 }
