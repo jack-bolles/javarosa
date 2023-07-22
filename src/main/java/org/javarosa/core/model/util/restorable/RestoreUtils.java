@@ -19,21 +19,19 @@ package org.javarosa.core.model.util.restorable;
 import org.javarosa.core.model.Constants;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.data.IAnswerData;
-import org.javarosa.core.model.data.MultipleItemsData;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.services.storage.Persistable;
+import org.javarosa.model.xform.XPathReference;
 
 import java.util.Date;
 
 public class RestoreUtils {
     private static final String RECORD_ID_TAG = "rec-id";
 
-    public static IXFormyFactory xfFact = new IXFormyFactory();
-
-    public static TreeReference ref(String refStr) {
-        return xfFact.ref(refStr);
+    private static TreeReference ref(String refStr) {
+        return FormInstance.unpackReference(new XPathReference(refStr));
     }
 
     private static TreeReference topRef(FormInstance dm) {
@@ -44,28 +42,7 @@ public class RestoreUtils {
         return ref(childPath).parent(parentRef);
     }
 
-    public static int getDataType(Object o) {
-        int dataType = -1;
-        if (o instanceof String) {
-            dataType = Constants.DATATYPE_TEXT;
-        } else if (o instanceof Integer) {
-            dataType = Constants.DATATYPE_INTEGER;
-        } else if (o instanceof Long) {
-            dataType = Constants.DATATYPE_LONG;
-        } else if (o instanceof Float || o instanceof Double) {
-            dataType = Constants.DATATYPE_DECIMAL;
-        } else if (o instanceof Date) {
-            dataType = Constants.DATATYPE_DATE;
-        } else if (o instanceof Boolean) {
-            dataType = Constants.DATATYPE_BOOLEAN; //booleans are serialized as a literal 't'/'f'
-        } else if (o instanceof MultipleItemsData) {
-            dataType = Constants.DATATYPE_MULTIPLE_ITEMS;
-        }
-        return dataType;
-    }
-
-    //used for incoming data
-    public static int getDataType(Class c) {
+    private static int getDataType(Class c) {
         int dataType;
         if (c == String.class) {
             dataType = Constants.DATATYPE_TEXT;
@@ -105,10 +82,6 @@ public class RestoreUtils {
         }
     }
 
-    private static void applyDataType(FormInstance dm, String path, TreeReference parent, Class type) {
-        applyDataType(dm, path, parent, getDataType(type));
-    }
-
     private static void applyDataType(FormInstance dm, String path, TreeReference parent, int dataType) {
         TreeReference ref = childRef(path, parent);
         new EvaluationContext(dm)
@@ -121,11 +94,11 @@ public class RestoreUtils {
     public static void templateData(Restorable r, FormInstance dm, TreeReference parent) {
         if (parent == null) {
             parent = topRef(dm);
-            applyDataType(dm, "timestamp", parent, Date.class);
+            applyDataType(dm, "timestamp", parent, getDataType(Date.class));
         }
 
         if (r instanceof Persistable) {
-            applyDataType(dm, RECORD_ID_TAG, parent, Integer.class);
+            applyDataType(dm, RECORD_ID_TAG, parent, getDataType(Integer.class));
         }
 
         r.templateData(dm, parent);

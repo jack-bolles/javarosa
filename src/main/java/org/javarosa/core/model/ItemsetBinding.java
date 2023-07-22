@@ -1,18 +1,5 @@
 package org.javarosa.core.model;
 
-import static org.javarosa.core.model.FormDef.getAbsRef;
-import static org.javarosa.xform.parse.RandomizeHelper.shuffle;
-import static org.javarosa.xpath.expr.XPathFuncExpr.toNumeric;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.condition.IConditionExpr;
 import org.javarosa.core.model.data.IAnswerData;
@@ -22,7 +9,6 @@ import org.javarosa.core.model.data.helper.Selection;
 import org.javarosa.core.model.instance.DataInstance;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.instance.TreeReference;
-import org.javarosa.core.model.util.restorable.RestoreUtils;
 import org.javarosa.core.services.locale.Localizable;
 import org.javarosa.core.services.locale.Localizer;
 import org.javarosa.core.util.externalizable.DeserializationException;
@@ -38,6 +24,20 @@ import org.javarosa.xpath.XPathConditional;
 import org.javarosa.xpath.XPathException;
 import org.javarosa.xpath.expr.XPathNumericLiteral;
 import org.javarosa.xpath.expr.XPathPathExpr;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
+import static org.javarosa.core.model.FormDef.getAbsRef;
+import static org.javarosa.xform.parse.RandomizeHelper.shuffle;
+import static org.javarosa.xpath.expr.XPathFuncExpr.toNumeric;
 
 public class ItemsetBinding implements Externalizable, Localizable {
     // Temporarily cached filtered list (not serialized)
@@ -337,7 +337,7 @@ public class ItemsetBinding implements Externalizable, Localizable {
             relRef = valueRef.relativize(copyRef);
         }
 
-        return relRef != null ? RestoreUtils.xfFact.refToPathExpr(relRef) : null;
+        return relRef != null ? new XPathConditional(XPathPathExpr.fromRef(relRef)) : null;
     }
 
     public void initReferences(QuestionDef q) {

@@ -49,7 +49,6 @@ import org.javarosa.core.services.locale.TableLocaleSource;
 import org.javarosa.core.util.StopWatch;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.model.xform.XPathReference;
-import org.javarosa.xform.util.XFormAnswerDataParser;
 import org.javarosa.xform.util.XFormSerializer;
 import org.javarosa.xform.util.XFormUtils;
 import org.javarosa.xml.util.InvalidStructureException;
@@ -116,6 +115,7 @@ import static org.javarosa.xform.parse.Constants.SELECTONE;
 import static org.javarosa.xform.parse.RandomizeHelper.cleanNodesetDefinition;
 import static org.javarosa.xform.parse.RandomizeHelper.cleanSeedDefinition;
 import static org.javarosa.xform.parse.RangeParser.populateQuestionWithRangeAttributes;
+import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
 
 /* droos: i think we need to start storing the contents of the <bind>s in the formdef again */
 
@@ -864,7 +864,7 @@ public class XFormParser implements IXFormParserFunctions {
         }
     }
 
-    protected QuestionDef parseUpload(IFormElement parent, Element e, int controlUpload) throws ParseException {
+    private void parseUpload(IFormElement parent, Element e, int controlUpload) throws ParseException {
         // get media type value
         String mediaType = e.getAttributeValue(null, "mediatype");
         // parse the control
@@ -887,7 +887,6 @@ public class XFormParser implements IXFormParserFunctions {
             // Presumably, the appearance attribute would govern how this is handled.
             question.setControlType(CONTROL_FILE_CAPTURE);
         }
-        return question;
     }
 
     /**
@@ -1377,8 +1376,6 @@ public class XFormParser implements IXFormParserFunctions {
         itemset.nodesetExpr = new XPathConditional(path);
         itemset.contextRef = getFormElementRef(q);
         // this is not valid yet...
-        itemset.nodesetRef = null;
-        // itemset.nodesetRef = FormInstance.unpackReference(getAbsRef(new XPathReference(path.getReference(true)), itemset.contextRef));
         itemset.copyMode = false;
 
         for (int i = 0; i < e.getChildCount(); i++) {
@@ -2080,7 +2077,7 @@ public class XFormParser implements IXFormParserFunctions {
             String text = getXMLText(node);
             if (text != null && !text.trim().isEmpty()) { //ignore text that is only whitespace
                 //TODO: custom data types? modelPrototypes?
-                cur.setValue(XFormAnswerDataParser.getAnswerData(text, cur.getDataType(), ghettoGetQuestionDef(cur.getDataType(), f, cur.getRef())));
+                cur.setValue(getAnswerData(text, cur.getDataType(), ghettoGetQuestionDef(cur.getDataType(), f, cur.getRef())));
             }
         }
     }

@@ -20,9 +20,22 @@ import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.FormElementStateListener;
 import org.javarosa.core.model.condition.Constraint;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.model.data.BooleanData;
+import org.javarosa.core.model.data.DateData;
+import org.javarosa.core.model.data.DateTimeData;
+import org.javarosa.core.model.data.DecimalData;
+import org.javarosa.core.model.data.GeoPointData;
+import org.javarosa.core.model.data.GeoShapeData;
+import org.javarosa.core.model.data.GeoTraceData;
 import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.core.model.data.IntegerData;
+import org.javarosa.core.model.data.LongData;
+import org.javarosa.core.model.data.MultiPointerAnswerData;
 import org.javarosa.core.model.data.MultipleItemsData;
+import org.javarosa.core.model.data.PointerAnswerData;
 import org.javarosa.core.model.data.SelectOneData;
+import org.javarosa.core.model.data.StringData;
+import org.javarosa.core.model.data.TimeData;
 import org.javarosa.core.model.data.UncastData;
 import org.javarosa.core.model.instance.utils.CompactInstanceWrapper;
 import org.javarosa.core.model.instance.utils.ITreeVisitor;
@@ -35,6 +48,7 @@ import org.javarosa.core.util.externalizable.ExtWrapTagged;
 import org.javarosa.core.util.externalizable.Externalizable;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.model.xform.XPathReference;
+import org.javarosa.xform.util.XFormAnswerDataSerializer;
 import org.javarosa.xpath.expr.XPathEqExpr;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.expr.XPathPathExpr;
@@ -48,7 +62,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.javarosa.core.model.util.restorable.RestoreUtils.xfFact;
+import static org.javarosa.xform.parse.XFormParser.ghettoGetQuestionDef;
+import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
 
 /**
  * <p>An element of a FormInstance.</p>
@@ -736,7 +751,8 @@ import static org.javarosa.core.model.util.restorable.RestoreUtils.xfFact;
                 setValue(value); // value is a StringData
             } else {
                 String textVal = (String) value.getValue();
-                setValue(xfFact.parseData(textVal, getDataType(), getRef(), f));
+                int dataType = getDataType();
+                setValue(getAnswerData(textVal, dataType, ghettoGetQuestionDef(dataType, f, getRef())));
             }
         } else {
             List<String> names = new ArrayList<>(getNumChildren());
@@ -749,7 +765,7 @@ import static org.javarosa.core.model.util.restorable.RestoreUtils.xfFact;
 
             // remove all default repetitions from skeleton data model (_preserving_ templates, though)
             for (int i = 0; i < getNumChildren(); i++) {
-                TreeElement child = this.getChildAt(i);
+                TreeElement child = getChildAt(i);
                 if (child.getMaskVar(MASK_REPEATABLE) && child.getMult() != TreeReference.INDEX_TEMPLATE) {
                     removeChildAt(i);
                     i--;
@@ -834,8 +850,46 @@ import static org.javarosa.core.model.util.restorable.RestoreUtils.xfFact;
                             !(value instanceof SelectOneData || value instanceof MultipleItemsData)) {
                     this.setValue(value);
                 } else {
-                    String textVal = xfFact.serializeData(value);
-                    IAnswerData typedVal = xfFact.parseData(textVal, this.dataType, this.getRef(), f);
+                    //TODO - enums or tiny types
+                    Object result = null;
+                    XFormAnswerDataSerializer xFormAnswerDataSerializer = new XFormAnswerDataSerializer();
+                    if (value instanceof StringData) {
+                        result = xFormAnswerDataSerializer.serializeAnswerData((StringData) value);
+                    } else if (value instanceof MultipleItemsData) {
+                        result = xFormAnswerDataSerializer.serializeAnswerData((MultipleItemsData) value);
+                    } else if (value instanceof SelectOneData) {
+                        result = xFormAnswerDataSerializer.serializeAnswerData((SelectOneData) value);
+                    } else if (value instanceof IntegerData){
+                        result = xFormAnswerDataSerializer.serializeAnswerData((IntegerData) value);
+                    } else if (value instanceof LongData){
+                        result = xFormAnswerDataSerializer.serializeAnswerData((LongData) value);
+                    } else if (value instanceof DecimalData) {
+                        result = xFormAnswerDataSerializer.serializeAnswerData((DecimalData) value);
+                    } else if (value instanceof DateData) {
+                        result = xFormAnswerDataSerializer.serializeAnswerData((DateData) value);
+                    } else if (value instanceof TimeData) {
+                        result = xFormAnswerDataSerializer.serializeAnswerData((TimeData) value);
+                    } else if (value instanceof PointerAnswerData) {
+                        result = xFormAnswerDataSerializer.serializeAnswerData((PointerAnswerData) value);
+                    } else if (value instanceof MultiPointerAnswerData) {
+                        result = xFormAnswerDataSerializer.serializeAnswerData((MultiPointerAnswerData) value);
+                    } else if (value instanceof GeoShapeData) {
+                        result = xFormAnswerDataSerializer.serializeAnswerData((GeoShapeData) value);
+                    } else if (value instanceof GeoTraceData) {
+                        result = xFormAnswerDataSerializer.serializeAnswerData((GeoTraceData) value);
+                    } else if (value instanceof GeoPointData) {
+                        result = xFormAnswerDataSerializer.serializeAnswerData((GeoPointData) value);
+                    } else if (value instanceof DateTimeData) {
+                        result = xFormAnswerDataSerializer.serializeAnswerData((DateTimeData) value);
+                    } else if (value instanceof BooleanData) {
+                        result = xFormAnswerDataSerializer.serializeAnswerData((BooleanData) value);
+                    } else if (value instanceof UncastData) {
+                        result = xFormAnswerDataSerializer.serializeAnswerData((UncastData) value);
+                    }
+
+                    String textVal = (String) result;
+                    TreeReference ref = this.getRef();
+                    IAnswerData typedVal = getAnswerData(textVal, dataType, ghettoGetQuestionDef(dataType, f, ref));
                     this.setValue(typedVal);
                 }
             }

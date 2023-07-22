@@ -37,7 +37,6 @@ import org.javarosa.core.model.instance.InstanceInitializationFactory;
 import org.javarosa.core.model.instance.InvalidReferenceException;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.instance.TreeReference;
-import org.javarosa.core.model.util.restorable.RestoreUtils;
 import org.javarosa.core.model.utils.QuestionPreloader;
 import org.javarosa.core.services.locale.Localizable;
 import org.javarosa.core.services.locale.Localizer;
@@ -791,7 +790,7 @@ public class FormDef implements IFormElement, Localizable, Persistable, IMetaDat
                     try {
                         String value = (String) args[0];
                         String questionXpath = (String) args[1];
-                        TreeReference ref = RestoreUtils.xfFact.ref(questionXpath);
+                        TreeReference ref = FormInstance.unpackReference(new XPathReference(questionXpath));
                         ref = ref.anchor(ec.getContextRef());
 
                         QuestionDef q = findQuestionByRef(ref, f);
