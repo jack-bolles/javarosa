@@ -191,19 +191,6 @@ public class PropertyManager implements IPropertyManager {
     }
 
     /**
-     * Adds a set of rules to be used by this PropertyManager.
-     * Note that rules sets are inclusive, they add new possible
-     * values, never remove possible values.
-     *
-     * @param rules The set of rules to be added to the permitted list
-     */
-    public void addRules(IPropertyRules rules) {
-        if (rules != null) {
-            this.rulesList.add(rules);
-        }
-    }
-
-    /**
      * Checks that a property is permitted to exist by any of the existing rules sets
      *
      * @param propertyName The name of the property to be set

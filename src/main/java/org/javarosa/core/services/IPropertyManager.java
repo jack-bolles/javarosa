@@ -32,6 +32,6 @@ public interface IPropertyManager {
     void setProperty(String propertyName, String propertyValue);
     void setProperty(String propertyName, List<String> propertyValue);
     String getSingularProperty(String propertyName);
-    void addRules(IPropertyRules rules);
+
     List<IPropertyRules> getRules();
 }

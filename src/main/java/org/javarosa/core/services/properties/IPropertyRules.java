@@ -74,30 +74,7 @@ public interface IPropertyRules {
      * @return True if the property specified may not be modified by the user. false otherwise
      */
     boolean checkPropertyUserReadOnly(String propertyName);
-    
-    /**
-     * Returns a human readable string representing the description of a
-     * property.
-     *  
-     * @param propertyName The name of the property to be described
-     * @return A string that describes the meaning of the property name
-     */
-    String getHumanReadableDescription(String propertyName);
-    
-    /**
-     * Returns a human readable string representing the value of a specific
-     * property. This allows multiple choice answers to be stored in a concise
-     * format, while offering a standardized way to present those options to
-     * a user.
-     *  
-     * @param propertyName The name of the property whose value is to be 
-     * interpreted.
-     * @param value The value to be interpreted as a String
-     * @return A string representing the passed in value that can be parsed by 
-     * a user to determine what its significance is.
-     */
-    String getHumanReadableValue(String propertyName, String value);
-    
+
     /**
      * Handles any state changes that would be required upon a specific value
      * being changed.

@@ -70,7 +70,7 @@ class FormInstanceParser {
             "prefix", "delimiter"));
 
         String schema = e.getNamespace();
-        if (schema != null && schema.length() > 0 && !schema.equals(defaultNamespace)) {
+        if (schema != null && !schema.isEmpty() && !schema.equals(defaultNamespace)) {
             instanceModel.schema = schema;
         }
         instanceModel.formVersion = e.getAttributeValue(null, "version");
@@ -150,7 +150,7 @@ class FormInstanceParser {
                 i--;
             } else {
                 List<TreeReference> nodes = new EvaluationContext(instance).expandReference(ref, true);
-                if (nodes.size() == 0) {
+                if (nodes.isEmpty()) {
                     logger.warn("XForm Parse Warning: <bind> defined for a node that doesn't exist " +
                         "[{}]. The node's name was probably changed and the bind should be updated.", ref);
                 }
@@ -167,7 +167,7 @@ class FormInstanceParser {
         //check control/group/repeat bindings (bound nodes exist, question can't bind to '/')
         List<String> bindErrors = new ArrayList<>();
         verifyControlBindings(formDef, instance, bindErrors);
-        if (bindErrors.size() > 0) {
+        if (!bindErrors.isEmpty()) {
             StringBuilder errorMsg = new StringBuilder();
             for (String bindError : bindErrors) {
                 errorMsg.append(bindError).append("\n");
@@ -188,7 +188,7 @@ class FormInstanceParser {
         //check the target of actions which are manipulating real values
         for (TreeReference target : actionTargets) {
             List<TreeReference> nodes = new EvaluationContext(instance).expandReference(target, true);
-            if (nodes.size() == 0) {
+            if (nodes.isEmpty()) {
                 throw new ParseException("Invalid Action - Targets non-existent node: " + target.toString(true));
             }
         }
@@ -254,7 +254,7 @@ class FormInstanceParser {
                 logger.warn("XForm Parse Warning: Cannot bind control to '/'");
             } else {
                 List<TreeReference> nodes = new EvaluationContext(instance).expandReference(tref, true);
-                if (nodes.size() == 0) {
+                if (nodes.isEmpty()) {
                     logger.error("XForm Parse Error: {} bound to non-existent node: [{}]", type, tref);
                     errors.add(type + " bound to non-existent node: [" + tref + "]");
                 }
@@ -498,15 +498,15 @@ class FormInstanceParser {
         //it is VERY important that the missing template refs are listed in depth-first or breadth-first order... namely, that
         //every ref is listed after a ref that could be its parent. checkRepeatsForTemplate currently behaves this way
         for (TreeReference templRef : missingTemplates) {
-            final TreeReference firstMatch;
+            TreeReference firstMatch;
 
             //make template ref generic and choose first matching node
-            final TreeReference ref = templRef.clone();
+            TreeReference ref = templRef.clone();
             for (int j = 0; j < ref.size(); j++) {
                 ref.setMultiplicity(j, TreeReference.INDEX_UNBOUND);
             }
-            final List<TreeReference> nodes = new EvaluationContext(instance).expandReference(ref);
-            if (nodes.size() == 0) {
+            List<TreeReference> nodes = new EvaluationContext(instance).expandReference(ref);
+            if (nodes.isEmpty()) {
                 //binding error; not a single node matches the repeat binding; will be reported later
                 continue;
             } else {

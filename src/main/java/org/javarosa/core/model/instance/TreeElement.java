@@ -83,6 +83,7 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
  public class TreeElement implements Externalizable, AbstractTreeElement<TreeElement> {
     private String name; // can be null only for hidden root node
     protected int multiplicity; // see TreeReference for special values
+    @Nullable
     private AbstractTreeElement parent;
 
     private IAnswerData value;
@@ -94,9 +95,9 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
     /* model properties */
     protected int dataType = Constants.DATATYPE_NULL; //TODO
 
-    private Constraint constraint = null;
-    private String preloadHandler = null;
-    private String preloadParams = null;
+    private Constraint constraint;
+    private String preloadHandler;
+    private String preloadParams;
     private List<TreeElement> bindAttributes = new ArrayList<>(0);
 
     // TODO see what’s required here from commented-out code removed 2017-04-23
@@ -118,7 +119,7 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
      * The name of the instance that this node is in. The value of the id attribute in the case of a secondary
      * instance or null for the primary instance.
      */
-    private String instanceName = null;
+    private String instanceName;
 
     /**
      * TreeElement with null name and 0 multiplicity? (a "hidden root" node?)
@@ -134,7 +135,7 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
     public TreeElement(String name, int multiplicity) {
         this.name = name;
         this.multiplicity = multiplicity;
-        this.parent = null;
+        parent = null;
         attributes = new ArrayList<>(0);
     }
 
@@ -149,15 +150,11 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
      */
     public static TreeElement constructAttributeElement(String namespace, String name, String value) {
         TreeElement element = new TreeElement(name);
-        element.setIsAttribute(true);
+        element.setMaskVar(MASK_ATTRIBUTE, true);
         element.namespace = (namespace == null) ? "" : namespace;
         element.multiplicity = TreeReference.INDEX_ATTRIBUTE;
         element.value = new UncastData(value);
         return element;
-    }
-
-    private void setIsAttribute(boolean attribute) {
-        setMaskVar(MASK_ATTRIBUTE, attribute);
     }
 
     /**
@@ -197,7 +194,7 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
         if ( value == null ) return;
 
         // create an attribute...
-        TreeElement attr = TreeElement.constructAttributeElement(namespace, name, value);
+        TreeElement attr = constructAttributeElement(namespace, name, value);
         attr.setParent(parent);
 
         attrs.add(attr);
@@ -329,16 +326,16 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
         return getNumChildrenWithName(name);
     }
 
-    public TreeElement shallowCopy() {
+    private TreeElement shallowCopy() {
         TreeElement newNode = new TreeElement(name, multiplicity);
         newNode.parent = parent;
-        newNode.setRepeatable(this.isRepeatable());
+        newNode.setRepeatable(isRepeatable());
         newNode.dataType = dataType;
 
         // Just set the flag? side effects?
-        newNode.setMaskVar(MASK_RELEVANT, this.getMaskVar(MASK_RELEVANT));
-        newNode.setMaskVar(MASK_REQUIRED, this.getMaskVar(MASK_REQUIRED));
-        newNode.setMaskVar(MASK_ENABLED, this.getMaskVar(MASK_ENABLED));
+        newNode.setMaskVar(MASK_RELEVANT, getMaskVar(MASK_RELEVANT));
+        newNode.setMaskVar(MASK_REQUIRED, getMaskVar(MASK_REQUIRED));
+        newNode.setMaskVar(MASK_ENABLED, getMaskVar(MASK_ENABLED));
 
         newNode.constraint = constraint;
         newNode.preloadHandler = preloadHandler;
@@ -454,37 +451,6 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
         return bindAttributes;
     }
 
-    /**
-     * <p>Retrieves the TreeElement representing an arbitrary bind attribute
-     * for this element at the provided namespace and name, or null if none exists.</p>
-     *
-     * <p>If 'null' is provided for the namespace, it will match the first
-     * attribute with the matching name.</p>
-     *
-     * @return TreeElement
-     */
-    public TreeElement getBindAttribute(String namespace, String name) {
-        return getAttribute(bindAttributes, namespace, name);
-    }
-
-   /**
-    * Returns the value of the given bind attribute from the given namespace.
-    * <p>
-    * Example:
-    * <ul>
-    * <li>Given a binding {@code <bind assertion="blah"/>}, calling {@code getBindAttributeValue(null, "assertion")} will return {@code "blah"}
-    * <li>Given a binding {@code <bind odk:assertion="blah"/>}, calling {@code getBindAttributeValue("odk", "assertion")} will return {@code "blah"}
-    * </ul>
-    * </p>
-    *
-    * @param namespace the namespace of the attribute. It can be null
-    * @param name      the name of the attribute
-    */
-    public String getBindAttributeValue(String namespace, String name) {
-        TreeElement element = getBindAttribute(namespace,name);
-        return element == null ? null: getAttributeValue(element);
-    }
-
     public void setBindAttribute(String namespace, String name, String value) {
         setAttribute(this, bindAttributes, namespace, name, value);
     }
@@ -493,7 +459,7 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
         setEnabled(enabled, false);
     }
 
-    public void setEnabled(boolean enabled, boolean inherited) {
+    private void setEnabled(boolean enabled, boolean inherited) {
         boolean oldEnabled = isEnabled();
         if (inherited) {
             setMaskVar(MASK_ENABLED_INH, enabled);
@@ -511,15 +477,6 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
 
     /* ==== OBSERVER PATTERN ==== */
 
-    public void registerStateObserver(FormElementStateListener qsl) {
-        if (observers == null)
-            observers = new ArrayList<>(1);
-
-        if (!observers.contains(qsl)) {
-            observers.add(qsl);
-        }
-    }
-
     public void unregisterStateObserver(FormElementStateListener qsl) {
         if (observers != null) {
             observers.remove(qsl);
@@ -528,7 +485,7 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
         }
     }
 
-    public void alertStateObservers(int changeFlags) {
+    private void alertStateObservers(int changeFlags) {
         if (observers != null) {
          for (FormElementStateListener observer : observers) {
             observer.formElementStateChanged(this, changeFlags);
@@ -773,48 +730,48 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
             }
 
             // make sure ordering is preserved (needed for compliance with xsd schema)
-            if (this.getNumChildren() != names.size()) {
+            if (getNumChildren() != names.size()) {
                 throw new RuntimeException("sanity check failed");
             }
 
-            for (int i = 0; i < this.getNumChildren(); i++) {
-                TreeElement child = this.getChildAt(i);
+            for (int i = 0; i < getNumChildren(); i++) {
+                TreeElement child = getChildAt(i);
                 String expectedName = names.get(i);
 
                 if (!child.getName().equals(expectedName)) {
                     TreeElement child2 = null;
                     int j;
 
-                    for (j = i + 1; j < this.getNumChildren(); j++) {
-                        child2 = this.getChildAt(j);
+                    for (j = i + 1; j < getNumChildren(); j++) {
+                        child2 = getChildAt(j);
                         if (child2.getName().equals(expectedName)) {
                             break;
                         }
                     }
-                    if (j == this.getNumChildren()) {
+                    if (j == getNumChildren()) {
                         throw new RuntimeException("sanity check failed");
                     }
 
-                    this.removeChildAt(j);
-                    this.children.add(i, child2);
+                    removeChildAt(j);
+                    children.add(i, child2);
                 }
             }
 
-            for (int i = 0; i < this.getNumChildren(); i++) {
-                TreeElement child = this.getChildAt(i);
+            for (int i = 0; i < getNumChildren(); i++) {
+                TreeElement child = getChildAt(i);
                 List<TreeElement> newChildren = incoming.getChildrenWithName(child.getName());
 
                 if (child.getMaskVar(MASK_REPEATABLE)) {
                     for (int k = 0; k < newChildren.size(); k++) {
                         TreeElement newChild = child.deepCopy(true);
                         newChild.setMult(k);
-                        this.children.add(i + k + 1, newChild);
+                        children.add(i + k + 1, newChild);
                         newChild.populate(newChildren.get(k), f);
                     }
                     i += newChildren.size();
                 } else {
 
-                    if (newChildren.size() == 0) {
+                    if (newChildren.isEmpty()) {
                         child.setRelevant(false);
                     } else {
                         child.populate(newChildren.get(0), f);
@@ -828,7 +785,7 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
             String ns = incoming.getAttributeNamespace(i);
             String value = incoming.getAttributeValue(i);
 
-            this.setAttribute(ns, name, value);
+            setAttribute(ns, name, value);
         }
     }
 
@@ -836,19 +793,19 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
     //is used for overall structure (including data types), and the itemset source node is used for
     //raw data. note that data may be coerced across types, which may result in type conversion error
     //very similar in structure to populate()
-    public void populateTemplate(TreeElement incoming, FormDef f) {
-        if (this.isLeaf()) {
+    void populateTemplate(TreeElement incoming, FormDef f) {
+        if (isLeaf()) {
             IAnswerData value = incoming.getValue();
             if (value == null) {
-                this.setValue(null);
+                setValue(null);
             } else {
-                Class classType = CompactInstanceWrapper.classForDataType(this.dataType);
+                Class classType = CompactInstanceWrapper.classForDataType(dataType);
 
                 if (classType == null) {
                     throw new RuntimeException("data type [" + value.getClass().getName() + "] not supported inside itemset");
                 } else if (classType.isAssignableFrom(value.getClass()) &&
                             !(value instanceof SelectOneData || value instanceof MultipleItemsData)) {
-                    this.setValue(value);
+                    setValue(value);
                 } else {
                     //TODO - enums or tiny types
                     Object result = null;
@@ -888,14 +845,14 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
                     }
 
                     String textVal = (String) result;
-                    TreeReference ref = this.getRef();
+                    TreeReference ref = getRef();
                     IAnswerData typedVal = getAnswerData(textVal, dataType, ghettoGetQuestionDef(dataType, f, ref));
-                    this.setValue(typedVal);
+                    setValue(typedVal);
                 }
             }
         } else {
-            for (int i = 0; i < this.getNumChildren(); i++) {
-                TreeElement child = this.getChildAt(i);
+            for (int i = 0; i < getNumChildren(); i++) {
+                TreeElement child = getChildAt(i);
                 List<TreeElement> newChildren = incoming.getChildrenWithName(child.getName());
 
                 if (child.getMaskVar(MASK_REPEATABLE)) {
@@ -903,7 +860,7 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
                         TreeElement template = f.getMainInstance().getTemplate(child.getRef());
                         TreeElement newChild = template.deepCopy(false);
                         newChild.setMult(k);
-                        this.children.add(i + k + 1, newChild);
+                        children.add(i + k + 1, newChild);
                         newChild.populateTemplate(newChildren.get(k), f);
                     }
                     i += newChildren.size();
@@ -917,7 +874,7 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
     //TODO: This is probably silly because this object is likely already
     //not thread safe in any way. Also, we should be wrapping all of the
     //setters.
-    final TreeReference[] refCache = new TreeReference[1];
+    private final TreeReference[] refCache = new TreeReference[1];
 
     private void expireReferenceCache() {
         synchronized(refCache) {
@@ -930,13 +887,13 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
         //TODO: Expire cache somehow;
         synchronized(refCache) {
             if(refCache[0] == null) {
-                refCache[0] = TreeElement.BuildRef(this);
+                refCache[0] = BuildRef(this);
             }
             return refCache[0];
         }
     }
 
-    public static TreeReference BuildRef(AbstractTreeElement elem) {
+    static TreeReference BuildRef(AbstractTreeElement elem) {
         TreeReference ref = TreeReference.selfRef();
 
         while (elem != null) {
@@ -964,10 +921,10 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
 
     @Override
     public int getDepth () {
-        return TreeElement.CalculateDepth(this);
+        return CalculateDepth(this);
     }
 
-    public static int CalculateDepth(AbstractTreeElement elem) {
+    private static int CalculateDepth(AbstractTreeElement elem) {
         int depth = 0;
 
         while (elem.getName() != null) {
@@ -1043,7 +1000,7 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
             name = this.name;
         }
 
-        return name + " - Children: " + this.children.size();
+        return name + " - Children: " + children.size();
     }
 
     @Override
@@ -1069,8 +1026,8 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
     }
 
     public void clearChildrenCaches() {
-        for (int i = 0; i < this.getNumChildren(); i++) {
-            TreeElement child = this.getChildAt(i);
+        for (int i = 0; i < getNumChildren(); i++) {
+            TreeElement child = getChildAt(i);
             child.clearCaches();
             child.clearChildrenCaches();
         }
@@ -1114,9 +1071,9 @@ import static org.javarosa.xform.util.XFormAnswerDataParser.getAnswerData;
                     //don't want the overhead if our predicate is too complex anyway
                     if(indices == null) {
                         indices = new HashMap<>();
-                        kids = this.getChildrenWithName(name);
+                        kids = getChildrenWithName(name);
 
-                        if(kids.size() == 0 ) { return null; }
+                        if(kids.isEmpty()) { return null; }
 
                         //Anything that we're going to use across elements should be on all of them
                         TreeElement kid = kids.get(0);

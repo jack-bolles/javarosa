@@ -17,7 +17,6 @@
 package org.javarosa.core.model.instance.test;
 
 
-import org.javarosa.core.model.IDataReference;
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.data.IntegerData;
 import org.javarosa.core.model.data.StringData;
@@ -25,12 +24,8 @@ import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.instance.utils.ITreeVisitor;
-import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -41,50 +36,16 @@ import static org.junit.Assert.fail;
 public class QuestionDataElementTests {
     private final String stringElementName = "String Data Element";
 
-    StringData stringData;
-    IntegerData integerData;
-    IDataReference stringReference;
-    IDataReference integerReference;
-    TreeElement stringElement;
-    TreeElement intElement;
+    private StringData stringData;
+    private IntegerData integerData;
+    private TreeElement stringElement;
+    private TreeElement intElement;
 
     @Before
     public void setUp() throws Exception {
 
         stringData = new StringData("Answer Value");
         integerData = new IntegerData(4);
-
-        stringReference = new IDataReference() {
-            String reference = "stringValue";
-
-            public Object getReference() {
-                return reference;
-            }
-
-            public void setReference(Object reference) {
-                this.reference = (String)reference;
-            }
-
-            public void readExternal(DataInputStream in, PrototypeFactory pf) {}
-
-            public void writeExternal(DataOutputStream out) {}
-        };
-
-        integerReference = new IDataReference() {
-            Integer intReference = 15;
-
-            public Object getReference() {
-                return intReference;
-            }
-
-            public void setReference(Object reference) {
-                this.intReference = (Integer)reference;
-            }
-
-            public void readExternal(DataInputStream in, PrototypeFactory pf) {}
-
-            public void writeExternal(DataOutputStream out) {}
-        };
 
         intElement  = new TreeElement("intElement");
         intElement.setValue(integerData);
@@ -135,7 +96,7 @@ public class QuestionDataElementTests {
     private static class MutableBoolean {
         private boolean bool;
 
-        public MutableBoolean(boolean bool) {
+        MutableBoolean(boolean bool) {
             this.bool = bool;
         }
 
@@ -146,8 +107,8 @@ public class QuestionDataElementTests {
 
     @Test
     public void testAcceptsVisitor() {
-        final MutableBoolean visitorAccepted = new MutableBoolean(false);
-        final MutableBoolean dispatchedWrong = new MutableBoolean(false);
+        MutableBoolean visitorAccepted = new MutableBoolean(false);
+        MutableBoolean dispatchedWrong = new MutableBoolean(false);
         ITreeVisitor sampleVisitor = new ITreeVisitor() {
 
             public void visit(FormInstance tree) {

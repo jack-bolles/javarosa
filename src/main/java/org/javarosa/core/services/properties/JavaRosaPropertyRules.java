@@ -131,37 +131,6 @@ public class JavaRosaPropertyRules implements IPropertyRules {
 
     /*
      * (non-Javadoc)
-     * @see org.javarosa.core.services.properties.IPropertyRules#getHumanReadableDescription(java.lang.String)
-     */
-    public String getHumanReadableDescription(String propertyName) {
-        if(DEVICE_ID_PROPERTY.equals(propertyName)) {
-            return "Unique Device ID";
-        } else if(LOGS_ENABLED.equals(propertyName)) {
-            return "Device Logging";
-        } else if(CURRENT_LOCALE.equals(propertyName)) {
-            return Localization.get("settings.language");
-        } else if(OPENROSA_API_LEVEL.equals(propertyName)) {
-            return "OpenRosa API Level";
-        }
-        return propertyName;
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.javarosa.core.services.properties.IPropertyRules#getHumanReadableValue(java.lang.String, java.lang.String)
-     */
-    public String getHumanReadableValue(String propertyName, String value) {
-        if(CURRENT_LOCALE.equals(propertyName)) {
-            String name = Localization.getGlobalLocalizerAdvanced().getText(value);
-            if(name != null) {
-                return name;
-            }
-        }
-        return value;
-    }
-
-    /*
-     * (non-Javadoc)
      * @see org.javarosa.core.services.properties.IPropertyRules#handlePropertyChanges(java.lang.String)
      */
     public void handlePropertyChanges(String propertyName) {
