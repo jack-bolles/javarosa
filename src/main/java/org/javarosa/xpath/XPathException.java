@@ -22,9 +22,7 @@ public class XPathException extends RuntimeException {
 
     //A reference to the "Source" of this message helpful
     //for tracking down where the invalid xpath was declared
-    String sourceRef;
-
-    public XPathException () { super(); }
+    private String sourceRef;
 
     public XPathException (String message) {
         super("XPath evaluation: " + message);
@@ -35,7 +33,7 @@ public class XPathException extends RuntimeException {
     }
 
     public void setSource(String source) {
-        this.sourceRef = source;
+        sourceRef = source;
     }
 
     public String getSource() {

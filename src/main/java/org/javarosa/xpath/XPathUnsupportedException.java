@@ -17,16 +17,7 @@
 package org.javarosa.xpath;
 
 public class XPathUnsupportedException extends XPathException {
-    /**
-     *
-     */
-    private static final long serialVersionUID = 6610985705012351835L;
-
-    public XPathUnsupportedException () {
-
-    }
-
-    public XPathUnsupportedException (String s) {
+    public XPathUnsupportedException(String s) {
         super("unsupported construct [" + s + "]");
     }
 }

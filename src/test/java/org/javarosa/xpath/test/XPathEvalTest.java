@@ -48,6 +48,7 @@ import static java.lang.Boolean.TRUE;
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Double.NaN;
 import static java.lang.Double.POSITIVE_INFINITY;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
@@ -66,13 +67,13 @@ import static org.javarosa.xpath.test.IFunctionHandlerHelpers.HANDLER_STATEFUL_R
 import static org.javarosa.xpath.test.IFunctionHandlerHelpers.HANDLER_STATEFUL_WRITE;
 import static org.javarosa.xpath.test.IFunctionHandlerHelpers.HANDLER_TESTFUNC;
 import static org.junit.Assert.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 @RunWith(Parameterized.class)
 public class XPathEvalTest {
-    public static final TimeZone GMT = TimeZone.getTimeZone("GMT");
-    @Parameterized.Parameter()
+    private static final TimeZone GMT = TimeZone.getTimeZone("GMT");
+
+    @Parameterized.Parameter
     public Locale locale;
 
     private EvaluationContext ec;
@@ -98,13 +99,13 @@ public class XPathEvalTest {
 
     @Test
     public void unsupported_functions() {
-        testEval("/union | /expr", new XPathUnsupportedException());
-        testEval("/descendant::blah", new XPathUnsupportedException());
-        testEval("/cant//support", new XPathUnsupportedException());
-        testEval("/text()", new XPathUnsupportedException());
-        testEval("/namespace:*", new XPathUnsupportedException());
-        testEval("(filter-expr)[5]", buildInstance(), null, new XPathUnsupportedException());
-        testEval("(filter-expr)/data", buildInstance(), null, new XPathUnsupportedException());
+        testEval("/union | /expr", new XPathUnsupportedException("TEST"));
+        testEval("/descendant::blah", new XPathUnsupportedException("TEST"));
+        testEval("/cant//support", new XPathUnsupportedException("TEST"));
+        testEval("/text()", new XPathUnsupportedException("TEST"));
+        testEval("/namespace:*", new XPathUnsupportedException("TEST"));
+        testEval("(filter-expr)[5]", buildInstance(), null, new XPathUnsupportedException("TEST"));
+        testEval("(filter-expr)/data", buildInstance(), null, new XPathUnsupportedException("TEST"));
     }
 
     @Test
@@ -149,7 +150,7 @@ public class XPathEvalTest {
         testEval("boolean('false')", TRUE);
         testEval("boolean(date('2000-01-01'))", TRUE);
         testEval("boolean(convertible())", null, ec, TRUE);
-        testEval("boolean(inconvertible())", null, ec, new XPathTypeMismatchException());
+        testEval("boolean(inconvertible())", null, ec, new XPathTypeMismatchException("TEST"));
         testEval("number(true())", 1.0);
         testEval("number(false())", 0.0);
         testEval("number('100')", 100.0);
@@ -181,7 +182,7 @@ public class XPathEvalTest {
         testEval("number(date('2008-09-05'))", 14127.0);
         testEval("number(date('1941-12-07'))", -10252.0);
         testEval("number(convertible())", null, ec, 5.0);
-        testEval("number(inconvertible())", null, ec, new XPathTypeMismatchException());
+        testEval("number(inconvertible())", null, ec, new XPathTypeMismatchException("TEST"));
         testEval("string(true())", "true");
         testEval("string(false())", "false");
         testEval("string(number('NaN'))", "NaN");
@@ -201,7 +202,7 @@ public class XPathEvalTest {
         testEval("string('a string')", "a string");
         testEval("string(date('1989-11-09'))", "1989-11-09");
         testEval("string(convertible())", null, ec, "hi");
-        testEval("string(inconvertible())", null, ec, new XPathTypeMismatchException());
+        testEval("string(inconvertible())", null, ec, new XPathTypeMismatchException("TEST"));
         testEval("int('100')", 100.0);
         testEval("int('100.001')", 100.0);
         testEval("int('.1001')", 0.0);
@@ -274,9 +275,9 @@ public class XPathEvalTest {
         testEval("normalize-space('\na\nb\n')", "a b");
         testEval("normalize-space('\nab')", "ab");
         testEval("normalize-space(' \ta\n\t  b \n\t c   \n')", "a b c");
-        testEval("normalize-space()", new XPathException());
+        testEval("normalize-space()", new XPathException("TEST"));
         testEval("string-length('cocotero')", 8.0);
-        testEval("string-length()", new XPathException());
+        testEval("string-length()", new XPathException("TEST"));
     }
 
     @Test
@@ -305,8 +306,8 @@ public class XPathEvalTest {
             testEval("date('2000-01-01')", DateUtils.getDate(2000, 1, 1));
             testEval("date('1945-04-26')", DateUtils.getDate(1945, 4, 26));
             testEval("date('1996-02-29')", DateUtils.getDate(1996, 2, 29));
-            testEval("date('1983-09-31')", new XPathTypeMismatchException());
-            testEval("date('not a date')", new XPathTypeMismatchException());
+            testEval("date('1983-09-31')", new XPathTypeMismatchException("TEST"));
+            testEval("date('not a date')", new XPathTypeMismatchException("TEST"));
             testEval("date(0)", DateUtils.getDate(1970, 1, 1));
             testEval("date(6.5)", DateUtils.getDate(1970, 1, 7));
             testEval("date(1)", DateUtils.getDate(1970, 1, 2));
@@ -314,14 +315,14 @@ public class XPathEvalTest {
             testEval("date(14127)", DateUtils.getDate(2008, 9, 5));
             testEval("date(-10252)", DateUtils.getDate(1941, 12, 7));
             testEval("date(date('1989-11-09'))", DateUtils.getDate(1989, 11, 9));
-            testEval("date(true())", new XPathTypeMismatchException());
-            testEval("date(convertible())", null, ec, new XPathTypeMismatchException());
+            testEval("date(true())", new XPathTypeMismatchException("TEST"));
+            testEval("date(convertible())", null, ec, new XPathTypeMismatchException("TEST"));
             testEval("format-date('2018-01-02T10:20:30.123', \"%Y-%m-%e %H:%M:%S\")", "2018-01-2 10:20:30");
             testEval("date-time('2000-01-01T10:20:30.000')", DateUtils.parseDateTime("2000-01-01T10:20:30.000"));
             testEval("decimal-date-time('2000-01-01T10:20:30.000')", 10957.430902777778);
             testEval("decimal-time('2000-01-01T10:20:30.000+03:00')", .30590277777810115);
-            testEval("decimal-date-time('-1000')", new XPathTypeMismatchException());
-            testEval("decimal-date-time('-01-2019')", new XPathTypeMismatchException());
+            testEval("decimal-date-time('-1000')", new XPathTypeMismatchException("TEST"));
+            testEval("decimal-date-time('-01-2019')", new XPathTypeMismatchException("TEST"));
         });
     }
     @Test
@@ -535,10 +536,10 @@ public class XPathEvalTest {
     public void functions_and_custom_function_handlers() {
         ec.addFunctionHandler(HANDLER_TESTFUNC);
         ec.addFunctionHandler(HANDLER_ADD);
-        testEval("true(5)", new XPathUnhandledException());
-        testEval("number()", new XPathUnhandledException());
-        testEval("string('too', 'many', 'args')", new XPathUnhandledException());
-        testEval("not-a-function()", new XPathUnhandledException());
+        testEval("true(5)", new XPathUnhandledException("TEST"));
+        testEval("number()", new XPathUnhandledException("TEST"));
+        testEval("string('too', 'many', 'args')", new XPathUnhandledException("TEST"));
+        testEval("not-a-function()", new XPathUnhandledException("TEST"));
         testEval("testfunc()", null, ec, TRUE);
         testEval("add(3, 5)", null, ec, 8.0);
         testEval("add('17', '-14')", null, ec, 3.0);
@@ -549,7 +550,7 @@ public class XPathEvalTest {
         ec.addFunctionHandler(HANDLER_INCONVERTIBLE);
         ec.addFunctionHandler(HANDLER_PROTO);
         ec.addFunctionHandler(HANDLER_NULL_PROTO);
-        testEval("proto()", null, ec, new XPathTypeMismatchException());
+        testEval("proto()", null, ec, new XPathTypeMismatchException("TEST"));
         testEval("proto(5, 5)", null, ec, "[Double:5.0,Double:5.0]");
         testEval("proto(6)", null, ec, "[Double:6.0]");
         testEval("proto('asdf')", null, ec, "[Double:NaN]");
@@ -557,8 +558,8 @@ public class XPathEvalTest {
         //(double, double) prototype takes precedence and strings are convertible to doubles
         testEval("proto(1.1, 'asdf', true())", null, ec, "[Double:1.1,String:asdf,Boolean:true]");
         testEval("proto(false(), false(), false())", null, ec, "[Double:0.0,String:false,Boolean:false]");
-        testEval("proto(1.1, 'asdf', inconvertible())", null, ec, new XPathTypeMismatchException());
-        testEval("proto(1.1, 'asdf', true(), 16)", null, ec, new XPathTypeMismatchException());
+        testEval("proto(1.1, 'asdf', inconvertible())", null, ec, new XPathTypeMismatchException("TEST"));
+        testEval("proto(1.1, 'asdf', true(), 16)", null, ec, new XPathTypeMismatchException("TEST"));
         testEval("null-proto()", null, ec, new NullPointerException());
     }
 

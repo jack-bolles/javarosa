@@ -19,10 +19,6 @@ package org.javarosa.xpath;
 public class XPathTypeMismatchException extends XPathException {
     private static final long serialVersionUID = -1953231431177255217L;
 
-    public XPathTypeMismatchException() {
-        super();
-    }
-
     public XPathTypeMismatchException(String message) {
         super("type mismatch \n" + message);
     }
