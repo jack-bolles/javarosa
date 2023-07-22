@@ -17,8 +17,6 @@
 package org.javarosa.xform.util;
 
 import org.javarosa.core.model.FormDef;
-import org.javarosa.core.util.externalizable.DeserializationException;
-import org.javarosa.core.util.externalizable.ExtUtil;
 import org.javarosa.xform.parse.IXFormParserFactory;
 import org.javarosa.xform.parse.ParseException;
 import org.javarosa.xform.parse.XFormParser;
@@ -27,8 +25,6 @@ import org.kxml2.kdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.DataInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -40,38 +36,21 @@ import java.util.List;
  * Static Utility methods pertaining to XForms.
  *
  * @author Clayton Sims
- *
  */
 public class XFormUtils {
     private static final Logger logger = LoggerFactory.getLogger(XFormUtils.class);
 
     private static IXFormParserFactory _factory = new XFormParserFactory();
 
-    public static IXFormParserFactory setXFormParserFactory(IXFormParserFactory factory) {
-        IXFormParserFactory oldFactory = _factory;
+    public static void setXFormParserFactory(IXFormParserFactory factory) {
         _factory = factory;
-        return oldFactory;
     }
 
-    public static FormDef getFormFromResource (String resource) throws ParseException {
-        InputStream is = System.class.getResourceAsStream(resource);
-        if (is == null) {
-            logger.error("Can't find form resource {}. Is it in the JAR?", resource);
-            return null;
-        }
-
-        return getFormFromInputStream(is);
-    }
-
-
-    public static FormDef getFormRaw(InputStreamReader isr) throws ParseException {
-        return _factory.getXFormParser(isr).parse(null, null);
-    }
 
     /**
      * Parses a form with an external secondary instance, and returns a FormDef.
      *
-     * @param is                         the InputStream containing the form
+     * @param is the InputStream containing the form
      * @return a FormDef for the parsed form
      * @throws ParseException if the form can’t be parsed
      */
@@ -80,10 +59,9 @@ public class XFormUtils {
     }
 
     /**
-     * @see #getFormFromInputStream(InputStream)
-     *
      * @param lastSavedSrc The src of the last-saved instance of this form (for auto-filling). If null,
      *                     no data will be loaded and the instance will be blank.
+     * @see #getFormFromInputStream(InputStream)
      */
     public static FormDef getFormFromInputStream(InputStream is, String lastSavedSrc) throws ParseException {
         InputStreamReader isr = null;
@@ -103,76 +81,19 @@ public class XFormUtils {
         }
     }
 
-    /**
-     *
-     * @param formXmlSrc The path to the XForm that is to be parsed
-     * @param lastSavedSrc The src of the last-saved instance of this form (for auto-filling). If null,
-     *                     no data will be loaded and the instance will be blank.
-     */
-    public static FormDef getFormFromFormXml(String formXmlSrc, String lastSavedSrc) throws ParseException {
-        InputStreamReader isr = null;
-        try {
-            isr = new FileReader(formXmlSrc);
-            XFormParser xFormParser = _factory.getXFormParser(isr);
-            return xFormParser.parse(formXmlSrc, lastSavedSrc);
-        } catch (IOException e) {
-            throw new ParseException("IO Exception during parse! " + e.getMessage());
-        } finally {
-            try {
-                if (isr != null) {
-                    isr.close();
-                }
-            } catch (IOException e) {
-                logger.error("IO Exception while closing stream.", e);
-            }
-        }
-    }
-
-    public static FormDef getFormFromSerializedResource(String resource) {
-        FormDef returnForm = null;
-        InputStream is = System.class.getResourceAsStream(resource);
-        DataInputStream dis = null;
-        try {
-            if (is != null) {
-                dis = new DataInputStream(is);
-                returnForm = (FormDef) ExtUtil.read(dis, FormDef.class);
-            } else {
-                logger.info("ResourceStream NULL");
-            }
-        } catch (IOException | DeserializationException e) {
-            logger.error("Error", e);
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    logger.error("Error", e);
-                }
-            }
-            if (dis != null) {
-                try {
-                    dis.close();
-                } catch (IOException e) {
-                    logger.error("Error", e);
-                }
-            }
-        }
-        return returnForm;
-    }
-
 
     /////Parser Attribute warning stuff
 
-    public static List<String> getAttributeList(Element e){
+    private static List<String> getAttributeList(Element e) {
         List<String> atts = new ArrayList<>(e.getAttributeCount());
-        for(int i=0;i<e.getAttributeCount();i++){
+        for (int i = 0; i < e.getAttributeCount(); i++) {
             atts.add(e.getAttributeName(i));
         }
 
         return atts;
     }
 
-    public static List<String> getUnusedAttributes(Element e,List<String> usedAtts){
+    private static List<String> getUnusedAttributes(Element e, List<String> usedAtts) {
         List<String> unusedAtts = getAttributeList(e);
         for (String usedAtt : usedAtts) {
             unusedAtts.remove(usedAtt);
@@ -185,9 +106,9 @@ public class XFormUtils {
         String warning = "Warning: ";
         List<String> unusedAttributes = getUnusedAttributes(e, usedAtts);
         warning += unusedAttributes.size() + " Unrecognized attributes found in Element [" + e.getName() +
-        "] and will be ignored: ";
+                "] and will be ignored: ";
         warning += "[";
-        for (int i=0; i < unusedAttributes.size(); i++) {
+        for (int i = 0; i < unusedAttributes.size(); i++) {
             warning += unusedAttributes.get(i);
             if (i != unusedAttributes.size() - 1) warning += ",";
         }
@@ -196,12 +117,8 @@ public class XFormUtils {
         return warning;
     }
 
-    public static boolean showUnusedAttributeWarning(Element e, List<String> usedAtts){
-        return getUnusedAttributes(e,usedAtts).size()>0;
-    }
-
-    public static boolean isOutput(Element e){
-        return e.getName().equalsIgnoreCase("output");
+    public static boolean showUnusedAttributeWarning(Element e, List<String> usedAtts) {
+        return !getUnusedAttributes(e, usedAtts).isEmpty();
     }
 
 }

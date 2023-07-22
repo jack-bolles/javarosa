@@ -1170,7 +1170,7 @@ public class XFormParser implements IXFormParserFunctions {
             Element kid = (Element) e.getChild(i);
 
             //is just text
-            if (kidType == Node.ELEMENT && XFormUtils.isOutput(kid)) {
+            if (kidType == Node.ELEMENT && "output".equalsIgnoreCase(kid.getName())) {
                 String s = "${" + parseOutput(kid) + "}";
                 e.removeChild(i);
                 e.addChild(i, Node.TEXT, s);
