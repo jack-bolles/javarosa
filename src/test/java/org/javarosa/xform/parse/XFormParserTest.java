@@ -278,7 +278,7 @@ public class XFormParserTest {
 
         // restore (deserialize) the form instance
         byte[] formInstanceBytes = readAllBytes(formInstanceXmlFileName);
-        FormInstance formInstance = XFormParser.restoreDataModel(formInstanceBytes, null);
+        FormInstance formInstance = XFormParser.restoreDataModel(formInstanceBytes);
 
         // Then
         audit = findDepthFirst(formInstance.getRoot(), AUDIT_NODE);

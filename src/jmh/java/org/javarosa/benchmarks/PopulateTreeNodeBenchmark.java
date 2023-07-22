@@ -1,11 +1,5 @@
 package org.javarosa.benchmarks;
 
-import static org.javarosa.benchmarks.BenchmarkUtils.dryRun;
-import static org.javarosa.benchmarks.BenchmarkUtils.prepareAssets;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.test.FormParseInit;
@@ -17,6 +11,13 @@ import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import static org.javarosa.benchmarks.BenchmarkUtils.dryRun;
+import static org.javarosa.benchmarks.BenchmarkUtils.prepareAssets;
 
 public class PopulateTreeNodeBenchmark {
     public static void main(String[] args) {
@@ -42,7 +43,7 @@ public class PopulateTreeNodeBenchmark {
             FormParseInit formParseInit = new FormParseInit(formFile);
             FormEntryController formEntryController = formParseInit.getFormEntryController();
             byte[] formInstanceAsBytes = Files.readAllBytes(submissionFile);
-            savedRoot = XFormParser.restoreDataModel(formInstanceAsBytes, null).getRoot();
+            savedRoot = XFormParser.restoreDataModel(formInstanceAsBytes).getRoot();
             formDef = formEntryController.getModel().getForm();
             dataRootNode = formDef.getInstance().getRoot().deepCopy(true);
         }
