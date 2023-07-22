@@ -34,13 +34,6 @@ public class XPathNodeset {
     private List<TreeReference> nodes;
     protected DataInstance instance;
     protected EvaluationContext ec;
-    // these are purely for improved error messages
-    private String pathEvaluated;
-    private String originalPath;
-
-    private XPathNodeset() {
-
-    }
 
     /**
      * for lazy evaluation
@@ -52,7 +45,6 @@ public class XPathNodeset {
         this.instance = instance;
         this.ec = ec;
     }
-
 
     /**
      * Construct an XPath nodeset.
@@ -66,16 +58,6 @@ public class XPathNodeset {
         this.nodes = nodes;
         this.instance = instance;
         this.ec = ec;
-    }
-
-    public static XPathNodeset ConstructInvalidPathNodeset(String pathEvaluated, String originalPath) {
-        XPathNodeset nodeset = new XPathNodeset();
-        nodeset.nodes = null;
-        nodeset.instance = null;
-        nodeset.ec = null;
-        nodeset.pathEvaluated = pathEvaluated;
-        nodeset.originalPath = originalPath;
-        return nodeset;
     }
 
     /**
@@ -105,12 +87,12 @@ public class XPathNodeset {
         );
     }
 
-    protected void setReferences(List<TreeReference> nodes) {
+    void setReferences(List<TreeReference> nodes) {
         this.nodes = nodes;
     }
 
     public List<TreeReference> getReferences() {
-        return this.nodes;
+        return nodes;
     }
 
 
@@ -192,17 +174,13 @@ public class XPathNodeset {
         return XPathPathExpr.getRefValue(instance, ec, getRefAt(i));
     }
 
-    protected XPathTypeMismatchException getInvalidNodesetException() {
-        if(!pathEvaluated.equals(originalPath)) {
-            throw new XPathTypeMismatchException("The path " + originalPath + " refers to the location " + pathEvaluated + " which was not found");
-        } else {
-            throw new XPathTypeMismatchException("Location " + pathEvaluated + " was not found");
-        }
+    private XPathTypeMismatchException getInvalidNodesetException() {
+        throw new XPathTypeMismatchException("Location " + null + " was not found");
     }
 
     protected String nodeContents () {
         if(nodes == null) {
-            return "Invalid Path: " + pathEvaluated;
+            return "'Invalid Path'";
         }
 
         StringBuilder sb = new StringBuilder();
