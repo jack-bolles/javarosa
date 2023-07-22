@@ -36,7 +36,7 @@ public interface IPropertyRules {
      * @param propertyName The name of the property that is being identified
      * @return A List containing all of the values that this property may be set to
      */
-    public List<String> allowableValues(String propertyName);
+    List<String> allowableValues(String propertyName);
     
     /**
      * Identifies whether the given value is an acceptable for a property.
@@ -46,14 +46,14 @@ public interface IPropertyRules {
      * 
      * @return True if the property specified may be set to potentialValue, False otherwise
      */
-    public boolean checkValueAllowed(String propertyName, String potentialValue);
+    boolean checkValueAllowed(String propertyName, String potentialValue);
     
     /**
      * Identifies what properties are acceptable for this rules set
      * 
      * @return A List containing all of the properties that may be set
      */
-    public List<String> allowableProperties();
+    List<String> allowableProperties();
     
     /**
      * Identifies whether the given property is usable
@@ -62,7 +62,7 @@ public interface IPropertyRules {
      * 
      * @return True if the property specified may used. False otherwise
      */
-    public boolean checkPropertyAllowed(String propertyName);
+    boolean checkPropertyAllowed(String propertyName);
     
     /**
      * Identifies whether the property should be revealed to users. Note
@@ -73,7 +73,7 @@ public interface IPropertyRules {
      * 
      * @return True if the property specified may not be modified by the user. false otherwise
      */
-    public boolean checkPropertyUserReadOnly(String propertyName);
+    boolean checkPropertyUserReadOnly(String propertyName);
     
     /**
      * Returns a human readable string representing the description of a
@@ -82,7 +82,7 @@ public interface IPropertyRules {
      * @param propertyName The name of the property to be described
      * @return A string that describes the meaning of the property name
      */
-    public String getHumanReadableDescription(String propertyName);
+    String getHumanReadableDescription(String propertyName);
     
     /**
      * Returns a human readable string representing the value of a specific
@@ -96,7 +96,7 @@ public interface IPropertyRules {
      * @return A string representing the passed in value that can be parsed by 
      * a user to determine what its significance is.
      */
-    public String getHumanReadableValue(String propertyName, String value);
+    String getHumanReadableValue(String propertyName, String value);
     
     /**
      * Handles any state changes that would be required upon a specific value
@@ -104,5 +104,5 @@ public interface IPropertyRules {
      * 
      * @param propertyName The name of the property that has changed
      */
-    public void handlePropertyChanges(String propertyName);
+    void handlePropertyChanges(String propertyName);
 }

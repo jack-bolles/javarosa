@@ -36,5 +36,5 @@ public interface IInstanceProcessor {
      *
      * @param tree The data model that will be handled.
      */
-    public void processInstance(FormInstance tree);
+    void processInstance(FormInstance tree);
 }

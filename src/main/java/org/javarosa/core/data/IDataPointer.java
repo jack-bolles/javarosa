@@ -16,10 +16,10 @@
 
 package org.javarosa.core.data;
 
+import org.javarosa.core.util.externalizable.Externalizable;
+
 import java.io.IOException;
 import java.io.InputStream;
-
-import org.javarosa.core.util.externalizable.Externalizable;
 
 /**
  * A data pointer representing a pointer to a (usually) larger object in memory.
@@ -34,29 +34,29 @@ public interface IDataPointer extends Externalizable {
      * @return
      */
 
-    public String getDisplayText();
+    String getDisplayText();
 
     /**
      * Get the data from the underlying storage.  This should maybe be a stream instead of a byte[]
      * @return
      * @throws IOException
      */
-    public byte[] getData() throws IOException;
+    byte[] getData() throws IOException;
 
     /**
      * Get the data from the underlying storage.
      * @return
      * @throws IOException
      */
-    public InputStream getDataStream() throws IOException;
+    InputStream getDataStream() throws IOException;
 
     /**
      * Deletes the underlying data from storage.
      */
-    public boolean deleteData();
+    boolean deleteData();
 
     /**
      * @return Gets the length of the data payload
      */
-    public long getLength();
+    long getLength();
 }

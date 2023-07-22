@@ -16,13 +16,13 @@
 
 package org.javarosa.core.model.utils;
 
-import java.io.IOException;
-
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.IAnswerDataSerializer;
 import org.javarosa.core.model.IDataReference;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.services.transport.payload.IDataPayload;
+
+import java.io.IOException;
 
 /**
  * An IInstanceSerializingVisitor serializes a DataModel
@@ -38,11 +38,11 @@ public interface IInstanceSerializingVisitor extends IInstanceVisitor {
     byte[] serializeInstance(FormInstance model, IDataReference ref) throws IOException;
     byte[] serializeInstance(FormInstance model) throws IOException;
 
-    public IDataPayload createSerializedPayload    (FormInstance model, IDataReference ref) throws IOException;
-    public IDataPayload createSerializedPayload    (FormInstance model) throws IOException;
+    IDataPayload createSerializedPayload    (FormInstance model, IDataReference ref) throws IOException;
+    IDataPayload createSerializedPayload    (FormInstance model) throws IOException;
 
     void setAnswerDataSerializer(IAnswerDataSerializer ads);
 
-    public IInstanceSerializingVisitor newInstance();
+    IInstanceSerializingVisitor newInstance();
 
 }

@@ -29,5 +29,5 @@ public interface Localizable {
      * @param locale
      * @param localizer
      */
-    public void localeChanged(String locale, Localizer localizer);
+    void localeChanged(String locale, Localizer localizer);
 }

@@ -34,12 +34,12 @@ public interface Externalizable {
      * @param in
      * @throws IOException
      */
-    public void readExternal(DataInputStream in, PrototypeFactory pf) throws IOException, DeserializationException;
+    void readExternal(DataInputStream in, PrototypeFactory pf) throws IOException, DeserializationException;
 
     /**
      * @param out
      * @throws IOException
      */
-    public void writeExternal(DataOutputStream out) throws IOException;
+    void writeExternal(DataOutputStream out) throws IOException;
 
 }
