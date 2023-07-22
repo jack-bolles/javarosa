@@ -61,13 +61,13 @@ public class XPathPathExpr extends XPathExpression {
 
     public static final int INIT_CONTEXT_ROOT = 0;
     public static final int INIT_CONTEXT_RELATIVE = 1;
-    public static final int INIT_CONTEXT_EXPR = 2;
+    static final int INIT_CONTEXT_EXPR = 2;
 
     public int init_context;
     public XPathStep[] steps;
 
     //for INIT_CONTEXT_EXPR only
-    public XPathFilterExpr filtExpr;
+    XPathFilterExpr filtExpr;
 
     public XPathPathExpr() {
     } //for deserialization
@@ -90,20 +90,20 @@ public class XPathPathExpr extends XPathExpression {
      * all '..' steps must come before anything else
      */
     public TreeReference getReference() throws XPathUnsupportedException {
-        final TreeReference ref = new TreeReference();
+        TreeReference ref = new TreeReference();
         boolean parentsAllowed;
         switch (init_context) {
-            case XPathPathExpr.INIT_CONTEXT_ROOT:
+            case INIT_CONTEXT_ROOT:
                 ref.setRefLevel(TreeReference.REF_ABSOLUTE);
                 parentsAllowed = false;
                 break;
-            case XPathPathExpr.INIT_CONTEXT_RELATIVE:
+            case INIT_CONTEXT_RELATIVE:
                 ref.setRefLevel(0);
                 parentsAllowed = true;
                 break;
-            case XPathPathExpr.INIT_CONTEXT_EXPR:
+            case INIT_CONTEXT_EXPR:
                 if (filtExpr.x instanceof XPathFuncExpr) {
-                    XPathFuncExpr func = (XPathFuncExpr) (this.filtExpr.x);
+                    XPathFuncExpr func = (XPathFuncExpr) (filtExpr.x);
                     switch (func.id.toString()) {
                         case "instance":
                             ref.setRefLevel(TreeReference.REF_ABSOLUTE); //i assume when refering the non main instance you have to be absolute
@@ -159,7 +159,7 @@ public class XPathPathExpr extends XPathExpression {
                 throw new XPathUnsupportedException("filter expression");
         }
         for (int i = 0; i < steps.length; i++) {
-            final XPathStep step = steps[i];
+            XPathStep step = steps[i];
             switch (step.axis) {
                 case XPathStep.AXIS_SELF:
                     if (step.test != XPathStep.TEST_TYPE_NODE) {
@@ -316,49 +316,6 @@ public class XPathPathExpr extends XPathExpression {
         }
     }
 
-    /**
-     * Warning: this method has somewhat unclear semantics.
-     *
-     * "matches" follows roughly the same process as equals(), in that it goes
-     * through the path step by step and compares whether each step can refer to the same node.
-     * The only difference is that match() will allow for a named step to match a step who's name
-     * is a wildcard.
-     *
-     * So
-     * \/data\/path\/to
-     * will "match"
-     * \/data\/*\/to
-     * <p>
-     * even though they are not equal.
-     * <p>
-     * Matching is reflexive, consistent, and symmetric, but _not_ transitive.
-     *
-     * @param o
-     * @return true if the expression is a path that matches this one
-     */
-    public boolean matches(XPathExpression o) {
-        if (o instanceof XPathPathExpr) {
-            XPathPathExpr x = (XPathPathExpr) o;
-
-            //Shortcuts for easily comparable values
-            if (init_context != x.init_context || steps.length != x.steps.length) {
-                return false;
-            }
-
-            for (int i = 0; i < steps.length; i++) {
-                if (!steps[i].matches(x.steps[i])) {
-                    return false;
-                }
-            }
-
-            // If all steps match, we still need to make sure we're in the same "context" if this
-            // is a normal expression.
-            return (init_context != INIT_CONTEXT_EXPR || filtExpr.equals(x.filtExpr));
-        } else {
-            return false;
-        }
-    }
-
     @Override
     public void readExternal(DataInputStream in, PrototypeFactory pf) throws IOException, DeserializationException {
         init_context = ExtUtil.readInt(in);
@@ -406,7 +363,7 @@ public class XPathPathExpr extends XPathExpression {
         }
         //It's very, very hard to figure out how to pivot predicates. For now, just skip it
         for (int i = 0; i < ref.size(); ++i) {
-            if (ref.getPredicate(i) != null && ref.getPredicate(i).size() > 0) {
+            if (ref.getPredicate(i) != null && !ref.getPredicate(i).isEmpty()) {
                 throw new UnpivotableExpressionException("Can't pivot filtered treereferences. Ref: " + ref.toString(true) + " has predicates.");
             }
         }
