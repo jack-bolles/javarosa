@@ -5,7 +5,7 @@
 + Code Cleanup. Each commit is the application of one or a few (bundled when impact was small) applications of fixes suggested by Intelli's `Inspect Code` tool
 
 ### More work to do 
-+ There is much de-duplication and reomving references to deprecated code, and removing the deprecated code itself.
++ There is much de-duplication and removing references to deprecated code, and removing the deprecated code itself.
 
 ## Hangover from previous
 ### More work to do
