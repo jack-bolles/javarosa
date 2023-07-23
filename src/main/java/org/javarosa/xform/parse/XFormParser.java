@@ -46,7 +46,6 @@ import org.javarosa.core.services.locale.Localizer;
 import org.javarosa.core.services.locale.TableLocaleSource;
 import org.javarosa.core.util.StopWatch;
 import org.javarosa.model.xform.XPathReference;
-import org.javarosa.xform.util.XFormSerializer;
 import org.javarosa.xform.util.XFormUtils;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
@@ -61,6 +60,7 @@ import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.kxml2.io.KXmlParser;
+import org.kxml2.io.KXmlSerializer;
 import org.kxml2.kdom.Document;
 import org.kxml2.kdom.Element;
 import org.kxml2.kdom.Node;
@@ -70,6 +70,8 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -83,6 +85,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableSet;
@@ -236,6 +239,20 @@ public class XFormParser implements IXFormParserFunctions {
 
         // Clients that want to record audio must register an action listener with Actions.registerActionListener
         registerActionHandler(RecordAudioActionHandler.ELEMENT_NAME, new RecordAudioActionHandler());
+    }
+
+    public static String elementToString(Element e){
+        KXmlSerializer serializer = new KXmlSerializer();
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(bos);
+        try {
+            serializer.setOutput(dos, null);
+            e.write(serializer);
+            serializer.flush();
+            return new String(bos.toByteArray(), UTF_8);
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     private void initState() {
@@ -1140,7 +1157,7 @@ public class XFormParser implements IXFormParserFunctions {
 
                 //If the child is in the HTML namespace, retain it.
                 if (NAMESPACE_HTML.equals(child.getNamespace())) {
-                    sb.append(XFormSerializer.elementToString(child));
+                    sb.append(elementToString(child));
                 } else {
                     //Otherwise, ignore it.
                     logger.info("Unrecognized tag inside of text: <{}>. Did you intend to " +
@@ -1359,7 +1376,7 @@ public class XFormParser implements IXFormParserFunctions {
          */
         String nodesetStr = e.getAttributeValue("", NODESET_ATTR);
         if (nodesetStr == null)
-            throw new RuntimeException("No nodeset attribute in element: [" + e.getName() + "]. This is required. (Element Printout:" + XFormSerializer.elementToString(e) + ")");
+            throw new RuntimeException("No nodeset attribute in element: [" + e.getName() + "]. This is required. (Element Printout:" + elementToString(e) + ")");
 
         if (nodesetStr.startsWith("randomize(")) {
             itemset.randomize = true;

@@ -29,122 +29,118 @@ import org.javarosa.core.services.transport.payload.DataPointerPayload;
 import org.javarosa.core.services.transport.payload.IDataPayload;
 import org.javarosa.core.services.transport.payload.MultiMessagePayload;
 import org.javarosa.xform.util.XFormAnswerDataSerializer;
-import org.javarosa.xform.util.XFormSerializer;
+import org.kxml2.io.KXmlSerializer;
 import org.kxml2.kdom.Document;
 import org.kxml2.kdom.Element;
 import org.kxml2.kdom.Node;
 
-import java.io.IOException;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * A visitor-esque class which walks a FormInstance and constructs an XML document
  * containing its instance.
- *
+ * <p>
  * The XML node elements are constructed in a depth-first manner, consistent with
  * standard XML document parsing.
  *
  * @author Clayton Sims
- *
  */
 public class XFormSerializingVisitor implements IInstanceSerializingVisitor {
 
-        /** The XML document containing the instance that is to be returned */
-        Document theXmlDoc;
+    private Document theXmlDoc;
 
-        /** The serializer to be used in constructing XML for AnswerData elements */
-        IAnswerDataSerializer serializer;
+    private IAnswerDataSerializer serializer;
 
-        /** The root of the xml document which should be included in the serialization **/
-        TreeReference rootRef;
+    private TreeReference rootRef;
 
-        /** The schema to be used to serialize answer data */
-        FormDef schema; //not used
+    private List<IDataPointer> dataPointers;
 
-        List<IDataPointer> dataPointers;
+    private final boolean respectRelevance;
 
-        boolean respectRelevance;
+    public XFormSerializingVisitor() {
+        this(true);
+    }
 
-        public XFormSerializingVisitor() {
-            this(true);
+    private XFormSerializingVisitor(boolean respectRelevance) {
+        this.respectRelevance = respectRelevance;
+    }
+
+    private static byte[] getUtfBytes(Document doc) {
+        KXmlSerializer serializer = new KXmlSerializer();
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try {
+            serializer.setOutput(bos, UTF_8.name());
+            doc.write(serializer);
+            serializer.flush();
+            return bos.toByteArray();
+        } catch (Exception e) {
+            return null;
         }
-        public XFormSerializingVisitor(boolean respectRelevance) {
-            this.respectRelevance = respectRelevance;
+    }
+
+    private void init() {
+        theXmlDoc = null;
+        dataPointers = new ArrayList<>(0);
+    }
+
+    public byte[] serializeInstance(FormInstance model, FormDef formDef) {
+        //LEGACY: Should remove
+        init();
+        return serializeInstance(model);
+    }
+
+    public byte[] serializeInstance(FormInstance model) {
+        return serializeInstance(model, new XPathReference("/"));
+    }
+
+    public byte[] serializeInstance(FormInstance model, IDataReference ref) {
+        init();
+        rootRef = FormInstance.unpackReference(ref);
+        if (serializer == null) {
+            setAnswerDataSerializer(new XFormAnswerDataSerializer());
         }
 
-        private void init() {
-            theXmlDoc = null;
-            schema = null;
-            dataPointers = new ArrayList<>(0);
+        model.accept(this);
+        if (theXmlDoc != null) {
+            return getUtfBytes(theXmlDoc);
+        } else {
+            return null;
         }
+    }
 
-        public byte[] serializeInstance(FormInstance model, FormDef formDef) {
+    public IDataPayload createSerializedPayload(FormInstance model) {
+        return createSerializedPayload(model, new XPathReference("/"));
+    }
 
-            //LEGACY: Should remove
-            init();
-            this.schema = formDef;
-            return serializeInstance(model);
+    public IDataPayload createSerializedPayload(FormInstance model, IDataReference ref) {
+        init();
+        rootRef = FormInstance.unpackReference(ref);
+        if (serializer == null) {
+            setAnswerDataSerializer(new XFormAnswerDataSerializer());
         }
-
-        public byte[] serializeInstance(FormInstance model) {
-            return serializeInstance(model, new XPathReference("/"));
-        }
-
-        /*
-         * (non-Javadoc)
-         * @see org.javarosa.core.model.utils.IInstanceSerializingVisitor#serializeDataModel(org.javarosa.core.model.IFormDataModel)
-         */
-        public byte[] serializeInstance(FormInstance model, IDataReference ref) {
-            init();
-            rootRef = FormInstance.unpackReference(ref);
-            if(this.serializer == null) {
-                this.setAnswerDataSerializer(new XFormAnswerDataSerializer());
+        model.accept(this);
+        if (theXmlDoc != null) {
+            //TODO: Did this strip necessary data?
+            byte[] form = getUtfBytes(theXmlDoc);
+            if (dataPointers.isEmpty()) {
+                return new ByteArrayPayload(form, null, IDataPayload.PAYLOAD_TYPE_XML);
             }
-
-            model.accept(this);
-            if(theXmlDoc != null) {
-                return XFormSerializer.getUtfBytes(theXmlDoc);
+            MultiMessagePayload payload = new MultiMessagePayload();
+            payload.addPayload(new ByteArrayPayload(form, "xml_submission_file", IDataPayload.PAYLOAD_TYPE_XML));
+            for (IDataPointer pointer : dataPointers) {
+                payload.addPayload(new DataPointerPayload(pointer));
             }
-            else {
-                return null;
-            }
+            return payload;
+        } else {
+            return null;
         }
+    }
 
-        public IDataPayload createSerializedPayload(FormInstance model) throws IOException {
-            return createSerializedPayload(model, new XPathReference("/"));
-        }
-
-        public IDataPayload createSerializedPayload(FormInstance model, IDataReference ref) {
-            init();
-            rootRef = FormInstance.unpackReference(ref);
-            if(this.serializer == null) {
-                this.setAnswerDataSerializer(new XFormAnswerDataSerializer());
-            }
-            model.accept(this);
-            if(theXmlDoc != null) {
-                //TODO: Did this strip necessary data?
-                byte[] form = XFormSerializer.getUtfBytes(theXmlDoc);
-                if(dataPointers.size() == 0) {
-                    return new ByteArrayPayload(form, null, IDataPayload.PAYLOAD_TYPE_XML);
-                }
-                MultiMessagePayload payload = new MultiMessagePayload();
-                payload.addPayload(new ByteArrayPayload(form, "xml_submission_file", IDataPayload.PAYLOAD_TYPE_XML));
-                for (IDataPointer pointer : dataPointers) {
-                    payload.addPayload(new DataPointerPayload(pointer));
-                }
-                return payload;
-            }
-            else {
-                return null;
-            }
-        }
-
-    /*
-     * (non-Javadoc)
-     * @see org.javarosa.core.model.utils.ITreeVisitor#visit(org.javarosa.core.model.DataModelTree)
-     */
     public void visit(FormInstance tree) {
         theXmlDoc = new Document();
         //TreeElement root = tree.getRoot();
@@ -153,7 +149,7 @@ public class XFormSerializingVisitor implements IInstanceSerializingVisitor {
 
         //For some reason resolveReference won't ever return the root, so we'll
         //catch that case and just start at the root.
-        if(root == null) {
+        if (root == null) {
             root = tree.getRoot();
         }
 
@@ -173,7 +169,7 @@ public class XFormSerializingVisitor implements IInstanceSerializingVisitor {
         }
     }
 
-    public Element serializeNode (TreeElement instanceNode) {
+    private Element serializeNode(TreeElement instanceNode) {
         Element e = new Element(); //don't set anything on this element yet, as it might get overwritten
 
         //don't serialize template nodes or non-relevant nodes
@@ -190,7 +186,7 @@ public class XFormSerializingVisitor implements IInstanceSerializingVisitor {
             }
 
             if (serializedAnswer instanceof Element) {
-                e = (Element)serializedAnswer;
+                e = (Element) serializedAnswer;
             } else if (serializedAnswer instanceof String) {
                 e = new Element();
                 e.addChild(Node.TEXT, serializedAnswer);
@@ -198,7 +194,7 @@ public class XFormSerializingVisitor implements IInstanceSerializingVisitor {
                 throw new RuntimeException("Can't handle serialized output for" + instanceNode.getValue().toString() + ", " + serializedAnswer);
             }
 
-            if(serializer.containsExternalData(instanceNode.getValue())) {
+            if (serializer.containsExternalData(instanceNode.getValue())) {
                 IDataPointer[] pointer = serializer.retrieveExternalDataPointer(instanceNode.getValue());
                 Collections.addAll(dataPointers, pointer);
             }
@@ -235,24 +231,20 @@ public class XFormSerializingVisitor implements IInstanceSerializingVisitor {
             }
             e.setAttribute(namespace, name, val);
         }
-        if(instanceNode.getNamespace() != null) {
+        if (instanceNode.getNamespace() != null) {
             e.setNamespace(instanceNode.getNamespace());
         }
 
         return e;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.javarosa.core.model.utils.IInstanceSerializingVisitor#setAnswerDataSerializer(org.javarosa.core.model.IAnswerDataSerializer)
-     */
     public void setAnswerDataSerializer(IAnswerDataSerializer ads) {
-        this.serializer = ads;
+        serializer = ads;
     }
 
     public IInstanceSerializingVisitor newInstance() {
         XFormSerializingVisitor modelSerializer = new XFormSerializingVisitor();
-        modelSerializer.setAnswerDataSerializer(this.serializer);
+        modelSerializer.setAnswerDataSerializer(serializer);
         return modelSerializer;
     }
 }
